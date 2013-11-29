@@ -2,6 +2,11 @@
  Changelog
 ============
 
+0.11.1
+------
+
+* Added Levenshtein.h to MANIFEST.in
+
 0.11.0
 ------
 

@@ -3,7 +3,7 @@ import os
 
 from distutils.core import Extension
 
-version = '0.11.0'
+version = '0.11.1'
 
 extLevensthein = Extension('Levenshtein',
                            sources = ['Levenshtein.c'],
