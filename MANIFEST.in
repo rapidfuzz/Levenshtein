@@ -1,6 +1,7 @@
 recursive-include docs *
 include README.rst
 include HISTORY.txt
+include Levenshtein.h
 global-exclude *pyc
 global-exclude .project
 global-exclude .pydevproject
