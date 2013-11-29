@@ -1,11 +1,5 @@
 .. contents ::
 
-Maintainer needed
--------------------
-
-I (Mikko Ohtamaa) am not currently maintaining this code. I just pulled in to Github for general good (was not available in public repo before).
-So if you file any issues I won't be looking into them.
-
 Introduction
 ------------
 
@@ -22,7 +16,7 @@ computation of
 
 It supports both normal and Unicode strings.
 
-Python 2.2 or newer is required.
+Python 2.2 or newer is required; Python 3 is supported.
 
 StringMatcher.py is an example SequenceMatcher-like class built on the top of
 Levenshtein.  It misses some SequenceMatcher's functionality, and has some
@@ -60,21 +54,20 @@ This package was long missing from PyPi and available as source checkout only.
 We needed to restore this package for `Go Mobile for Plone <http://webandmobile.mfabrik.com>`_
 and `Pywurfl <http://celljam.net/>`_ projects which depend on this.
 
-The project is not under active development as far as the maintainer knows.
-
 Source code
 -----------
 
-* http://github.com/miohtama/python-Levenshtein/tree/
+* http://github.com/ztane/python-Levenshtein/tree/
 
 Authors
 -------
 
-* Maintainer: `Mikko Ohtamaa <http://opensourcehacker.com>`_ - I am not actively doing anything
-  for this, please feel free take over PyPi and Github administration
+* Maintainer: `Antti Haapala <antti@haapala.name>`
 
-* David Necas (Yeti) <yeti at physics.muni.cz>
+* Python 3 compatibility: Esa Määttä
 
+* Jonatas CD: Fixed documentation generation
 
+* Previous maintainer: `Mikko Ohtamaa <http://opensourcehacker.com>`_
 
-
+* Original code: David Necas (Yeti) <yeti at physics.muni.cz>

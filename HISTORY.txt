@@ -2,8 +2,13 @@
  Changelog
 ============
 
-10.1 - 10.2
------------
+0.11.0
+------
+
+* Python 3 support, maintainership passed to Antti Haapala
+
+0.10.1 - 0.10.2
+---------------
 
 * Made python-Lehvenstein Git compatible and use setuptools for PyPi upload
 
