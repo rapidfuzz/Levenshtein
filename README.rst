@@ -57,7 +57,7 @@ and `Pywurfl <http://celljam.net/>`_ projects which depend on this.
 Source code
 -----------
 
-* http://github.com/ztane/python-Levenshtein/tree/
+* http://github.com/ztane/python-Levenshtein/
 
 Authors
 -------
