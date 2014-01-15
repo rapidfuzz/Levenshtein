@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import os
+import sys
 
 from distutils.core import Extension
 
@@ -9,11 +10,16 @@ extLevensthein = Extension('Levenshtein',
                            sources = ['Levenshtein.c'],
                            )
 
+if sys.version_info >= (3, 0):
+    _open = lambda f: open(f, encoding='utf8')
+else:
+    _open = open
+
 setup(name='python-Levenshtein',
       version=version,
       description="Python extension for computing string edit distances and similarities.",
-      long_description=open("README.rst").read() + "\n" +
-                       open(os.path.join("HISTORY.txt")).read(),
+      long_description=_open("README.rst").read() + "\n" +
+                       _open(os.path.join("HISTORY.txt")).read(),
       # Get more strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
