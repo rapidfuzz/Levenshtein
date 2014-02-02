@@ -2,6 +2,10 @@ recursive-include docs *
 include README.rst
 include HISTORY.txt
 include Levenshtein.h
+include COPYING
+include StringMatcher.py
+include gendoc.sh
+include NEWS
 global-exclude *pyc
 global-exclude .project
 global-exclude .pydevproject
