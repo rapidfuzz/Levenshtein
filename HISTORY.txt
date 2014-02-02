@@ -2,6 +2,15 @@
  Changelog
 ============
 
+0.11.2
+------
+
+* Fixed a bug in setup.py: installation would fail on Python 3 if the locale
+  did not specify UTF-8 charset (Felix Yan).
+
+* Added COPYING, StringMatcher.py, gendoc.sh and NEWS in MANIFEST.in, as they
+  were missing from source distributions.
+
 0.11.1
 ------
 
@@ -18,5 +27,3 @@
 * Made python-Lehvenstein Git compatible and use setuptools for PyPi upload
 
 * Created HISTORY.txt and made README reST compatible
-
-
