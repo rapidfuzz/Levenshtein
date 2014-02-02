@@ -222,7 +222,7 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
   "ratio(string1, string2)\n" \
   "\n" \
   "The similarity is a number between 0 and 1, it's usually equal or\n" \
-  "somewhat higher than difflib.SequenceMatcher.ratio(), becuase it's\n" \
+  "somewhat higher than difflib.SequenceMatcher.ratio(), because it's\n" \
   "based on real minimal edit distance.\n" \
   "\n" \
   "Examples:\n" \
