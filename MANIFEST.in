@@ -5,6 +5,7 @@ include Levenshtein.h
 include COPYING
 include StringMatcher.py
 include gendoc.sh
+include genextdoc.py
 include NEWS
 global-exclude *pyc
 global-exclude .project
