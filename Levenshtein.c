@@ -1302,8 +1302,8 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
   strseq1 = PySequence_Fast(strlist1, name);
   strseq2 = PySequence_Fast(strlist2, name);
 
-  n1 = PySequence_Fast_GET_SIZE(strlist1);
-  n2 = PySequence_Fast_GET_SIZE(strlist2);
+  n1 = PySequence_Fast_GET_SIZE(strseq1);
+  n2 = PySequence_Fast_GET_SIZE(strseq2);
   *lensum = n1 + n2;
   if (n1 == 0) {
     Py_DECREF(strseq1);
@@ -1316,13 +1316,13 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
     return (double)n1;
   }
 
-  stringtype1 = extract_stringlist(strlist1, name, n1, &sizes1, &strings1);
+  stringtype1 = extract_stringlist(strseq1, name, n1, &sizes1, &strings1);
   Py_DECREF(strseq1);
   if (stringtype1 < 0) {
     Py_DECREF(strseq2);
     return r;
   }
-  stringtype2 = extract_stringlist(strlist2, name, n2, &sizes2, &strings2);
+  stringtype2 = extract_stringlist(strseq2, name, n2, &sizes2, &strings2);
   Py_DECREF(strseq2);
   if (stringtype2 < 0) {
     free(sizes1);
