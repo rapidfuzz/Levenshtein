@@ -1402,7 +1402,7 @@ extract_editops(PyObject *list)
       return NULL;
     }
     item = PyTuple_GET_ITEM(tuple, 0);
-    if (!PyString_Check(item)
+    if (!(PyString_Check(item) || PyUnicode_Check(item))
         || ((type = string_to_edittype(item)) == LEV_EDIT_LAST)) {
       free(ops);
       return NULL;
@@ -1444,7 +1444,7 @@ extract_opcodes(PyObject *list)
       return NULL;
     }
     item = PyTuple_GET_ITEM(tuple, 0);
-    if (!PyString_Check(item)
+    if (!(PyString_Check(item) || PyUnicode_Check(item))
         || ((type = string_to_edittype(item)) == LEV_EDIT_LAST)) {
       free(bops);
       return NULL;
