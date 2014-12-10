@@ -2,6 +2,21 @@
  Changelog
 ============
 
+0.12.0
+------
+
+* Fixed a bug in StringMatcher.StringMatcher.get_matching_blocks /
+  extract_editops for Python 3; now allow only `str` editops on
+  both Python 2 and Python 3, for simpler and working code.
+
+* Added documentation in the source distribution and in GIT
+
+* Fixed the package layout: renamed the .so/.dll to _levenshtein,
+  and made it reside inside a package, along with the StringMatcher
+  class.
+
+* Fixed spelling errors.
+
 0.11.2
 ------
 

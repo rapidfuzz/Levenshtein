@@ -1,0 +1,373 @@
+<p>A C extension module for fast computation of:</p>
+<ul><li>Levenshtein (edit) distance and edit sequence manipulation</li>
+<li>string similarity</li>
+<li>approximate median strings, and generally string averaging</li>
+<li>string sequence and set similarity</li></ul>
+<p>Levenshtein has a some overlap with difflib (SequenceMatcher).  It
+supports only strings, not arbitrary sequence types, but on the
+other hand it's much faster.</p>
+<p>It supports both normal and Unicode strings, but can't mix them, all
+arguments to a function (method) have to be of the same type (or its
+subclasses).</p>
+<p><b>Functions:</b></p>
+<ul class="ltoc">
+<li><a href="#Levenshtein-apply_edit">apply_edit</a>(<var>edit_operations</var>, <var>source_string</var>, <var>destination_string</var>)</li>
+<li><a href="#Levenshtein-distance">distance</a>(<var>string1</var>, <var>string2</var>)</li>
+<li><a href="#Levenshtein-editops">editops</a>(<var>source_string</var>, <var>destination_string</var>)<br/>
+<a href="#Levenshtein-editops">editops</a>(<var>edit_operations</var>, <var>source_length</var>, <var>destination_length</var>)</li>
+<li><a href="#Levenshtein-hamming">hamming</a>(<var>string1</var>, <var>string2</var>)</li>
+<li><a href="#Levenshtein-inverse">inverse</a>(<var>edit_operations</var>)</li>
+<li><a href="#Levenshtein-jaro">jaro</a>(<var>string1</var>, <var>string2</var>)</li>
+<li><a href="#Levenshtein-jaro_winkler">jaro_winkler</a>(<var>string1</var>, <var>string2</var>[, <var>prefix_weight</var>])</li>
+<li><a href="#Levenshtein-matching_blocks">matching_blocks</a>(<var>edit_operations</var>, <var>source_length</var>, <var>destination_length</var>)</li>
+<li><a href="#Levenshtein-median">median</a>(<var>string_sequence</var>[, <var>weight_sequence</var>])</li>
+<li><a href="#Levenshtein-median_improve">median_improve</a>(<var>string</var>, <var>string_sequence</var>[, <var>weight_sequence</var>])</li>
+<li><a href="#Levenshtein-opcodes">opcodes</a>(<var>source_string</var>, <var>destination_string</var>)<br/>
+<a href="#Levenshtein-opcodes">opcodes</a>(<var>edit_operations</var>, <var>source_length</var>, <var>destination_length</var>)</li>
+<li><a href="#Levenshtein-quickmedian">quickmedian</a>(<var>string</var>[, <var>weight_sequence</var>])</li>
+<li><a href="#Levenshtein-ratio">ratio</a>(<var>string1</var>, <var>string2</var>)</li>
+<li><a href="#Levenshtein-seqratio">seqratio</a>(<var>string_sequence1</var>, <var>string_sequence2</var>)</li>
+<li><a href="#Levenshtein-setmedian">setmedian</a>(<var>string</var>[, <var>weight_sequence</var>])</li>
+<li><a href="#Levenshtein-setratio">setratio</a>(<var>string_sequence1</var>, <var>string_sequence2</var>)</li>
+<li><a href="#Levenshtein-subtract_edit">subtract_edit</a>(<var>edit_operations</var>, <var>subsequence</var>)</li>
+</ul>
+<p><b>Data:</b></p>
+<ul class="ltoc">
+<li>_levenshtein = A C extension module for fast computation of:
+- Levenshtein (edit) distance and edit sequence manipulation
+- string similarity
+- approximate median strings, and generally string averaging
+- string sequence and set similarity
+
+Levenshtein has a some overlap with difflib (SequenceMatcher).  It
+supports only strings, not arbitrary sequence types, but on the
+other hand it's much faster.
+
+It supports both normal and Unicode strings, but can't mix them, all
+arguments to a function (method) have to be of the same type (or its
+subclasses).
+</li>
+</ul>
+<hr/>
+<dl>
+<dt id="Levenshtein-apply_edit">apply_edit(<var>edit_operations</var>, <var>source_string</var>, <var>destination_string</var>)</dt>
+<dd><p>Apply a sequence of edit operations to a string.</p>
+<p>In the case of editops, the sequence can be arbitrary ordered subset
+of the edit sequence transforming source_string to destination_string.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; e = editops('man', 'scotsman')
+</pre>
+<pre>
+&gt;&gt;&gt; apply_edit(e, 'man', 'scotsman')
+'scotsman'
+&gt;&gt;&gt; apply_edit(e[:3], 'man', 'scotsman')
+'scoman'
+</pre>
+<p>The other form of edit operations, opcodes, is not very suitable for
+such a tricks, because it has to always span over complete strings,
+subsets can be created by carefully replacing blocks with 'equal'
+blocks, or by enlarging 'equal' block at the expense of other blocks
+and adjusting the other blocks accordingly.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; a, b = 'spam and eggs', 'foo and bar'
+&gt;&gt;&gt; e = opcodes(a, b)
+&gt;&gt;&gt; apply_edit(inverse(e), b, a)
+'spam and eggs'
+&gt;&gt;&gt; e[4] = ('equal', 10, 13, 8, 11)
+&gt;&gt;&gt; a, b, e
+&gt;&gt;&gt; apply_edit(e, a, b)
+'foo and ggs'
+</pre>
+</dd>
+<dt id="Levenshtein-distance">distance(<var>string1</var>, <var>string2</var>)</dt>
+<dd><p>Compute absolute Levenshtein distance of two strings.</p>
+<p>Examples (it's hard to spell Levenshtein correctly):</p>
+<pre>
+&gt;&gt;&gt; distance('Levenshtein', 'Lenvinsten')
+4
+</pre>
+<pre>
+&gt;&gt;&gt; distance('Levenshtein', 'Levensthein')
+2
+&gt;&gt;&gt; distance('Levenshtein', 'Levenshten')
+1
+&gt;&gt;&gt; distance('Levenshtein', 'Levenshtein')
+0
+</pre>
+<p>Yeah, we've managed it at last.</p>
+</dd>
+<dt id="Levenshtein-editops">editops(<var>source_string</var>, <var>destination_string</var>)<br/>
+editops(<var>edit_operations</var>, <var>source_length</var>, <var>destination_length</var>)</dt>
+<dd><p>Find sequence of edit operations transforming one string to another.</p>
+<p>The result is a list of triples (operation, spos, dpos), where
+operation is one of 'equal', 'replace', 'insert', or 'delete';  spos
+and dpos are position of characters in the first (source) and the
+second (destination) strings.  These are operations on signle
+characters.  In fact the returned list doesn't contain the 'equal',
+but all the related functions accept both lists with and without
+'equal's.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; editops('spam', 'park')
+[('delete', 0, 0), ('insert', 3, 2), ('replace', 3, 3)]
+</pre>
+<p>The alternate form editops(opcodes, source_string, destination_string)
+can be used for conversion from opcodes (5-tuples) to editops (you can
+pass strings or their lengths, it doesn't matter).</p>
+</dd>
+<dt id="Levenshtein-hamming">hamming(<var>string1</var>, <var>string2</var>)</dt>
+<dd><p>Compute Hamming distance of two strings.</p>
+<p>The Hamming distance is simply the number of differing characters.
+That means the length of the strings must be the same.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; hamming('Hello world!', 'Holly grail!')
+7
+&gt;&gt;&gt; hamming('Brian', 'Jesus')
+5
+</pre>
+</dd>
+<dt id="Levenshtein-inverse">inverse(<var>edit_operations</var>)</dt>
+<dd><p>Invert the sense of an edit operation sequence.</p>
+<p>In other words, it returns a list of edit operations transforming the
+second (destination) string to the first (source).  It can be used
+with both editops and opcodes.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; inverse(editops('spam', 'park'))
+[('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]
+</pre>
+<pre>
+&gt;&gt;&gt; editops('park', 'spam')
+[('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]
+</pre>
+</dd>
+<dt id="Levenshtein-jaro">jaro(<var>string1</var>, <var>string2</var>)</dt>
+<dd><p>Compute Jaro string similarity metric of two strings.</p>
+<p>The Jaro string similarity metric is intended for short strings like
+personal last names.  It is 0 for completely different strings and
+1 for identical strings.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; jaro('Brian', 'Jesus')
+0.0
+&gt;&gt;&gt; jaro('Thorkel', 'Thorgier')  # doctest: +ELLIPSIS
+0.779761...
+&gt;&gt;&gt; jaro('Dinsdale', 'D')  # doctest: +ELLIPSIS
+0.708333...
+</pre>
+</dd>
+<dt id="Levenshtein-jaro_winkler">jaro_winkler(<var>string1</var>, <var>string2</var>[, <var>prefix_weight</var>])</dt>
+<dd><p>Compute Jaro string similarity metric of two strings.</p>
+<p>The Jaro-Winkler string similarity metric is a modification of Jaro
+metric giving more weight to common prefix, as spelling mistakes are
+more likely to occur near ends of words.</p>
+<p>The prefix weight is inverse value of common prefix length sufficient
+to consider the strings *identical*.  If no prefix weight is
+specified, 1/10 is used.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; jaro_winkler('Brian', 'Jesus')
+0.0
+</pre>
+<pre>
+&gt;&gt;&gt; jaro_winkler('Thorkel', 'Thorgier')  # doctest: +ELLIPSIS
+0.867857...
+&gt;&gt;&gt; jaro_winkler('Dinsdale', 'D')  # doctest: +ELLIPSIS
+0.7375...
+&gt;&gt;&gt; jaro_winkler('Thorkel', 'Thorgier', 0.25)
+1.0
+</pre>
+</dd>
+<dt id="Levenshtein-matching_blocks">matching_blocks(<var>edit_operations</var>, <var>source_length</var>, <var>destination_length</var>)</dt>
+<dd><p>Find identical blocks in two strings.</p>
+<p>The result is a list of triples with the same meaning as in
+SequenceMatcher's get_matching_blocks() output.  It can be used with
+both editops and opcodes.  The second and third arguments don't
+have to be actually strings, their lengths are enough.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; a, b = 'spam', 'park'
+</pre>
+<pre>
+&gt;&gt;&gt; matching_blocks(editops(a, b), a, b)
+[(1, 0, 2), (4, 4, 0)]
+&gt;&gt;&gt; matching_blocks(editops(a, b), len(a), len(b))
+[(1, 0, 2), (4, 4, 0)]
+</pre>
+<p>The last zero-length block is not an error, but it's there for
+compatibility with difflib which always emits it.</p>
+<p>One can join the matching blocks to get two identical strings:</p>
+<pre>
+&gt;&gt;&gt; a, b = 'dog kennels', 'mattresses'
+&gt;&gt;&gt; mb = matching_blocks(editops(a,b), a, b)
+&gt;&gt;&gt; ''.join([a[x[0]:x[0]+x[2]] for x in mb])
+'ees'
+&gt;&gt;&gt; ''.join([b[x[1]:x[1]+x[2]] for x in mb])
+'ees'
+</pre>
+</dd>
+<dt id="Levenshtein-median">median(<var>string_sequence</var>[, <var>weight_sequence</var>])</dt>
+<dd><p>Find an approximate generalized median string using greedy algorithm.</p>
+<p>You can optionally pass a weight for each string as the second
+argument.  The weights are interpreted as item multiplicities,
+although any non-negative real numbers are accepted.  Use them to
+improve computation speed when strings often appear multiple times
+in the sequence.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; median(['SpSm', 'mpamm', 'Spam', 'Spa', 'Sua', 'hSam'])
+'Spam'
+</pre>
+<pre>
+&gt;&gt;&gt; fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
+...          'Leveshtei', 'Lenshtein', 'Lvenstein',
+...          'Levenhtin', 'evenshtei']
+&gt;&gt;&gt; median(fixme)
+'Levenshtein'
+</pre>
+<p>Hm.  Even a computer program can spell Levenshtein better than me.</p>
+</dd>
+<dt id="Levenshtein-median_improve">median_improve(<var>string</var>, <var>string_sequence</var>[, <var>weight_sequence</var>])</dt>
+<dd><p>Improve an approximate generalized median string by perturbations.</p>
+<p>The first argument is the estimated generalized median string you
+want to improve, the others are the same as in median().  It returns
+a string with total distance less or equal to that of the given string.</p>
+<p>Note this is much slower than median().  Also note it performs only
+one improvement step, calling median_improve() again on the result
+may improve it further, though this is unlikely to happen unless the
+given string was not very similar to the actual generalized median.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
+...          'Leveshtei', 'Lenshtein', 'Lvenstein',
+...          'Levenhtin', 'evenshtei']
+</pre>
+<pre>
+&gt;&gt;&gt; median_improve('spam', fixme)
+'enhtein'
+&gt;&gt;&gt; median_improve(median_improve('spam', fixme), fixme)
+'Levenshtein'
+</pre>
+<p>It takes some work to change spam to Levenshtein.</p>
+</dd>
+<dt id="Levenshtein-opcodes">opcodes(<var>source_string</var>, <var>destination_string</var>)<br/>
+opcodes(<var>edit_operations</var>, <var>source_length</var>, <var>destination_length</var>)</dt>
+<dd><p>Find sequence of edit operations transforming one string to another.</p>
+<p>The result is a list of 5-tuples with the same meaning as in
+SequenceMatcher's get_opcodes() output.  But since the algorithms
+differ, the actual sequences from Levenshtein and SequenceMatcher
+may differ too.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; for x in opcodes('spam', 'park'):
+...     print(x)
+...
+('delete', 0, 1, 0, 0)
+('equal', 1, 3, 0, 2)
+('insert', 3, 3, 2, 3)
+('replace', 3, 4, 3, 4)
+</pre>
+<p>The alternate form opcodes(editops, source_string, destination_string)
+can be used for conversion from editops (triples) to opcodes (you can
+pass strings or their lengths, it doesn't matter).</p>
+</dd>
+<dt id="Levenshtein-quickmedian">quickmedian(<var>string</var>[, <var>weight_sequence</var>])</dt>
+<dd><p>Find a very approximate generalized median string, but fast.</p>
+<p>See median() for argument description.</p>
+<p>This method is somewhere between setmedian() and picking a random
+string from the set; both speedwise and quality-wise.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
+...          'Leveshtei', 'Lenshtein', 'Lvenstein',
+...          'Levenhtin', 'evenshtei']
+</pre>
+<pre>
+&gt;&gt;&gt; quickmedian(fixme)
+'Levnshein'
+</pre>
+</dd>
+<dt id="Levenshtein-ratio">ratio(<var>string1</var>, <var>string2</var>)</dt>
+<dd><p>Compute similarity of two strings.</p>
+<p>The similarity is a number between 0 and 1, it's usually equal or
+somewhat higher than difflib.SequenceMatcher.ratio(), because it's
+based on real minimal edit distance.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; ratio('Hello world!', 'Holly grail!')  # doctest: +ELLIPSIS
+0.583333...
+</pre>
+<pre>
+&gt;&gt;&gt; ratio('Brian', 'Jesus')
+0.0
+</pre>
+<p>Really?  I thought there was some similarity.</p>
+</dd>
+<dt id="Levenshtein-seqratio">seqratio(<var>string_sequence1</var>, <var>string_sequence2</var>)</dt>
+<dd><p>Compute similarity ratio of two sequences of strings.</p>
+<p>This is like ratio(), but for string sequences.  A kind of ratio()
+is used to to measure the cost of item change operation for the
+strings.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; seqratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
+...          ['caribou', 'sausage', 'gorn', 'woody'])
+0.21517857142857144
+</pre>
+</dd>
+<dt id="Levenshtein-setmedian">setmedian(<var>string</var>[, <var>weight_sequence</var>])</dt>
+<dd><p>Find set median of a string set (passed as a sequence).</p>
+<p>See median() for argument description.</p>
+<p>The returned string is always one of the strings in the sequence.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; setmedian(['ehee', 'cceaes', 'chees', 'chreesc',
+...            'chees', 'cheesee', 'cseese', 'chetese'])
+'chees'
+</pre>
+<p>You haven't asked me about Limburger, sir.</p>
+</dd>
+<dt id="Levenshtein-setratio">setratio(<var>string_sequence1</var>, <var>string_sequence2</var>)</dt>
+<dd><p>Compute similarity ratio of two strings sets (passed as sequences).</p>
+<p>The best match between any strings in the first set and the second
+set (passed as sequences) is attempted.  I.e., the order doesn't
+matter here.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; setratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
+...          ['caribou', 'sausage', 'gorn', 'woody'])  # doctest: +ELLIPSIS
+0.281845...
+</pre>
+<p>No, even reordering doesn't help the tinny words to match the
+woody ones.</p>
+</dd>
+<dt id="Levenshtein-subtract_edit">subtract_edit(<var>edit_operations</var>, <var>subsequence</var>)</dt>
+<dd><p>Subtract an edit subsequence from a sequence.</p>
+<p>The result is equivalent to
+editops(apply_edit(subsequence, s1, s2), s2), except that is
+constructed directly from the edit operations.  That is, if you apply
+it to the result of subsequence application, you get the same final
+string as from application complete edit_operations.  It may be not
+identical, though (in amibuous cases, like insertion of a character
+next to the same character).</p>
+<p>The subtracted subsequence must be an ordered subset of
+edit_operations.</p>
+<p>Note this function does not accept difflib-style opcodes as no one in
+his right mind wants to create subsequences from them.</p>
+<p>Examples:</p>
+<pre>
+&gt;&gt;&gt; e = editops('man', 'scotsman')
+</pre>
+<pre>
+&gt;&gt;&gt; e1 = e[:3]
+&gt;&gt;&gt; bastard = apply_edit(e1, 'man', 'scotsman')
+&gt;&gt;&gt; bastard
+'scoman'
+&gt;&gt;&gt; apply_edit(subtract_edit(e, e1), bastard, 'scotsman')
+'scotsman'
+</pre>
+</dd>
+</dl>

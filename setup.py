@@ -1,13 +1,13 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
 import sys
 
 from distutils.core import Extension
 
-version = '0.11.2'
+version = '0.12.0'
 
-extLevensthein = Extension('Levenshtein',
-                           sources = ['Levenshtein.c'],
+extLevensthein = Extension('Levenshtein._levenshtein',
+                           sources = ['Levenshtein/_levenshtein.c'],
                            )
 
 if sys.version_info >= (3, 0):
@@ -33,7 +33,7 @@ setup(name='python-Levenshtein',
       author_email='antti@haapala.name',
       url='http://github.com/ztane/python-Levenshtein',
       license='GPL',
-      packages=find_packages(exclude=['ez_setup']),
+      packages=['Levenshtein'],
       namespace_packages=[],
       include_package_data=True,
       zip_safe=False,

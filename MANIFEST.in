@@ -1,12 +1,10 @@
-recursive-include docs *
+recursive-include docs *.html
+recursive-include Levenshtein *.c *.h *.py
 include README.rst
 include HISTORY.txt
-include Levenshtein.h
 include COPYING
-include StringMatcher.py
-include gendoc.sh
-include genextdoc.py
 include NEWS
 global-exclude *pyc
+global-exclude *so
 global-exclude .project
 global-exclude .pydevproject

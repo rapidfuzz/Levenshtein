@@ -59,6 +59,12 @@ Source code
 
 * http://github.com/ztane/python-Levenshtein/
 
+Documentation
+-------------
+
+The current documentation is available at
+  `python-Levenshtein Github repository <http://github.com/ztane/python-Levenshtein/blob/master/docs/Levenshtein.html>`__
+
 Authors
 -------
 
