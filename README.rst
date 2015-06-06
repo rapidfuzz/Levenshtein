@@ -42,10 +42,14 @@ in ``./gendoc.sh --selfcontained``.  It needs Levenshtein already installed
 and genextdoc.py.
 
 License
------------
+-------
 
-Levenshtein can be copied and/or modified under the terms of GNU General
-Public License, see the file COPYING for full license text.
+Levenshtein is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+See the file COPYING for the full text of GNU General Public License version 2.
 
 History
 -------
