@@ -36,6 +36,8 @@ are provided yet, RTFS.  But they are not interchangeable:
 Documentation
 --------------
 
+* `Documentation for the current version <https://rawgit.com/ztane/python-Levenshtein/master/docs/Levenshtein.html>`_
+
 gendoc.sh generates HTML API documentation,
 you probably want a selfcontained instead of includable version, so run
 in ``./gendoc.sh --selfcontained``.  It needs Levenshtein already installed
@@ -54,7 +56,8 @@ See the file COPYING for the full text of GNU General Public License version 2.
 History
 -------
 
-This package was long missing from PyPi and available as source checkout only.
+This package was long missing from the Python Package Index and available as source checkout only, but can now `be found on PyPI again <https://pypi.python.org/pypi/python-Levenshtein>`_.
+
 We needed to restore this package for `Go Mobile for Plone <http://webandmobile.mfabrik.com>`_
 and `Pywurfl <http://celljam.net/>`_ projects which depend on this.
 
@@ -62,11 +65,6 @@ Source code
 -----------
 
 * http://github.com/ztane/python-Levenshtein/
-
-Documentation
--------------
-
-* `Documentation for the current version <https://rawgit.com/ztane/python-Levenshtein/master/docs/Levenshtein.html>`_
 
 Authors
 -------
