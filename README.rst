@@ -33,6 +33,13 @@ are provided yet, RTFS.  But they are not interchangeable:
 * Unicode character type used with -DNO_PYTHON is wchar_t, Python extension
   uses Py_UNICODE, they may be the same but don't count on it
 
+Installation
+------------
+
+::
+
+   pip install python-Levenshtein
+
 Documentation
 --------------
 
