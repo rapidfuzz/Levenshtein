@@ -2,6 +2,14 @@
  Changelog
 ============
 
+0.12.1
+------
+
+* Fixed handling of numerous possible wraparounds in calculating the size
+  of memory allocations; incorrect handling of which could cause denial
+  of service or even possible remote code execution in previous versions
+  of the library.
+
 0.12.0
 ------
 

@@ -500,7 +500,8 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
   ">>> apply_edit(inverse(e), b, a)\n" \
   "'spam and eggs'\n" \
   ">>> e[4] = ('equal', 10, 13, 8, 11)\n" \
-  ">>> a, b, e\n" \
+  ">>> e\n" \
+  "[('delete', 0, 1, 0, 0), ('replace', 1, 4, 0, 3), ('equal', 4, 9, 3, 8), ('delete', 9, 10, 8, 8), ('equal', 10, 13, 8, 11)]\n" \
   ">>> apply_edit(e, a, b)\n" \
   "'foo and ggs'\n"
 
@@ -682,6 +683,25 @@ setseq_common(PyObject *args,
               const char *name,
               SetSeqFuncs foo,
               size_t *lensum);
+
+static void *
+safe_malloc(size_t nmemb, size_t size) {
+  /* extra-conservative overflow check */
+  if (SIZE_MAX / size <= nmemb) {
+    return NULL;
+  }
+  return malloc(nmemb * size);
+}
+
+static void *
+safe_malloc_3(size_t nmemb1, size_t nmemb2, size_t size) {
+  /* extra-conservative overflow check */
+  if (SIZE_MAX / size <= nmemb2) {
+    return NULL;
+  }
+  return safe_malloc(nmemb1, nmemb2 * size);
+}
+
 /* }}} */
 
 /****************************************************************************
@@ -1119,7 +1139,7 @@ extract_weightlist(PyObject *wlist, const char *name, size_t n)
       Py_DECREF(seq);
       return NULL;
     }
-    weights = (double*)malloc(n*sizeof(double));
+    weights = (double*)safe_malloc(n, sizeof(double));
     if (!weights)
       return (double*)PyErr_NoMemory();
     for (i = 0; i < n; i++) {
@@ -1146,7 +1166,7 @@ extract_weightlist(PyObject *wlist, const char *name, size_t n)
     Py_DECREF(seq);
   }
   else {
-    weights = (double*)malloc(n*sizeof(double));
+    weights = (double*)safe_malloc(n, sizeof(double));
     if (!weights)
       return (double*)PyErr_NoMemory();
     for (i = 0; i < n; i++)
@@ -1184,13 +1204,13 @@ extract_stringlist(PyObject *list, const char *name,
     lev_byte **strings;
     size_t *sizes;
 
-    strings = (lev_byte**)malloc(n*sizeof(lev_byte*));
+    strings = (lev_byte**)safe_malloc(n, sizeof(lev_byte*));
     if (!strings) {
       PyErr_Format(PyExc_MemoryError,
                    "%s cannot allocate memory", name);
       return -1;
     }
-    sizes = (size_t*)malloc(n*sizeof(size_t));
+    sizes = (size_t*)safe_malloc(n, sizeof(size_t));
     if (!sizes) {
       free(strings);
       PyErr_Format(PyExc_MemoryError,
@@ -1222,12 +1242,12 @@ extract_stringlist(PyObject *list, const char *name,
     Py_UNICODE **strings;
     size_t *sizes;
 
-    strings = (Py_UNICODE**)malloc(n*sizeof(Py_UNICODE*));
+    strings = (Py_UNICODE**)safe_malloc(n, sizeof(Py_UNICODE*));
     if (!strings) {
       PyErr_NoMemory();
       return -1;
     }
-    sizes = (size_t*)malloc(n*sizeof(size_t));
+    sizes = (size_t*)safe_malloc(n, sizeof(size_t));
     if (!sizes) {
       free(strings);
       PyErr_NoMemory();
@@ -1423,7 +1443,7 @@ extract_editops(PyObject *list)
   LevEditType type;
   size_t n = PyList_GET_SIZE(list);
 
-  ops = (LevEditOp*)malloc(n*sizeof(LevEditOp));
+  ops = (LevEditOp*)safe_malloc(n, sizeof(LevEditOp));
   if (!ops)
     return (LevEditOp*)PyErr_NoMemory();
   for (i = 0; i < n; i++) {
@@ -1464,7 +1484,7 @@ extract_opcodes(PyObject *list)
   LevEditType type;
   size_t nb = PyList_GET_SIZE(list);
 
-  bops = (LevOpCode*)malloc(nb*sizeof(LevOpCode));
+  bops = (LevOpCode*)safe_malloc(nb, sizeof(LevOpCode));
   if (!bops)
     return (LevOpCode*)PyErr_NoMemory();
   for (i = 0; i < nb; i++) {
@@ -2274,8 +2294,14 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
   len2++;
   half = len1 >> 1;
 
+  /* conservative overflow check */
+  printf("Doing overflow check\n");
+  if (UINT32_MAX / sizeof(size_t) >= len2)
+    return (size_t)(-1);
+
+  printf("Passed\n");
   /* initalize first row */
-  row = (size_t*)malloc(len2*sizeof(size_t));
+  row = (size_t*)safe_malloc(len2, sizeof(size_t));
   if (!row)
     return (size_t)(-1);
   end = row + len2 - 1;
@@ -2455,7 +2481,7 @@ lev_u_edit_distance(size_t len1, const lev_wchar *string1,
   half = len1 >> 1;
 
   /* initalize first row */
-  row = (size_t*)malloc(len2*sizeof(size_t));
+  row = (size_t*)safe_malloc(len2, sizeof(size_t));
   if (!row)
     return (size_t)(-1);
   end = row + len2 - 1;
@@ -2923,7 +2949,7 @@ make_symlist(size_t n, const size_t *lengths,
    * present in the strings */
   {
     size_t pos = 0;
-    symlist = (lev_byte*)malloc((*symlistlen)*sizeof(lev_byte));
+    symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
     if (!symlist) {
       *symlistlen = (size_t)(-1);
       free(symset);
@@ -2995,7 +3021,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)malloc(n*sizeof(size_t*));
+  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
   if (!rows) {
     free(symlist);
     return NULL;
@@ -3006,7 +3032,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
     size_t leni = lengths[i];
     if (leni > maxlen)
       maxlen = leni;
-    ri = rows[i] = (size_t*)malloc((leni + 1)*sizeof(size_t));
+    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
     if (!ri) {
       for (j = 0; j < i; j++)
         free(rows[j]);
@@ -3018,7 +3044,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
       ri[j] = j;
   }
   stoplen = 2*maxlen + 1;
-  row = (size_t*)malloc((stoplen + 1)*sizeof(size_t));
+  row = (size_t*)safe_malloc((stoplen + 1), sizeof(size_t));
   if (!row) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3029,7 +3055,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
 
   /* compute final cost of string of length 0 (empty string may be also
    * a valid answer) */
-  median = (lev_byte*)malloc(stoplen*sizeof(lev_byte));
+  median = (lev_byte*)safe_malloc(stoplen, sizeof(lev_byte));
   if (!median) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3038,7 +3064,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
     free(symlist);
     return NULL;
   }
-  mediandist = (double*)malloc((stoplen + 1)*sizeof(double));
+  mediandist = (double*)safe_malloc((stoplen + 1), sizeof(double));
   if (!mediandist) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3139,7 +3165,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
 
   /* return result */
   {
-    lev_byte *result = (lev_byte*)malloc(bestlen*sizeof(lev_byte));
+    lev_byte *result = (lev_byte*)safe_malloc(bestlen, sizeof(lev_byte));
     if (!result) {
       free(median);
       return NULL;
@@ -3287,7 +3313,7 @@ lev_median_improve(size_t len, const lev_byte *s,
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)malloc(n*sizeof(size_t*));
+  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
   if (!rows) {
     free(symlist);
     return NULL;
@@ -3298,7 +3324,7 @@ lev_median_improve(size_t len, const lev_byte *s,
     size_t leni = lengths[i];
     if (leni > maxlen)
       maxlen = leni;
-    ri = rows[i] = (size_t*)malloc((leni + 1)*sizeof(size_t));
+    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
     if (!ri) {
       for (j = 0; j < i; j++)
         free(rows[j]);
@@ -3310,7 +3336,7 @@ lev_median_improve(size_t len, const lev_byte *s,
       ri[j] = j;
   }
   stoplen = 2*maxlen + 1;
-  row = (size_t*)malloc((stoplen + 2)*sizeof(size_t));
+  row = (size_t*)safe_malloc((stoplen + 2), sizeof(size_t));
   if (!row) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3320,7 +3346,7 @@ lev_median_improve(size_t len, const lev_byte *s,
   }
 
   /* initialize median to given string */
-  median = (lev_byte*)malloc((stoplen+1)*sizeof(lev_byte));
+  median = (lev_byte*)safe_malloc((stoplen+1), sizeof(lev_byte));
   if (!median) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3446,7 +3472,7 @@ lev_median_improve(size_t len, const lev_byte *s,
 
   /* return result */
   {
-    lev_byte *result = (lev_byte*)malloc(medlen*sizeof(lev_byte));
+    lev_byte *result = (lev_byte*)safe_malloc(medlen, sizeof(lev_byte));
     if (!result) {
       free(median);
       return NULL;
@@ -3507,7 +3533,7 @@ make_usymlist(size_t n, const size_t *lengths,
     return NULL;
 
   /* find all symbols, use a kind of hash for storage */
-  symmap = (HItem*)malloc(0x100*sizeof(HItem));
+  symmap = (HItem*)safe_malloc(0x100, sizeof(HItem));
   if (!symmap) {
     *symlistlen = (size_t)(-1);
     return NULL;
@@ -3551,7 +3577,7 @@ make_usymlist(size_t n, const size_t *lengths,
    * present in the strings */
   {
     size_t pos = 0;
-    symlist = (lev_wchar*)malloc((*symlistlen)*sizeof(lev_wchar));
+    symlist = (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
     if (!symlist) {
       free_usymlist_hash(symmap);
       *symlistlen = (size_t)(-1);
@@ -3628,7 +3654,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)malloc(n*sizeof(size_t*));
+  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
   if (!rows) {
     free(symlist);
     return NULL;
@@ -3639,7 +3665,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
     size_t leni = lengths[i];
     if (leni > maxlen)
       maxlen = leni;
-    ri = rows[i] = (size_t*)malloc((leni + 1)*sizeof(size_t));
+    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
     if (!ri) {
       for (j = 0; j < i; j++)
         free(rows[j]);
@@ -3651,7 +3677,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
       ri[j] = j;
   }
   stoplen = 2*maxlen + 1;
-  row = (size_t*)malloc((stoplen + 1)*sizeof(size_t));
+  row = (size_t*)safe_malloc((stoplen + 1), sizeof(size_t));
   if (!row) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3662,7 +3688,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
 
   /* compute final cost of string of length 0 (empty string may be also
    * a valid answer) */
-  median = (lev_wchar*)malloc(stoplen*sizeof(lev_wchar));
+  median = (lev_wchar*)safe_malloc(stoplen, sizeof(lev_wchar));
   if (!median) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3671,7 +3697,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
     free(symlist);
     return NULL;
   }
-  mediandist = (double*)malloc((stoplen + 1)*sizeof(double));
+  mediandist = (double*)safe_malloc((stoplen + 1), sizeof(double));
   if (!mediandist) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3772,7 +3798,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
 
   /* return result */
   {
-    lev_wchar *result = (lev_wchar*)malloc(bestlen*sizeof(lev_wchar));
+    lev_wchar *result = (lev_wchar*)safe_malloc(bestlen, sizeof(lev_wchar));
     if (!result) {
       free(median);
       return NULL;
@@ -3920,7 +3946,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)malloc(n*sizeof(size_t*));
+  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
   if (!rows) {
     free(symlist);
     return NULL;
@@ -3931,7 +3957,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     size_t leni = lengths[i];
     if (leni > maxlen)
       maxlen = leni;
-    ri = rows[i] = (size_t*)malloc((leni + 1)*sizeof(size_t));
+    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
     if (!ri) {
       for (j = 0; j < i; j++)
         free(rows[j]);
@@ -3943,7 +3969,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
       ri[j] = j;
   }
   stoplen = 2*maxlen + 1;
-  row = (size_t*)malloc((stoplen + 2)*sizeof(size_t));
+  row = (size_t*)safe_malloc((stoplen + 2), sizeof(size_t));
   if (!row) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -3953,7 +3979,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
   }
 
   /* initialize median to given string */
-  median = (lev_wchar*)malloc((stoplen+1)*sizeof(lev_wchar));
+  median = (lev_wchar*)safe_malloc((stoplen+1), sizeof(lev_wchar));
   if (!median) {
     for (j = 0; j < n; j++)
       free(rows[j]);
@@ -4079,7 +4105,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
 
   /* return result */
   {
-    lev_wchar *result = (lev_wchar*)malloc(medlen*sizeof(lev_wchar));
+    lev_wchar *result = (lev_wchar*)safe_malloc(medlen, sizeof(lev_wchar));
     if (!result) {
       free(median);
       return NULL;
@@ -4136,7 +4162,7 @@ make_symlistset(size_t n, const size_t *lengths,
    * present in the strings */
   {
     size_t pos = 0;
-    symlist = (lev_byte*)malloc((*symlistlen)*sizeof(lev_byte));
+    symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
     if (!symlist) {
       *symlistlen = (size_t)(-1);
       return NULL;
@@ -4176,7 +4202,7 @@ lev_quick_median(size_t n,
   *medlength = len = ml;
   if (!len)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
-  median = (lev_byte*)malloc(len*sizeof(lev_byte));
+  median = (lev_byte*)safe_malloc(len, sizeof(lev_byte));
   if (!median)
     return NULL;
 
@@ -4326,7 +4352,7 @@ make_usymlistset(size_t n, const size_t *lengths,
    * present in the strings */
   {
     size_t pos = 0;
-    symlist = (lev_wchar*)malloc((*symlistlen)*sizeof(lev_wchar));
+    symlist = (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
     if (!symlist) {
       *symlistlen = (size_t)(-1);
       return NULL;
@@ -4369,13 +4395,13 @@ lev_u_quick_median(size_t n,
   *medlength = len = ml;
   if (!len)
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
-  median = (lev_wchar*)malloc(len*sizeof(lev_wchar));
+  median = (lev_wchar*)safe_malloc(len, sizeof(lev_wchar));
   if (!median)
     return NULL;
 
   /* find the symbol set;
    * now an empty symbol set is really a failure */
-  symmap = (HQItem*)malloc(0x100*sizeof(HQItem));
+  symmap = (HQItem*)safe_malloc(0x100, sizeof(HQItem));
   if (!symmap) {
     free(median);
     return NULL;
@@ -4500,7 +4526,7 @@ lev_set_median_index(size_t n, const size_t *lengths,
   size_t i;
   long int *distances;
 
-  distances = (long int*)malloc((n*(n - 1)/2)*sizeof(long int));
+  distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
   if (!distances)
     return (size_t)-1;
 
@@ -4573,7 +4599,7 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
   size_t i;
   long int *distances;
 
-  distances = (long int*)malloc((n*(n - 1)/2)*sizeof(long int));
+  distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
   if (!distances)
     return (size_t)-1;
 
@@ -4653,7 +4679,7 @@ lev_set_median(size_t n, const size_t *lengths,
   if (!lengths[minidx])
     return (lev_byte*)calloc(1, sizeof(lev_byte));
 
-  result = (lev_byte*)malloc(lengths[minidx]*sizeof(lev_byte));
+  result = (lev_byte*)safe_malloc(lengths[minidx], sizeof(lev_byte));
   if (!result)
     return NULL;
   return memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
@@ -4689,7 +4715,7 @@ lev_u_set_median(size_t n, const size_t *lengths,
   if (!lengths[minidx])
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
 
-  result = (lev_wchar*)malloc(lengths[minidx]*sizeof(lev_wchar));
+  result = (lev_wchar*)safe_malloc(lengths[minidx], sizeof(lev_wchar));
   if (!result)
     return NULL;
   return memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
@@ -4775,7 +4801,7 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   n2++;
 
   /* initalize first row */
-  row = (double*)malloc(n2*sizeof(double));
+  row = (double*)safe_malloc(n2, sizeof(double));
   if (!row)
     return -1.0;
   end = row + n2 - 1;
@@ -4895,7 +4921,7 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   n2++;
 
   /* initalize first row */
-  row = (double*)malloc(n2*sizeof(double));
+  row = (double*)safe_malloc(n2, sizeof(double));
   if (!row)
     return -1.0;
   end = row + n2 - 1;
@@ -4994,7 +5020,7 @@ lev_set_distance(size_t n1, const size_t *lengths1,
   }
 
   /* compute distances from each to each */
-  r = dists = (double*)malloc(n1*n2*sizeof(double));
+  r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
   if (!r)
     return -1.0;
   for (i = 0; i < n2; i++) {
@@ -5094,7 +5120,7 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
   }
 
   /* compute distances from each to each */
-  r = dists = (double*)malloc(n1*n2*sizeof(double));
+  r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
   if (!r)
     return -1.0;
   for (i = 0; i < n2; i++) {
@@ -5514,7 +5540,7 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_byte*)malloc((n + len1)*sizeof(lev_byte));
+  dpos = dst = (lev_byte*)safe_malloc((n + len1), sizeof(lev_byte));
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
@@ -5586,7 +5612,7 @@ lev_u_editops_apply(size_t len1, const lev_wchar *string1,
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_wchar*)malloc((n + len1)*sizeof(lev_wchar));
+  dpos = dst = (lev_wchar*)safe_malloc((n + len1), sizeof(lev_wchar));
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
@@ -5661,7 +5687,7 @@ editops_from_cost_matrix(size_t len1, const lev_byte *string1, size_t off1,
     free(matrix);
     return NULL;
   }
-  ops = (LevEditOp*)malloc((*n)*sizeof(LevEditOp));
+  ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
   if (!ops) {
     free(matrix);
     *n = (size_t)(-1);
@@ -5779,8 +5805,8 @@ lev_editops_find(size_t len1, const lev_byte *string1,
   len1++;
   len2++;
 
-  /* initalize first row and column */
-  matrix = (size_t*)malloc(len1*len2*sizeof(size_t));
+  /* initialize first row and column */
+  matrix = (size_t*)safe_malloc_3(len1, len2, sizeof(size_t));
   if (!matrix) {
     *n = (size_t)(-1);
     return NULL;
@@ -5850,7 +5876,7 @@ ueditops_from_cost_matrix(size_t len1, const lev_wchar *string1, size_t o1,
     free(matrix);
     return NULL;
   }
-  ops = (LevEditOp*)malloc((*n)*sizeof(LevEditOp));
+  ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
   if (!ops) {
     free(matrix);
     *n = (size_t)(-1);
@@ -5969,7 +5995,7 @@ lev_u_editops_find(size_t len1, const lev_wchar *string1,
   len2++;
 
   /* initalize first row and column */
-  matrix = (size_t*)malloc(len1*len2*sizeof(size_t));
+  matrix = (size_t*)safe_malloc_3(len1, len2, sizeof(size_t));
   if (!matrix) {
     *n = (size_t)(-1);
     return NULL;
@@ -6049,7 +6075,7 @@ lev_opcodes_to_editops(size_t nb, const LevOpCode *bops,
   }
 
   /* convert */
-  o = ops = (LevEditOp*)malloc((*n)*sizeof(LevEditOp));
+  o = ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
   if (!ops) {
     *n = (size_t)(-1);
     return NULL;
@@ -6179,7 +6205,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
     nbl++;
 
   /* convert */
-  b = bops = (LevOpCode*)malloc(nbl*sizeof(LevOpCode));
+  b = bops = (LevOpCode*)safe_malloc(nbl, sizeof(LevOpCode));
   if (!bops) {
     *nb = (size_t)(-1);
     return NULL;
@@ -6282,7 +6308,7 @@ lev_opcodes_apply(size_t len1, const lev_byte *string1,
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_byte*)malloc((len1 + len2)*sizeof(lev_byte));
+  dpos = dst = (lev_byte*)safe_malloc((len1 + len2), sizeof(lev_byte));
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
@@ -6342,7 +6368,7 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_wchar*)malloc((len1 + len2)*sizeof(lev_wchar));
+  dpos = dst = (lev_wchar*)safe_malloc((len1 + len2), sizeof(lev_wchar));
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
@@ -6478,7 +6504,7 @@ lev_editops_matching_blocks(size_t len1,
     nmb++;
 
   /* fill the info */
-  mb = mblocks = (LevMatchingBlock*)malloc(nmb*sizeof(LevOpCode));
+  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevOpCode));
   if (!mblocks) {
     *nmblocks = (size_t)(-1);
     return NULL;
@@ -6585,7 +6611,7 @@ lev_opcodes_matching_blocks(size_t len1,
   }
 
   /* convert */
-  mb = mblocks = (LevMatchingBlock*)malloc(nmb*sizeof(LevOpCode));
+  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevOpCode));
   if (!mblocks) {
     *nmblocks = (size_t)(-1);
     return NULL;
@@ -6674,7 +6700,7 @@ lev_editops_normalize(size_t n,
   if (!*nnorm)
     return NULL;
 
-  opsnorm = on = (LevEditOp*)malloc((n - nx)*sizeof(LevEditOp));
+  opsnorm = on = (LevEditOp*)safe_malloc((n - nx), sizeof(LevEditOp));
   o = ops;
   for (i = n; i; i--, o++) {
     if (o->type == LEV_EDIT_KEEP)
@@ -6770,7 +6796,7 @@ lev_editops_subtract(size_t n,
     /* we could simply return NULL when nr == 0, but then it would be possible
      * to subtract *any* sequence of the right length to get an empty sequence
      * -- clrealy incorrectly; so we have to scan the list to check */
-    rem = nr ? (LevEditOp*)malloc(nr*sizeof(LevEditOp)) : NULL;
+    rem = nr ? (LevEditOp*)safe_malloc(nr, sizeof(LevEditOp)) : NULL;
     j = nn = shift = 0;
     for (i = 0; i < ns; i++) {
         while ((ops[j].spos != sub[i].spos
