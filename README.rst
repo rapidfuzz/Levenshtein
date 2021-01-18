@@ -1,5 +1,19 @@
 .. contents ::
 
+Maintainer wanted
+-----------------
+
+|MaintainerWanted|_
+
+.. |MaintainerWanted| image:: https://img.shields.io/badge/maintainers-wanted-red.svg
+.. _MaintainerWanted: https://github.com/pickhardt/maintainers-wanted
+
+I am looking for a new maintainer to the project as it is apparent that I
+haven't had the need for this particular library for well over 7 years now,
+due to it being a C-only library and its somewhat restrictive original license.
+
+*- Antti Haapala
+
 Introduction
 ------------
 
