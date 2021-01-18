@@ -1,9 +1,6 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
-  - "3.2"
-  - "3.3"
   - "3.4"
   - "3.5"
   - "3.6"
@@ -15,4 +12,4 @@ python:
 install: "python setup.py develop"
 
 # command to run tests
-script: "python setup.py test"
+script: "python -c 'import sys, doctest, Levenshtein; sys.exit(doctest.testmod(Levenshtein._levenshtein).failed > 0)'"
