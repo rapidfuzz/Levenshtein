@@ -2294,12 +2294,6 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
   len2++;
   half = len1 >> 1;
 
-  /* conservative overflow check */
-  printf("Doing overflow check\n");
-  if (UINT32_MAX / sizeof(size_t) >= len2)
-    return (size_t)(-1);
-
-  printf("Passed\n");
   /* initalize first row */
   row = (size_t*)safe_malloc(len2, sizeof(size_t));
   if (!row)
