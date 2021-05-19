@@ -6498,7 +6498,7 @@ lev_editops_matching_blocks(size_t len1,
     nmb++;
 
   /* fill the info */
-  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevOpCode));
+  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevMatchingBlock));
   if (!mblocks) {
     *nmblocks = (size_t)(-1);
     return NULL;
@@ -6605,7 +6605,7 @@ lev_opcodes_matching_blocks(size_t len1,
   }
 
   /* convert */
-  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevOpCode));
+  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevMatchingBlock));
   if (!mblocks) {
     *nmblocks = (size_t)(-1);
     return NULL;
