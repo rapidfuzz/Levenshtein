@@ -39,16 +39,6 @@ typedef enum {
   LEV_EDIT_ERR_LAST
 } LevEditOpError;
 
-/* string averaging method (UNUSED yet) */
-typedef enum {
-  LEV_AVG_HEAD = 0,  /* take operations from the head */
-  LEV_AVG_TAIL,  /* take operations from the tail */
-  LEV_AVG_SPREAD,  /* take a equidistantly distributed subset */
-  LEV_AVG_BLOCK,  /* take a random continuous block */
-  LEV_AVG_RANDOM,  /* take a random subset */
-  LEV_AVG_LAST
-} LevAveragingType;
-
 /* Edit operation (atomic).
  * This is the `native' atomic edit operation.  It differs from the difflib
  * one's because it represents a change of one character, not a block.  And
@@ -341,9 +331,5 @@ lev_editops_subtract(size_t n,
                      size_t ns,
                      const LevEditOp *sub,
                      size_t *nrem);
-
-/* UNUSED yet */
-void
-lev_init_rng(unsigned long int seed);
 
 #endif /* not LEVENSHTEIN_H */

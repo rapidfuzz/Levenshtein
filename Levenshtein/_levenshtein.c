@@ -6,11 +6,6 @@
  *
  * Copyright (C) 2002-2003 David Necas (Yeti) <yeti@physics.muni.cz>.
  *
- * The Taus113 random generator:
- * Copyright (C) 2002 Atakan Gurkan
- * Copyright (C) 1996, 1997, 1998, 1999, 2000 James Theiler, Brian Gough
- * (see below for more)
- *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -51,20 +46,6 @@
             Py_InitModule3(name, methods, doc);
     #define PY_MOD_INIT_FUNC_DEF(name) void init##name(void)
 #endif /* PY_MAJOR_VERSION */
-
-/* FIXME: inline avaliability should be solved in setup.py, somehow, or
- * even better in Python.h, like const is...
- * this should inline at least with gcc and msvc */
-#ifndef __GNUC__
-#  ifdef _MSC_VER
-#    define inline __inline
-#  else
-#    define inline /* */
-#  endif
-#endif
-
-#define LEV_EPSILON 1e-14
-#define LEV_INFINITY 1e100
 
 /* Me thinks the second argument of PyArg_UnpackTuple() should be const.
  * Anyway I habitually pass a constant string.
@@ -1289,7 +1270,7 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
   return r;
 }
 
-static inline LevEditType
+static LevEditType
 string_to_edittype(PyObject *string)
 {
   const char *s;
@@ -2016,7 +1997,6 @@ PY_MOD_INIT_FUNC_DEF(_levenshtein)
 #endif
     opcode_names[i].len = strlen(opcode_names[i].cstring);
   }
-  lev_init_rng(0);
 #ifdef LEV_PYTHON3
   return module;
 #endif

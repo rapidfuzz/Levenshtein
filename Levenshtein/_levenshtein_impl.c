@@ -6,11 +6,6 @@
  *
  * Copyright (C) 2002-2003 David Necas (Yeti) <yeti@physics.muni.cz>.
  *
- * The Taus113 random generator:
- * Copyright (C) 2002 Atakan Gurkan
- * Copyright (C) 1996, 1997, 1998, 1999, 2000 James Theiler, Brian Gough
- * (see below for more)
- *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -96,17 +91,7 @@
 #include <assert.h>
 #include "_levenshtein.h"
 
-/* FIXME: inline avaliability should be solved in setup.py, somehow, or
- * even better in Python.h, like const is...
- * this should inline at least with gcc and msvc */
-#ifndef __GNUC__
-#  ifdef _MSC_VER
-#    define inline __inline
-#  else
-#    define inline /* */
-#  endif
-#  define __attribute__(x) /* */
-#endif
+#define LEV_UNUSED(x) ((void)x)
 
 #define LEV_EPSILON 1e-14
 #define LEV_INFINITY 1e100
@@ -116,20 +101,6 @@ static size_t*
 munkers_blackman(size_t n1,
                  size_t n2,
                  double *dists);
-
-#define TAUS113_LCG(n) ((69069UL * n) & 0xffffffffUL)
-#define TAUS113_MASK 0xffffffffUL
-
-typedef struct {
-  unsigned long int z1, z2, z3, z4;
-} taus113_state_t;
-
-static inline unsigned long int
-taus113_get(taus113_state_t *state);
-
-static void
-taus113_set(taus113_state_t *state,
-            unsigned long int s);
 
 static void *
 safe_malloc(size_t nmemb, size_t size) {
@@ -148,97 +119,6 @@ safe_malloc_3(size_t nmemb1, size_t nmemb2, size_t size) {
   }
   return safe_malloc(nmemb1, nmemb2 * size);
 }
-
-/****************************************************************************
- *
- * Taus113
- *
- ****************************************************************************/
-/* {{{ */
-
-/*
- * Based on Tausworthe random generator implementation rng/taus113.c
- * from the GNU Scientific Library (http://sources.redhat.com/gsl/)
- * which has the notice
- * Copyright (C) 2002 Atakan Gurkan
- * Based on the file taus.c which has the notice
- * Copyright (C) 1996, 1997, 1998, 1999, 2000 James Theiler, Brian Gough
- */
-
-static inline unsigned long
-taus113_get(taus113_state_t *state)
-{
-  unsigned long b1, b2, b3, b4;
-
-  b1 = ((((state->z1 << 6UL) & TAUS113_MASK) ^ state->z1) >> 13UL);
-  state->z1 = ((((state->z1 & 4294967294UL) << 18UL) & TAUS113_MASK) ^ b1);
-
-  b2 = ((((state->z2 << 2UL) & TAUS113_MASK) ^ state->z2) >> 27UL);
-  state->z2 = ((((state->z2 & 4294967288UL) << 2UL) & TAUS113_MASK) ^ b2);
-
-  b3 = ((((state->z3 << 13UL) & TAUS113_MASK) ^ state->z3) >> 21UL);
-  state->z3 = ((((state->z3 & 4294967280UL) << 7UL) & TAUS113_MASK) ^ b3);
-
-  b4 = ((((state->z4 << 3UL) & TAUS113_MASK) ^ state->z4) >> 12UL);
-  state->z4 = ((((state->z4 & 4294967168UL) << 13UL) & TAUS113_MASK) ^ b4);
-
-  return (state->z1 ^ state->z2 ^ state->z3 ^ state->z4);
-
-}
-
-static void
-taus113_set(taus113_state_t *state,
-            unsigned long int s)
-{
-  if (!s)
-    s = 1UL;                    /* default seed is 1 */
-
-  state->z1 = TAUS113_LCG(s);
-  if (state->z1 < 2UL)
-    state->z1 += 2UL;
-
-  state->z2 = TAUS113_LCG(state->z1);
-  if (state->z2 < 8UL)
-    state->z2 += 8UL;
-
-  state->z3 = TAUS113_LCG(state->z2);
-  if (state->z3 < 16UL)
-    state->z3 += 16UL;
-
-  state->z4 = TAUS113_LCG(state->z3);
-  if (state->z4 < 128UL)
-    state->z4 += 128UL;
-
-  /* Calling RNG ten times to satify recurrence condition */
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-  taus113_get(state);
-}
-
-
-/**
- * lev_init_rng:
- * @seed: A seed.  If zero, a default value (currently 1) is used instead.
- *
- * Initializes the random generator used by some Levenshtein functions.
- *
- * This does NOT happen automatically when these functions are used.
- **/
-void
-lev_init_rng(unsigned long int seed)
-{
-  static taus113_state_t state;
-
-  taus113_set(&state, seed);
-}
-/* }}} */
 
 /****************************************************************************
  *
@@ -3540,13 +3420,14 @@ lev_editops_invert(size_t n, LevEditOp *ops)
  **/
 lev_byte*
 lev_editops_apply(size_t len1, const lev_byte *string1,
-                  __attribute__((unused)) size_t len2, const lev_byte *string2,
+                  size_t len2, const lev_byte *string2,
                   size_t n, const LevEditOp *ops,
                   size_t *len)
 {
   lev_byte *dst, *dpos;  /* destination string */
   const lev_byte *spos;  /* source string position */
   size_t i, j;
+  LEV_UNUSED(len2);
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
@@ -3611,14 +3492,14 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
  **/
 lev_wchar*
 lev_u_editops_apply(size_t len1, const lev_wchar *string1,
-                    __attribute__((unused)) size_t len2,
-                    const lev_wchar *string2,
+                    size_t len2, const lev_wchar *string2,
                     size_t n, const LevEditOp *ops,
                     size_t *len)
 {
   lev_wchar *dst, *dpos;  /* destination string */
   const lev_wchar *spos;  /* source string position */
   size_t i, j;
+  LEV_UNUSED(len2);
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
@@ -4595,7 +4476,7 @@ lev_editops_matching_blocks(size_t len1,
  **/
 LevMatchingBlock*
 lev_opcodes_matching_blocks(size_t len1,
-                            __attribute__((unused)) size_t len2,
+                            size_t len2,
                             size_t nb,
                             const LevOpCode *bops,
                             size_t *nmblocks)
@@ -4603,6 +4484,7 @@ lev_opcodes_matching_blocks(size_t len1,
   size_t nmb, i;
   const LevOpCode *b;
   LevMatchingBlock *mblocks, *mb;
+  LEV_UNUSED(len2);
 
   /* compute the number of matching blocks */
   nmb = 0;
@@ -4843,27 +4725,3 @@ lev_editops_subtract(size_t n,
     return rem;
 }
 /* }}} */
-
-/****************************************************************************
- *
- * Weighted mean strings
- *
- ****************************************************************************/
-
-/*
-lev_byte*
-lev_weighted_average(size_t len1,
-                     const lev_byte* string1,
-                     size_t len2,
-                     const lev_byte* string2,
-                     size_t n,
-                     const LevEditOp *ops,
-                     LevAveragingType avtype,
-                     size_t total_cost,
-                     double alpha,
-                     size_t *len)
-{
-  return NULL;
-}
-*/
-
