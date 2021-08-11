@@ -36,6 +36,7 @@ ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
+            'Levenshtein/_levenshtein_impl.c',
             'Levenshtein/_levenshtein.c'
         ]
     ),
