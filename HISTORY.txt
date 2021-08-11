@@ -2,6 +2,22 @@
  Changelog
 ============
 
+0.13.0 (in work)
+------
+
+* Removed unused functions and compiler specific hacks
+
+* Split the Python and C implementations to simplify building of
+  the C library
+
+* Fixed multiple bugs which prevented the use as C library, since some functions
+  only got defined when compiling for Python
+
+* Build and deliver python wheels for the library
+
+* Fixed incorrect allocation size in lev_editops_matching_blocks and
+  lev_opcodes_matching_blocks
+
 0.12.1
 ------
 
