@@ -1,47 +1,48 @@
-from setuptools import setup
-import os
+from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 import sys
 
-from distutils.core import Extension
+class BuildExt(build_ext):
+    """A custom build extension for adding compiler-specific options."""
+    c_opts = {
+        'msvc': ['/EHsc', '/O2', '/W4'],
+        'unix': ['-O3', '-Wextra', '-Wall', '-Wconversion', '-g0',],
+    }
+    l_opts = {
+        'msvc': [],
+        'unix': [],
+    }
 
-version = '0.12.2'
+    if sys.platform == 'darwin':
+        darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
+        c_opts['unix'] += darwin_opts
+        l_opts['unix'] += darwin_opts
 
-extLevensthein = Extension('Levenshtein._levenshtein',
-                           sources = ['Levenshtein/_levenshtein.c'],
-                           )
+    def build_extensions(self):
+        ct = self.compiler.compiler_type
+        opts = self.c_opts.get(ct, [])
+        link_opts = self.l_opts.get(ct, [])
+        if ct == 'unix':
+            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
+        elif ct == 'msvc':
+            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+        for ext in self.extensions:
+            ext.extra_compile_args += opts
+            ext.extra_link_args += link_opts
+        build_ext.build_extensions(self)
 
-if sys.version_info >= (3, 0):
-    _open = lambda f: open(f, encoding='utf8')
-else:
-    _open = open
 
-setup(name='python-Levenshtein',
-      version=version,
-      description="Python extension for computing string edit distances and similarities.",
-      long_description=_open("README.rst").read() + "\n" +
-                       _open(os.path.join("HISTORY.txt")).read(),
-      # Get more strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[
-        "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: Implementation :: CPython"
-        ],
-      keywords='string Levenshtein comparison edit-distance',
-      author='Antti Haapala',
-      author_email='antti@haapala.name',
-      url='http://github.com/ztane/python-Levenshtein',
-      license='GPL',
-      packages=['Levenshtein'],
-      namespace_packages=[],
-      include_package_data=True,
-      zip_safe=False,
-      ext_modules = [extLevensthein],
-      install_requires=[
-          'setuptools',
-          # -*- Extra requirements: -*-
-      ],
-      entry_points="""
-      """,
-      )
+ext_modules = [
+    Extension(
+        name='Levenshtein._levenshtein',
+        sources=[
+            'Levenshtein/_levenshtein.c'
+        ]
+    ),
+]
+
+if __name__ == "__main__":
+    setup(
+        cmdclass={'build_ext': BuildExt},
+        ext_modules = ext_modules
+    )
