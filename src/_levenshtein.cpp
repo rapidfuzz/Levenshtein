@@ -894,7 +894,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   }
 
   if (stringtype == 0) {
-    lev_byte *medstr = foo.s(n, sizes, strings, weights, &len);
+    lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -903,7 +903,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
     }
   }
   else if (stringtype == 1) {
-    Py_UNICODE *medstr = foo.u(n, sizes, strings, weights, &len);
+    Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -979,7 +979,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   if (stringtype == 0) {
     lev_byte *s = (lev_byte*)PyString_AS_STRING(arg1);
     size_t l = PyString_GET_SIZE(arg1);
-    lev_byte *medstr = foo.s(l, s, n, sizes, strings, weights, &len);
+    lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -990,7 +990,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   else if (stringtype == 1) {
     Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
     size_t l = PyUnicode_GET_SIZE(arg1);
-    Py_UNICODE *medstr = foo.u(l, s, n, sizes, strings, weights, &len);
+    Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -1264,12 +1264,12 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
                   name);
   }
   else if (stringtype1 == 0) {
-    r = foo.s(n1, sizes1, strings1, n2, sizes2, strings2);
+    r = foo.s(n1, sizes1, (const lev_byte**)strings1, n2, sizes2, (const lev_byte**)strings2);
     if (r < 0.0)
       PyErr_NoMemory();
   }
   else if (stringtype1 == 1) {
-    r = foo.u(n1, sizes1, strings1, n2, sizes2, strings2);
+    r = foo.u(n1, sizes1, (const Py_UNICODE**)strings1, n2, sizes2, (const Py_UNICODE**)strings2);
     if (r < 0.0)
       PyErr_NoMemory();
   }

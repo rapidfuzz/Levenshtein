@@ -36,9 +36,14 @@ ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
-            'Levenshtein/_levenshtein_impl.c',
-            'Levenshtein/_levenshtein.c'
-        ]
+            'src/Levenshtein-c/_levenshtein.c',
+            'src/_levenshtein.cpp'
+        ],
+        include_dirs=[
+            "src/rapidfuzz-cpp/",
+            "src/Levenshtein-c/",
+        ],
+        language='c++'
     ),
 ]
 
