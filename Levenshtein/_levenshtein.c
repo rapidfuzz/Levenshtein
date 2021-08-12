@@ -1487,7 +1487,7 @@ editops_py(PyObject *self, PyObject *args)
   /* convert: we were called (bops, s1, s2) */
   if (arg3) {
     if (!PyList_Check(arg1)) {
-      PyErr_Format(PyExc_ValueError,
+      PyErr_SetString(PyExc_ValueError,
                   "editops first argument must be a List of edit operations");
       return NULL;
     }
@@ -1499,14 +1499,14 @@ editops_py(PyObject *self, PyObject *args)
     len1 = get_length_of_anything(arg2);
     len2 = get_length_of_anything(arg3);
     if (len1 == (size_t)-1 || len2 == (size_t)-1) {
-      PyErr_Format(PyExc_ValueError,
+      PyErr_SetString(PyExc_ValueError,
                   "editops second and third argument must specify sizes");
       return NULL;
     }
 
     if ((bops = extract_opcodes(arg1)) != NULL) {
       if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                     "editops edit operation list is invalid");
         free(bops);
         return NULL;
@@ -1523,7 +1523,7 @@ editops_py(PyObject *self, PyObject *args)
     }
     if ((ops = extract_editops(arg1)) != NULL) {
       if (lev_editops_check_errors(len1, len2, n, ops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                     "editops edit operation list is invalid");
         free(ops);
         return NULL;
@@ -1533,7 +1533,7 @@ editops_py(PyObject *self, PyObject *args)
       return arg1;
     }
     if (!PyErr_Occurred())
-      PyErr_Format(PyExc_TypeError,
+      PyErr_SetString(PyExc_TypeError,
                   "editops first argument must be a List of edit operations");
     return NULL;
   }
@@ -1560,7 +1560,7 @@ editops_py(PyObject *self, PyObject *args)
     ops = lev_u_editops_find(len1, string1, len2, string2, &n);
   }
   else {
-    PyErr_Format(PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
                  "editops expected two Strings or two Unicodes");
     return NULL;
   }
@@ -1609,7 +1609,7 @@ opcodes_py(PyObject *self, PyObject *args)
   /* convert: we were called (ops, s1, s2) */
   if (arg3) {
     if (!PyList_Check(arg1)) {
-      PyErr_Format(PyExc_TypeError,
+      PyErr_SetString(PyExc_TypeError,
                   "opcodes first argument must be a List of edit operations");
       return NULL;
     }
@@ -1617,14 +1617,14 @@ opcodes_py(PyObject *self, PyObject *args)
     len1 = get_length_of_anything(arg2);
     len2 = get_length_of_anything(arg3);
     if (len1 == (size_t)-1 || len2 == (size_t)-1) {
-      PyErr_Format(PyExc_ValueError,
+      PyErr_SetString(PyExc_ValueError,
                   "opcodes second and third argument must specify sizes");
       return NULL;
     }
 
     if ((ops = extract_editops(arg1)) != NULL) {
       if (lev_editops_check_errors(len1, len2, n, ops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                     "opcodes edit operation list is invalid");
         free(ops);
         return NULL;
@@ -1641,7 +1641,7 @@ opcodes_py(PyObject *self, PyObject *args)
     }
     if ((bops = extract_opcodes(arg1)) != NULL) {
       if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                     "opcodes edit operation list is invalid");
         free(bops);
         return NULL;
@@ -1651,7 +1651,7 @@ opcodes_py(PyObject *self, PyObject *args)
       return arg1;
     }
     if (!PyErr_Occurred())
-      PyErr_Format(PyExc_TypeError,
+      PyErr_SetString(PyExc_TypeError,
                   "opcodes first argument must be a List of edit operations");
     return NULL;
   }
@@ -1678,7 +1678,7 @@ opcodes_py(PyObject *self, PyObject *args)
     ops = lev_u_editops_find(len1, string1, len2, string2, &n);
   }
   else {
-    PyErr_Format(PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
                  "opcodes expected two Strings or two Unicodes");
     return NULL;
   }
@@ -1724,7 +1724,7 @@ inverse_py(PyObject *self, PyObject *args)
   }
 
   if (!PyErr_Occurred())
-    PyErr_Format(PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
                 "inverse expected a list of edit operations");
   return NULL;
 }
@@ -1742,7 +1742,7 @@ apply_edit_py(PyObject *self, PyObject *args)
     return NULL;
 
   if (!PyList_Check(list)) {
-    PyErr_Format(PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
                  "apply_edit first argument must be a List of edit operations");
     return NULL;
   }
@@ -1763,7 +1763,7 @@ apply_edit_py(PyObject *self, PyObject *args)
 
     if ((ops = extract_editops(list)) != NULL) {
       if (lev_editops_check_errors(len1, len2, n, ops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                      "apply_edit edit operations are invalid or inapplicable");
         free(ops);
         return NULL;
@@ -1779,7 +1779,7 @@ apply_edit_py(PyObject *self, PyObject *args)
     }
     if ((bops = extract_opcodes(list)) != NULL) {
       if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                      "apply_edit edit operations are invalid or inapplicable");
         free(bops);
         return NULL;
@@ -1795,7 +1795,7 @@ apply_edit_py(PyObject *self, PyObject *args)
     }
 
     if (!PyErr_Occurred())
-      PyErr_Format(PyExc_TypeError,
+      PyErr_SetString(PyExc_TypeError,
                   "apply_edit first argument must be "
                   "a list of edit operations");
     return NULL;
@@ -1815,7 +1815,7 @@ apply_edit_py(PyObject *self, PyObject *args)
 
     if ((ops = extract_editops(list)) != NULL) {
       if (lev_editops_check_errors(len1, len2, n, ops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                      "apply_edit edit operations are invalid or inapplicable");
         free(ops);
         return NULL;
@@ -1831,7 +1831,7 @@ apply_edit_py(PyObject *self, PyObject *args)
     }
     if ((bops = extract_opcodes(list)) != NULL) {
       if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-        PyErr_Format(PyExc_ValueError,
+        PyErr_SetString(PyExc_ValueError,
                      "apply_edit edit operations are invalid or inapplicable");
         free(bops);
         return NULL;
@@ -1847,13 +1847,13 @@ apply_edit_py(PyObject *self, PyObject *args)
     }
 
     if (!PyErr_Occurred())
-      PyErr_Format(PyExc_TypeError,
+      PyErr_SetString(PyExc_TypeError,
                    "apply_edit first argument must be "
                    "a list of edit operations");
     return NULL;
   }
 
-  PyErr_Format(PyExc_TypeError,
+  PyErr_SetString(PyExc_TypeError,
                "apply_edit expected two Strings or two Unicodes");
   return NULL;
 }
@@ -1873,7 +1873,7 @@ matching_blocks_py(PyObject *self, PyObject *args)
     return NULL;
 
   if (!PyList_Check(list)) {
-    PyErr_Format(PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
                  "matching_blocks first argument must be "
                  "a List of edit operations");
     return NULL;
@@ -1882,7 +1882,7 @@ matching_blocks_py(PyObject *self, PyObject *args)
   len1 = get_length_of_anything(arg1);
   len2 = get_length_of_anything(arg2);
   if (len1 == (size_t)-1 || len2 == (size_t)-1) {
-    PyErr_Format(PyExc_ValueError,
+    PyErr_SetString(PyExc_ValueError,
                  "matching_blocks second and third argument "
                  "must specify sizes");
     return NULL;
@@ -1890,8 +1890,8 @@ matching_blocks_py(PyObject *self, PyObject *args)
 
   if ((ops = extract_editops(list)) != NULL) {
     if (lev_editops_check_errors(len1, len2, n, ops)) {
-      PyErr_Format(PyExc_ValueError,
-                   "apply_edit edit operations are invalid or inapplicable");
+      PyErr_SetString(PyExc_ValueError,
+                   "matching_blocks edit operations are invalid or inapplicable");
       free(ops);
       return NULL;
     }
@@ -1905,8 +1905,8 @@ matching_blocks_py(PyObject *self, PyObject *args)
   }
   if ((bops = extract_opcodes(list)) != NULL) {
     if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-      PyErr_Format(PyExc_ValueError,
-                   "apply_edit edit operations are invalid or inapplicable");
+      PyErr_SetString(PyExc_ValueError,
+                   "matching_blocks edit operations are invalid or inapplicable");
       free(bops);
       return NULL;
     }
@@ -1920,8 +1920,8 @@ matching_blocks_py(PyObject *self, PyObject *args)
   }
 
   if (!PyErr_Occurred())
-    PyErr_Format(PyExc_TypeError,
-                "inverse expected a list of edit operations");
+    PyErr_SetString(PyExc_TypeError,
+                "matching_blocks expected a list of edit operations");
   return NULL;
 }
 
@@ -1943,7 +1943,7 @@ subtract_edit_py(PyObject *self, PyObject *args)
   }
   n = PyList_GET_SIZE(list);
   if (!n) {
-    PyErr_Format(PyExc_ValueError,
+    PyErr_SetString(PyExc_ValueError,
                  "subtract_edit subsequence is not a subsequence "
                  "or is invalid");
     return NULL;
@@ -1956,7 +1956,7 @@ subtract_edit_py(PyObject *self, PyObject *args)
           free(osub);
 
           if (!orem && nr == -1) {
-              PyErr_Format(PyExc_ValueError,
+              PyErr_SetString(PyExc_ValueError,
                            "subtract_edit subsequence is not a subsequence "
                            "or is invalid");
               return NULL;
@@ -1970,7 +1970,7 @@ subtract_edit_py(PyObject *self, PyObject *args)
   }
 
   if (!PyErr_Occurred())
-    PyErr_Format(PyExc_TypeError,
+    PyErr_SetString(PyExc_TypeError,
                 "subtract_edit expected two lists of edit operations");
   return NULL;
 }
