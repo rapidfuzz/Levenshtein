@@ -584,7 +584,7 @@ lev_jaro_ratio(size_t len1, const lev_byte *string1,
     len2 = i;
   }
 
-  halflen = (len1 + 1)/2;
+  halflen = (len2 / 2) - 1;
   idx = (size_t*)calloc(len1, sizeof(size_t));
   if (!idx)
     return -1.0;

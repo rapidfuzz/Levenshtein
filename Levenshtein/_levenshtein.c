@@ -25,6 +25,8 @@
 #include <assert.h>
 #include "_levenshtein.h"
 
+#define LEV_UNUSED(x) ((void)x)
+
 #if PY_MAJOR_VERSION >= 3
 #define LEV_PYTHON3
 #define PyString_Type PyBytes_Type
