@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Search &mdash; Levenshtein 0.13.0 documentation</title>
+  <title>Installation &mdash; Levenshtein 0.13.0 documentation</title>
   
 
   
@@ -25,7 +25,6 @@
   
 
   
-    
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -40,10 +39,10 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-    <script type="text/javascript" src="_static/searchtools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Levenshtein module" href="levenshtein.html" />
+    <link rel="prev" title="Welcome to Levenshtein’s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -70,7 +69,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -89,8 +88,12 @@
             
             
               <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-pip">using pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#from-git">from git</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Usage:</span></p>
 <ul>
@@ -147,10 +150,14 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Search</li>
+      <li>Installation</li>
     
     
       <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -162,23 +169,38 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>The recommended method to install Levenshtein is by using <cite>pip</cite> (the Python package manager)</p>
+<div class="section" id="using-pip">
+<h2>using pip<a class="headerlink" href="#using-pip" title="Permalink to this headline">¶</a></h2>
+<p>RapidFuzz can be installed with <cite>pip</cite>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip install levenshtein
+</pre></div>
+</div>
+<p>There are pre-built binaries (wheels) of Levenshtein for MacOS (10.9 and later), Linux x86_64 and Windows.</p>
+</div>
+<div class="section" id="from-git">
+<h2>from git<a class="headerlink" href="#from-git" title="Permalink to this headline">¶</a></h2>
+<p>RapidFuzz can be directly used from GitHub by cloning the
+repository which might be useful when you want to work on it:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/maxbachmann/Levenshtein.git
+<span class="nb">cd</span> Levenshtein
+pip install .
+</pre></div>
+</div>
+</div>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
            
           </div>
           <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="levenshtein.html" class="btn btn-neutral float-right" title="Levenshtein module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Levenshtein’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
 
   <hr/>
 
@@ -215,14 +237,7 @@
   
   
     
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

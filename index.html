@@ -41,7 +41,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Levenshtein module" href="Levenshtein.html" /> 
+    <link rel="next" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -86,9 +86,17 @@
               
             
             
-              <p class="caption" role="heading"><span class="caption-text">Usage:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Levenshtein.html">Levenshtein module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Usage:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="levenshtein.html">Levenshtein module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Changelog:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
 </ul>
 
             
@@ -170,26 +178,64 @@ other hand it’s much faster.</p>
 arguments to a function (method) have to be of the same type (or its
 subclasses).</p>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Installation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#using-pip">using pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#from-git">from git</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Usage:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Levenshtein.html">Levenshtein module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#distance">distance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#ratio">ratio</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#hamming">hamming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#jaro">jaro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#jaro-winkler">jaro_winkler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#median">median</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#median-improve">median_improve</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#quickmedian">quickmedian</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#setmedian">setmedian</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#seqratio">seqratio</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#setratio">setratio</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#editops">editops</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#opcodes">opcodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#inverse">inverse</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#apply-edit">apply_edit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#matching-blocks">matching_blocks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Levenshtein.html#subtract-edit">subtract_edit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="levenshtein.html">Levenshtein module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#distance">distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#ratio">ratio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#hamming">hamming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#jaro">jaro</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#jaro-winkler">jaro_winkler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#median">median</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#median-improve">median_improve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#quickmedian">quickmedian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#setmedian">setmedian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#seqratio">seqratio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#setratio">setratio</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#editops">editops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#opcodes">opcodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#inverse">inverse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#apply-edit">apply_edit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#matching-blocks">matching_blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="levenshtein.html#subtract-edit">subtract_edit</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Changelog:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-13-0-in-work">v0.13.0 (in work)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-12-1">v0.12.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-12-0">v0.12.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-11-2">v0.11.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-11-1">v0.11.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-11-0">v0.11.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-10-2">v0.10.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-10-1">v0.10.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-10-0">v0.10.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-9-0">v0.9.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-8-2">v0.8.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-8-1">v0.8.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-8-0">v0.8.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-7-0">v0.7.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-6-0">v0.6.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-5-0">v0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-4-0">v0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-3-0">v0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-2-0">v0.2.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-0">v0.1.0</a></li>
 </ul>
 </li>
 </ul>
@@ -210,7 +256,7 @@ subclasses).</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Levenshtein.html" class="btn btn-neutral float-right" title="Levenshtein module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
