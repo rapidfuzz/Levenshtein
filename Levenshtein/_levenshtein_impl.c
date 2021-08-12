@@ -1438,8 +1438,8 @@ make_usymlist(size_t n, const size_t *lengths,
   for (i = 0; i < n; i++) {
     const lev_wchar *stri = strings[i];
     for (j = 0; j < lengths[i]; j++) {
-      int c = stri[j];
-      int key = (c + (c >> 7)) & 0xff;
+      lev_wchar c = stri[j];
+      int key = ((int)c + ((int)c >> 7)) & 0xff;
       HItem *p = symmap + key;
       if (p->n == symmap) {
         p->c = c;
@@ -2089,7 +2089,7 @@ lev_quick_median(size_t n,
   if (wl == 0.0)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
   ml = floor(ml/wl + 0.499999);
-  *medlength = len = ml;
+  *medlength = len = (size_t)ml;
   if (!len)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
   median = (lev_byte*)safe_malloc(len, sizeof(lev_byte));
@@ -2126,8 +2126,8 @@ lev_quick_median(size_t n,
       size_t lengthi = lengths[i];
       double start = lengthi/ml*j;
       double end = start + lengthi/ml;
-      size_t istart = floor(start);
-      size_t iend = ceil(end);
+      size_t istart = (size_t)floor(start);
+      size_t iend = (size_t)ceil(end);
 
       /* rounding errors can overflow the buffer */
       if (iend > lengthi)
@@ -2145,7 +2145,7 @@ lev_quick_median(size_t n,
       if (symset[symlist[i]] > symset[k])
         k = symlist[i];
     }
-    median[j] = k;
+    median[j] = (lev_byte)k;
   }
 
   free(symset);
@@ -2214,8 +2214,8 @@ make_usymlistset(size_t n, const size_t *lengths,
   for (i = 0; i < n; i++) {
     const lev_wchar *stri = strings[i];
     for (j = 0; j < lengths[i]; j++) {
-      int c = stri[j];
-      int key = (c + (c >> 7)) & 0xff;
+      lev_wchar c = stri[j];
+      int key = ((int)c + ((int)c >> 7)) & 0xff;
       HQItem *p = symmap + key;
       if (p->n == symmap) {
         p->c = c;
@@ -2282,7 +2282,7 @@ lev_u_quick_median(size_t n,
   if (wl == 0.0)
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   ml = floor(ml/wl + 0.499999);
-  *medlength = len = ml;
+  *medlength = len = (size_t)ml;
   if (!len)
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   median = (lev_wchar*)safe_malloc(len, sizeof(lev_wchar));
@@ -2322,8 +2322,8 @@ lev_u_quick_median(size_t n,
       size_t lengthi = lengths[i];
       double start = lengthi/ml*j;
       double end = start + lengthi/ml;
-      size_t istart = floor(start);
-      size_t iend = ceil(end);
+      size_t istart = (size_t)floor(start);
+      size_t iend = (size_t)ceil(end);
 
       /* rounding errors can overflow the buffer */
       if (iend > lengthi)
@@ -4669,7 +4669,7 @@ lev_editops_subtract(size_t n,
     int shift;
 
     /* compute remainder size */
-    *nrem = -1;
+    *nrem = (size_t)-1;
     nr = nn = 0;
     for (i = 0; i < n; i++) {
         if (ops[i].type != LEV_EDIT_KEEP)

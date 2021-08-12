@@ -4,6 +4,7 @@
 
 v0.13.0 (in work)
 ------
+* Maintainership passed to Max Bachmann
 * Fix incorrect exception messages
 * Removed unused functions and compiler specific hacks
 * Split the Python and C implementations to simplify building of

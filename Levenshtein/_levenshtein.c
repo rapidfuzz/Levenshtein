@@ -606,8 +606,8 @@ levenshtein_common(PyObject *args, const char *name, size_t xcost,
     len1 = PyString_GET_SIZE(arg1);
     len2 = PyString_GET_SIZE(arg2);
     *lensum = len1 + len2;
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
     {
       size_t d = lev_edit_distance(len1, string1, len2, string2, xcost);
       if (d == (size_t)(-1)) {
@@ -647,6 +647,7 @@ distance_py(PyObject *self, PyObject *args)
 {
   size_t lensum;
   long int ldist;
+  LEV_UNUSED(self);
 
   if ((ldist = levenshtein_common(args, "distance", 0, &lensum)) < 0)
     return NULL;
@@ -659,6 +660,7 @@ ratio_py(PyObject *self, PyObject *args)
 {
   size_t lensum;
   long int ldist;
+  LEV_UNUSED(self);
 
   if ((ldist = levenshtein_common(args, "ratio", 1, &lensum)) < 0)
     return NULL;
@@ -676,6 +678,7 @@ hamming_py(PyObject *self, PyObject *args)
   const char *name = "hamming";
   size_t len1, len2;
   long int dist;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 2, &arg1, &arg2))
     return NULL;
@@ -691,8 +694,8 @@ hamming_py(PyObject *self, PyObject *args)
                    "%s expected two strings of the same length", name);
       return NULL;
     }
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
     dist = lev_hamming_distance(len1, string1, string2);
     return PyInt_FromLong(dist);
   }
@@ -725,6 +728,7 @@ jaro_py(PyObject *self, PyObject *args)
   PyObject *arg1, *arg2;
   const char *name = "jaro";
   size_t len1, len2;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 2, &arg1, &arg2))
     return NULL;
@@ -735,8 +739,8 @@ jaro_py(PyObject *self, PyObject *args)
 
     len1 = PyString_GET_SIZE(arg1);
     len2 = PyString_GET_SIZE(arg2);
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
     return PyFloat_FromDouble(lev_jaro_ratio(len1, string1, len2, string2));
   }
   else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
@@ -763,6 +767,7 @@ jaro_winkler_py(PyObject *self, PyObject *args)
   double pfweight = 0.1;
   const char *name = "jaro_winkler";
   size_t len1, len2;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 3, &arg1, &arg2, &arg3))
     return NULL;
@@ -785,8 +790,8 @@ jaro_winkler_py(PyObject *self, PyObject *args)
 
     len1 = PyString_GET_SIZE(arg1);
     len2 = PyString_GET_SIZE(arg2);
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
     return PyFloat_FromDouble(lev_jaro_winkler_ratio(len1, string1,
                                                      len2, string2,
                                                      pfweight));
@@ -814,6 +819,7 @@ static PyObject*
 median_py(PyObject *self, PyObject *args)
 {
   MedianFuncs engines = { lev_greedy_median, lev_u_greedy_median };
+  LEV_UNUSED(self);
   return median_common(args, "median", engines);
 }
 
@@ -821,6 +827,7 @@ static PyObject*
 median_improve_py(PyObject *self, PyObject *args)
 {
   MedianImproveFuncs engines = { lev_median_improve, lev_u_median_improve };
+  LEV_UNUSED(self);
   return median_improve_common(args, "median_improve", engines);
 }
 
@@ -828,6 +835,7 @@ static PyObject*
 quickmedian_py(PyObject *self, PyObject *args)
 {
   MedianFuncs engines = { lev_quick_median, lev_u_quick_median };
+  LEV_UNUSED(self);
   return median_common(args, "quickmedian", engines);
 }
 
@@ -835,6 +843,7 @@ static PyObject*
 setmedian_py(PyObject *self, PyObject *args)
 {
   MedianFuncs engines = { lev_set_median, lev_u_set_median };
+  LEV_UNUSED(self);
   return median_common(args, "setmedian", engines);
 }
 
@@ -887,7 +896,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyString_FromStringAndSize(medstr, len);
+      result = PyString_FromStringAndSize((const char*)medstr, len);
       free(medstr);
     }
   }
@@ -966,13 +975,13 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
 
   Py_DECREF(strseq);
   if (stringtype == 0) {
-    lev_byte *s = PyString_AS_STRING(arg1);
+    lev_byte *s = (lev_byte*)PyString_AS_STRING(arg1);
     size_t l = PyString_GET_SIZE(arg1);
     lev_byte *medstr = foo.s(l, s, n, sizes, strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyString_FromStringAndSize(medstr, len);
+      result = PyString_FromStringAndSize((const char*)medstr, len);
       free(medstr);
     }
   }
@@ -1096,7 +1105,7 @@ extract_stringlist(PyObject *list, const char *name,
       return -1;
     }
 
-    strings[0] = PyString_AS_STRING(first);
+    strings[0] = (lev_byte*)PyString_AS_STRING(first);
     sizes[0] = PyString_GET_SIZE(first);
     for (i = 1; i < n; i++) {
       PyObject *item = PySequence_Fast_GET_ITEM(list, i);
@@ -1108,7 +1117,7 @@ extract_stringlist(PyObject *list, const char *name,
                      "%s item #%i is not a String", name, i);
         return -1;
       }
-      strings[i] = PyString_AS_STRING(item);
+      strings[i] = (lev_byte*)PyString_AS_STRING(item);
       sizes[i] = PyString_GET_SIZE(item);
     }
 
@@ -1164,6 +1173,7 @@ seqratio_py(PyObject *self, PyObject *args)
   SetSeqFuncs engines = { lev_edit_seq_distance, lev_u_edit_seq_distance };
   size_t lensum;
   double r = setseq_common(args, "seqratio", engines, &lensum);
+  LEV_UNUSED(self);
   if (r < 0)
     return NULL;
   if (lensum == 0)
@@ -1177,6 +1187,7 @@ setratio_py(PyObject *self, PyObject *args)
   SetSeqFuncs engines = { lev_set_distance, lev_u_set_distance };
   size_t lensum;
   double r = setseq_common(args, "setratio", engines, &lensum);
+  LEV_UNUSED(self);
   if (r < 0)
     return NULL;
   if (lensum == 0)
@@ -1273,12 +1284,11 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
 static LevEditType
 string_to_edittype(PyObject *string)
 {
-  const char *s;
-  size_t i, len;
+  size_t i;
 
   for (i = 0; i < N_OPCODE_NAMES; i++) {
     if (string == opcode_names[i].pystring)
-      return i;
+      return (LevEditType)i;
   }
 
   /* With Python >= 2.2, we shouldn't get here, except when the strings are
@@ -1291,21 +1301,25 @@ string_to_edittype(PyObject *string)
 
   for (i = 0; i < N_OPCODE_NAMES; i++) {
     if (PyUnicode_CompareWithASCIIString(string, opcode_names[i].cstring) == 0) {
-      return i;
+      return (LevEditType)i;
     }
   }
 
 #else
+  {
+    const char *s;
+    size_t len;
 
-  if (!PyString_Check(string))
-    return LEV_EDIT_LAST;
+    if (!PyString_Check(string))
+      return LEV_EDIT_LAST;
 
-  s = PyString_AS_STRING(string);
-  len = PyString_GET_SIZE(string);
-  for (i = 0; i < N_OPCODE_NAMES; i++) {
-    if (len == opcode_names[i].len
-        && memcmp(s, opcode_names[i].cstring, len) == 0) {
-      return i;
+    s = (lev_byte*)PyString_AS_STRING(string);
+    len = PyString_GET_SIZE(string);
+    for (i = 0; i < N_OPCODE_NAMES; i++) {
+      if (len == opcode_names[i].len
+          && memcmp(s, opcode_names[i].cstring, len) == 0) {
+        return (LevEditType)i;
+      }
     }
   }
 #endif
@@ -1478,6 +1492,7 @@ editops_py(PyObject *self, PyObject *args)
   size_t len1, len2, n;
   LevEditOp *ops;
   LevOpCode *bops;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX("editops"), 2, 3,
                          &arg1, &arg2, &arg3)) {
@@ -1545,8 +1560,8 @@ editops_py(PyObject *self, PyObject *args)
 
     len1 = PyString_GET_SIZE(arg1);
     len2 = PyString_GET_SIZE(arg2);
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
     ops = lev_editops_find(len1, string1, len2, string2, &n);
   }
   else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
@@ -1601,6 +1616,7 @@ opcodes_py(PyObject *self, PyObject *args)
   size_t len1, len2, n, nb;
   LevEditOp *ops;
   LevOpCode *bops;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX("opcodes"), 2, 3,
                          &arg1, &arg2, &arg3))
@@ -1663,8 +1679,8 @@ opcodes_py(PyObject *self, PyObject *args)
 
     len1 = PyString_GET_SIZE(arg1);
     len2 = PyString_GET_SIZE(arg2);
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
     ops = lev_editops_find(len1, string1, len2, string2, &n);
   }
   else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
@@ -1700,6 +1716,7 @@ inverse_py(PyObject *self, PyObject *args)
   size_t n;
   LevEditOp *ops;
   LevOpCode *bops;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX("inverse"), 1, 1, &list)
       || !PyList_Check(list))
@@ -1736,6 +1753,7 @@ apply_edit_py(PyObject *self, PyObject *args)
   size_t n, len, len1, len2;
   LevEditOp *ops;
   LevOpCode *bops;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX("apply_edit"), 3, 3,
                          &list, &arg1, &arg2))
@@ -1758,8 +1776,8 @@ apply_edit_py(PyObject *self, PyObject *args)
     }
     len1 = PyString_GET_SIZE(arg1);
     len2 = PyString_GET_SIZE(arg2);
-    string1 = PyString_AS_STRING(arg1);
-    string2 = PyString_AS_STRING(arg2);
+    string1 = (lev_byte*)PyString_AS_STRING(arg1);
+    string2 = (lev_byte*)PyString_AS_STRING(arg2);
 
     if ((ops = extract_editops(list)) != NULL) {
       if (lev_editops_check_errors(len1, len2, n, ops)) {
@@ -1773,7 +1791,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(ops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyString_FromStringAndSize(s, len);
+      result = PyString_FromStringAndSize((const char*)s, len);
       free(s);
       return result;
     }
@@ -1789,7 +1807,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(bops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyString_FromStringAndSize(s, len);
+      result = PyString_FromStringAndSize((const char*)s, len);
       free(s);
       return result;
     }
@@ -1866,6 +1884,7 @@ matching_blocks_py(PyObject *self, PyObject *args)
   LevEditOp *ops;
   LevOpCode *bops;
   LevMatchingBlock *mblocks;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX("matching_blocks"), 3, 3,
                          &list, &arg1, &arg2)
@@ -1931,6 +1950,7 @@ subtract_edit_py(PyObject *self, PyObject *args)
   PyObject *list, *sub, *result;
   size_t n, ns, nr;
   LevEditOp *ops, *osub, *orem;
+  LEV_UNUSED(self);
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX("subtract_edit"), 2, 2, &list, &sub)
       || !PyList_Check(list))
