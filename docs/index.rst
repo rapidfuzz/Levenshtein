@@ -22,9 +22,21 @@ subclasses).
 
 .. toctree::
    :maxdepth: 2
+   :caption: Installation:
+
+   installation
+
+.. toctree::
+   :maxdepth: 2
    :caption: Usage:
 
-   Levenshtein
+   levenshtein
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Changelog:
+
+   changelog
 
 Indices and tables
 ==================
