@@ -27,31 +27,56 @@ struct proc_string {
     size_t length;
 };
 
+#if PY_VERSION_HEX >= PYTHON_VERSION(3, 0, 0)
 static inline void validate_string(PyObject* py_str, const char* err)
 {
-    if (!PyUnicode_Check(py_str)) {
-        throw PythonTypeError(err);
+    if (PyBytes_Check(py_str)) {
+        return;
     }
 
-    // PEP 623 deprecates legacy strings and therefor
-    // deprecates e.g. PyUnicode_READY in Python 3.10
+    if (PyUnicode_Check(py_str)) {
+        // PEP 623 deprecates legacy strings and therefor
+        // deprecates e.g. PyUnicode_READY in Python 3.10
 #if PY_VERSION_HEX < PYTHON_VERSION(3, 10, 0)
-    if (PyUnicode_READY(py_str)) {
-      // cython will use the exception set by PyUnicode_READY
-      throw std::runtime_error("");
-    }
+        if (PyUnicode_READY(py_str)) {
+          // cython will use the exception set by PyUnicode_READY
+          throw std::runtime_error("");
+        }
 #endif
+        return;
+    }
+
+    throw PythonTypeError(err);
 }
 
 static inline proc_string convert_string(PyObject* py_str)
 {
-    return {
-        // see https://bugs.python.org/issue43565
-        static_cast<int>(PyUnicode_KIND(py_str)),
-        PyUnicode_DATA(py_str),
-        static_cast<std::size_t>(PyUnicode_GET_LENGTH(py_str))
-    };
+    if (PyBytes_Check(py_str)) {
+        return {
+            // see https://bugs.python.org/issue43565
+            static_cast<int>(PyUnicode_1BYTE_KIND),
+            PyBytes_AS_STRING(py_str),
+            static_cast<std::size_t>(PyBytes_GET_SIZE(py_str))
+        };
+    } else {
+        // PEP 623 deprecates legacy strings and therefor
+        // deprecates e.g. PyUnicode_READY in Python 3.10
+#if PY_VERSION_HEX < PYTHON_VERSION(3, 10, 0)
+        if (PyUnicode_READY(py_str)) {
+          // cython will use the exception set by PyUnicode_READY
+          throw std::runtime_error("");
+        }
+#endif
+        return {
+            // see https://bugs.python.org/issue43565
+            static_cast<int>(PyUnicode_KIND(py_str)),
+            PyUnicode_DATA(py_str),
+            static_cast<std::size_t>(PyUnicode_GET_LENGTH(py_str))
+        };
+    }
 }
+#else
+#endif
 
 /*
  * Levenshtein
