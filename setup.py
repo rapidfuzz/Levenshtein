@@ -37,14 +37,22 @@ ext_modules = [
         name='Levenshtein._levenshtein',
         sources=[
             'src/Levenshtein-c/_levenshtein.c',
-            'src/_levenshtein.cpp'
+            'src/_levenshtein.c'
         ],
         include_dirs=[
-            "src/rapidfuzz-cpp/",
             "src/Levenshtein-c/",
         ],
-        language='c++'
     ),
+    #Extension(
+    #    name='Levenshtein.cpp_levenshtein',
+    #    sources=[
+    #        'src/cpp_levenshtein.cpp'
+    #    ],
+    #    include_dirs=[
+    #        "src/rapidfuzz-cpp/",
+    #    ],
+    #    language='c++'
+    #),
 ]
 
 if __name__ == "__main__":
