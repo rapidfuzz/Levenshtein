@@ -3,7 +3,6 @@ recursive-include Levenshtein *.c *.h *.py
 include README.rst
 include HISTORY.txt
 include COPYING
-include NEWS
 global-exclude *pyc
 global-exclude *so
 global-exclude .project
