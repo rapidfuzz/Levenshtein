@@ -12,6 +12,9 @@ computation of:
 * approximate median strings, and generally string averaging
 * string sequence and set similarity
 
+This is a fork of `ztane/python-Levenshtein <https://github.com/ztane/python-Levenshtein>`_, since the original
+project is no longer actively maintained.
+
 Requirements
 ------------
 * Python 2.7 or later
@@ -19,7 +22,7 @@ Requirements
 Installation
 ------------
 .. code-block:: bash
-    pip install python-Levenshtein
+    pip install levenshtein
 
 Documentation
 -------------

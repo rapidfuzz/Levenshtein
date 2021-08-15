@@ -2,7 +2,7 @@
  Changelog
 ============
 
-v0.13.0 (in work)
+v0.13.0
 ------
 * Maintainership passed to Max Bachmann
 * use faster bitparallel implementations for distance and ratio
