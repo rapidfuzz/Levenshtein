@@ -33,7 +33,6 @@ class BuildExt(build_ext):
                 ext.extra_compile_args.append('-std=c++11')
         build_ext.build_extensions(self)
 
-
 ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',

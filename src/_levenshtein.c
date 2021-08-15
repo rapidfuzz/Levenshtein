@@ -56,9 +56,6 @@
 
 /* python interface and wrappers */
 /* declarations and docstrings {{{ */
-static PyObject* distance_py(PyObject *self, PyObject *args);
-static PyObject* ratio_py(PyObject *self, PyObject *args);
-static PyObject* hamming_py(PyObject *self, PyObject *args);
 static PyObject* jaro_py(PyObject *self, PyObject *args);
 static PyObject* jaro_winkler_py(PyObject *self, PyObject *args);
 static PyObject* median_py(PyObject *self, PyObject *args);
