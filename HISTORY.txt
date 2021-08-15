@@ -5,6 +5,8 @@
 v0.13.0 (in work)
 ------
 * Maintainership passed to Max Bachmann
+* use faster bitparallel implementations for distance and ratio
+* avoid string copies in distance, ratio and hamming
 * Fixed incorrect window size inside Jaro and Jaro-Winkler implementation
 * Fixed incorrect exception messages
 * Removed unused functions and compiler specific hacks

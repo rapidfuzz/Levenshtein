@@ -1768,7 +1768,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 /* #### Code section: module_code ### */
 
 /* "cpp_levenshtein.pyx":12
- *     object hamming_impl(object, object, size_t) nogil except +
+ *     object hamming_impl(object, object) nogil except +
  * 
  * def distance(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -1891,7 +1891,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_distance(CYTHON_UNUSED PyObject *__p
  *     validate_string(string1, "string1 must be a String")
  *     validate_string(string2, "string2 must be a String")             # <<<<<<<<<<<<<<
  * 
- *     return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)
+ *     return distance_impl(string1, string2)
  */
   try {
     validate_string(__pyx_v_string2, ((char const *)"string2 must be a String"));
@@ -1903,13 +1903,13 @@ static PyObject *__pyx_pf_15cpp_levenshtein_distance(CYTHON_UNUSED PyObject *__p
   /* "cpp_levenshtein.pyx":34
  *     validate_string(string2, "string2 must be a String")
  * 
- *     return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)             # <<<<<<<<<<<<<<
+ *     return distance_impl(string1, string2)             # <<<<<<<<<<<<<<
  * 
  * def ratio(string1, string2):
  */
   __Pyx_XDECREF(__pyx_r);
   try {
-    __pyx_t_1 = levenshtein_impl(__pyx_v_string1, __pyx_v_string2, 1, 1, 1, ((size_t)-1L));
+    __pyx_t_1 = distance_impl(__pyx_v_string1, __pyx_v_string2);
     if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
   } catch(...) {
     __Pyx_CppExn2PyErr();
@@ -1921,7 +1921,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_distance(CYTHON_UNUSED PyObject *__p
   goto __pyx_L0;
 
   /* "cpp_levenshtein.pyx":12
- *     object hamming_impl(object, object, size_t) nogil except +
+ *     object hamming_impl(object, object) nogil except +
  * 
  * def distance(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -1940,7 +1940,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_distance(CYTHON_UNUSED PyObject *__p
 }
 
 /* "cpp_levenshtein.pyx":36
- *     return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)
+ *     return distance_impl(string1, string2)
  * 
  * def ratio(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2064,7 +2064,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2ratio(CYTHON_UNUSED PyObject *__pyx
  *     validate_string(string1, "string1 must be a String")
  *     validate_string(string2, "string2 must be a String")             # <<<<<<<<<<<<<<
  * 
- *     return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100
+ *     return ratio_impl(string1, string2)
  */
   try {
     validate_string(__pyx_v_string2, ((char const *)"string2 must be a String"));
@@ -2076,25 +2076,25 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2ratio(CYTHON_UNUSED PyObject *__pyx
   /* "cpp_levenshtein.pyx":58
  *     validate_string(string2, "string2 must be a String")
  * 
- *     return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100             # <<<<<<<<<<<<<<
+ *     return ratio_impl(string1, string2)             # <<<<<<<<<<<<<<
  * 
  * def hamming(string1, string2):
  */
   __Pyx_XDECREF(__pyx_r);
   try {
-    __pyx_t_1 = normalized_levenshtein_impl(__pyx_v_string1, __pyx_v_string2, 1, 1, 2, 0.0);
+    __pyx_t_1 = ratio_impl(__pyx_v_string1, __pyx_v_string2);
   } catch(...) {
     __Pyx_CppExn2PyErr();
     __PYX_ERR(0, 58, __pyx_L1_error)
   }
-  __pyx_t_2 = PyFloat_FromDouble((__pyx_t_1 / 100.0)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
   /* "cpp_levenshtein.pyx":36
- *     return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)
+ *     return distance_impl(string1, string2)
  * 
  * def ratio(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2113,7 +2113,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2ratio(CYTHON_UNUSED PyObject *__pyx
 }
 
 /* "cpp_levenshtein.pyx":60
- *     return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100
+ *     return ratio_impl(string1, string2)
  * 
  * def hamming(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2236,7 +2236,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4hamming(CYTHON_UNUSED PyObject *__p
  *     validate_string(string1, "string1 must be a String")
  *     validate_string(string2, "string2 must be a String")             # <<<<<<<<<<<<<<
  * 
- *     return hamming_impl(string1, string2, <size_t>-1)
+ *     return hamming_impl(string1, string2)
  */
   try {
     validate_string(__pyx_v_string2, ((char const *)"string2 must be a String"));
@@ -2248,11 +2248,11 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4hamming(CYTHON_UNUSED PyObject *__p
   /* "cpp_levenshtein.pyx":78
  *     validate_string(string2, "string2 must be a String")
  * 
- *     return hamming_impl(string1, string2, <size_t>-1)             # <<<<<<<<<<<<<<
+ *     return hamming_impl(string1, string2)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
   try {
-    __pyx_t_1 = hamming_impl(__pyx_v_string1, __pyx_v_string2, ((size_t)-1L));
+    __pyx_t_1 = hamming_impl(__pyx_v_string1, __pyx_v_string2);
     if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 78, __pyx_L1_error)
   } catch(...) {
     __Pyx_CppExn2PyErr();
@@ -2264,7 +2264,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4hamming(CYTHON_UNUSED PyObject *__p
   goto __pyx_L0;
 
   /* "cpp_levenshtein.pyx":60
- *     return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100
+ *     return ratio_impl(string1, string2)
  * 
  * def hamming(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2353,7 +2353,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
   /* "cpp_levenshtein.pyx":12
- *     object hamming_impl(object, object, size_t) nogil except +
+ *     object hamming_impl(object, object) nogil except +
  * 
  * def distance(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2365,7 +2365,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_distance, 12, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 12, __pyx_L1_error)
 
   /* "cpp_levenshtein.pyx":36
- *     return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)
+ *     return distance_impl(string1, string2)
  * 
  * def ratio(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2377,7 +2377,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_ratio, 36, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 36, __pyx_L1_error)
 
   /* "cpp_levenshtein.pyx":60
- *     return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100
+ *     return ratio_impl(string1, string2)
  * 
  * def hamming(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2761,7 +2761,7 @@ if (!__Pyx_RefNanny) {
   #endif
 
   /* "cpp_levenshtein.pyx":12
- *     object hamming_impl(object, object, size_t) nogil except +
+ *     object hamming_impl(object, object) nogil except +
  * 
  * def distance(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2773,7 +2773,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "cpp_levenshtein.pyx":36
- *     return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)
+ *     return distance_impl(string1, string2)
  * 
  * def ratio(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2785,7 +2785,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "cpp_levenshtein.pyx":60
- *     return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100
+ *     return ratio_impl(string1, string2)
  * 
  * def hamming(string1, string2):             # <<<<<<<<<<<<<<
  *     """
@@ -2837,14 +2837,6 @@ if (!__Pyx_RefNanny) {
 /* #### Code section: cleanup_globals ### */
 /* #### Code section: cleanup_module ### */
 /* #### Code section: main_method ### */
-/* #### Code section: utility_code_pragmas ### */
-#if _MSC_VER
-#pragma warning( push )
-#pragma warning( disable : 4127 )
-#endif
-
-
-
 /* #### Code section: utility_code_def ### */
 
 /* --- Runtime support code --- */
@@ -5546,13 +5538,6 @@ static CYTHON_INLINE PyObject * __Pyx_PyBool_FromLong(long b) {
 static CYTHON_INLINE PyObject * __Pyx_PyInt_FromSize_t(size_t ival) {
     return PyInt_FromSize_t(ival);
 }
-
-
-/* #### Code section: utility_code_pragmas_end ### */
-#if _MSV_VER
-#pragma warning( pop )
-#endif
-
 
 
 /* #### Code section: end ### */

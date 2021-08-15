@@ -4,10 +4,10 @@
 
 cdef extern from "cpp_string_metric.hpp":
     void validate_string(object py_str, const char* err) except +
-    object levenshtein_impl(object, object, size_t, size_t, size_t, size_t) nogil except +
-    double normalized_levenshtein_impl(object, object, size_t, size_t, size_t, double) nogil except +
+    object distance_impl(object, object) nogil except +
+    double ratio_impl(object, object) nogil except +
 
-    object hamming_impl(object, object, size_t) nogil except +
+    object hamming_impl(object, object) nogil except +
 
 def distance(string1, string2):
     """
@@ -31,7 +31,7 @@ def distance(string1, string2):
     validate_string(string1, "string1 must be a String")
     validate_string(string2, "string2 must be a String")
 
-    return levenshtein_impl(string1, string2, 1, 1, 1, <size_t>-1)
+    return distance_impl(string1, string2)
 
 def ratio(string1, string2):
     """
@@ -55,7 +55,7 @@ def ratio(string1, string2):
     validate_string(string1, "string1 must be a String")
     validate_string(string2, "string2 must be a String")
 
-    return normalized_levenshtein_impl(string1, string2, 1, 1, 2, 0.0) / 100
+    return ratio_impl(string1, string2)
 
 def hamming(string1, string2):
     """
@@ -75,4 +75,4 @@ def hamming(string1, string2):
     validate_string(string1, "string1 must be a String")
     validate_string(string2, "string2 must be a String")
 
-    return hamming_impl(string1, string2, <size_t>-1)
+    return hamming_impl(string1, string2)

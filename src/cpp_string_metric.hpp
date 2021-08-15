@@ -21,8 +21,26 @@ private:
     char const* m_error;
 };
 
+#if PY_VERSION_HEX >= PYTHON_VERSION(3, 0, 0)
+#define LIST_OF_CASES(...)   \
+    X_ENUM(LEVENSHTEIN_UINT8,   uint8_t) \
+    X_ENUM(LEVENSHTEIN_UINT16,  uint16_t) \
+    X_ENUM(LEVENSHTEIN_UINT32,  uint32_t)
+#else
+#define LIST_OF_CASES(...)   \
+    X_ENUM(LEVENSHTEIN_UINT8,   uint8_t) \
+    X_ENUM(LEVENSHTEIN_UNICODE, Py_UNICODE)
+#endif
+
+enum LevenshteinType {
+# define X_ENUM(kind, type) kind,
+    LIST_OF_CASES()
+# undef X_ENUM
+};
+
+
 struct proc_string {
-    unsigned int kind;
+    LevenshteinType kind;
     void* data;
     size_t length;
 };
@@ -49,17 +67,27 @@ static inline void validate_string(PyObject* py_str, const char* err)
     throw PythonTypeError(err);
 }
 
+static inline LevenshteinType UnicodeToLevenshteinKind(unsigned int kind)
+{
+    switch(kind){
+    case PyUnicode_1BYTE_KIND: return LEVENSHTEIN_UINT8;
+    case PyUnicode_2BYTE_KIND: return LEVENSHTEIN_UINT16;
+    default: return LEVENSHTEIN_UINT32;
+    }
+}
+
 static inline proc_string convert_string(PyObject* py_str)
 {
     if (PyBytes_Check(py_str)) {
         return {
-            PyUnicode_1BYTE_KIND,
+            LEVENSHTEIN_UINT8,
             PyBytes_AS_STRING(py_str),
             static_cast<std::size_t>(PyBytes_GET_SIZE(py_str))
         };
     } else {
+
         return {
-            PyUnicode_KIND(py_str),
+            UnicodeToLevenshteinKind(PyUnicode_KIND(py_str)),
             PyUnicode_DATA(py_str),
             static_cast<std::size_t>(PyUnicode_GET_LENGTH(py_str))
         };
@@ -79,15 +107,13 @@ static inline proc_string convert_string(PyObject* py_str)
 {
     if (PyString_Check(py_str)) {
         return {
-            PyUnicode_1BYTE_KIND,
+            LEVENSHTEIN_UINT8,
             PyString_AS_STRING(py_str),
             static_cast<std::size_t>(PyString_GET_SIZE(py_str))
         };
     } else {
-        // todo max
         return {
-            // see https://bugs.python.org/issue43565
-            static_cast<int>(PyUnicode_KIND(py_str)),
+            LEVENSHTEIN_UNICODE,
             PyUnicode_AS_UNICODE(py_str),
             static_cast<std::size_t>(PyUnicode_GET_SIZE(py_str))
         };
@@ -95,56 +121,36 @@ static inline proc_string convert_string(PyObject* py_str)
 }
 #endif
 
+template<typename CharT>
+rapidfuzz::basic_string_view<CharT> to_string_view(proc_string str)
+{
+    return rapidfuzz::basic_string_view<CharT>((CharT*)str.data, str.length);
+}
+
 /*
- * Levenshtein
+ * Levenshtein distance
  */
 
 template<typename CharT>
-size_t levenshtein_impl_inner(proc_string s1, proc_string s2,
-    size_t insertion, size_t deletion, size_t substitution, size_t max)
+size_t distance_impl_inner(proc_string s1, proc_string s2)
 {
     switch(s2.kind){
-    case PyUnicode_1BYTE_KIND:
-        return string_metric::levenshtein(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint8_t>((uint8_t*)s2.data, s2.length),
-            {insertion, deletion, substitution}, max
-        );
-    case PyUnicode_2BYTE_KIND:
-        return string_metric::levenshtein(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint16_t>((uint16_t*)s2.data, s2.length),
-            {insertion, deletion, substitution}, max
-        );
-    default:
-        return string_metric::levenshtein(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint32_t>((uint32_t*)s2.data, s2.length),
-            {insertion, deletion, substitution}, max
-        );
+# define X_ENUM(KIND, TYPE) case KIND: return string_metric::levenshtein(to_string_view<CharT>(s1), to_string_view<TYPE>(s2));
+    LIST_OF_CASES()
+# undef X_ENUM
     }
 }
 
-PyObject* levenshtein_impl(PyObject* s1, PyObject* s2,
-    size_t insertion, size_t deletion, size_t substitution, size_t max)
+PyObject* distance_impl(PyObject* s1, PyObject* s2)
 {
     size_t result = 0;
     proc_string c_s1 = convert_string(s1);
     proc_string c_s2 = convert_string(s2);
 
     switch(c_s1.kind){
-    case PyUnicode_1BYTE_KIND:
-        result = levenshtein_impl_inner<uint8_t>(
-            c_s1, c_s2, insertion, deletion, substitution, max);
-        break;
-    case PyUnicode_2BYTE_KIND:
-        result = levenshtein_impl_inner<uint16_t>(
-            c_s1, c_s2, insertion, deletion, substitution, max);
-        break;
-    default:
-        result = levenshtein_impl_inner<uint32_t>(
-            c_s1, c_s2, insertion, deletion, substitution, max);
-        break;
+# define X_ENUM(KIND, TYPE) case KIND: result = distance_impl_inner<TYPE>(c_s1, c_s2); break;
+    LIST_OF_CASES()
+# undef X_ENUM
     }
 
     if (result == (std::size_t)-1) {
@@ -154,51 +160,28 @@ PyObject* levenshtein_impl(PyObject* s1, PyObject* s2,
 }
 
 /*
- *  Normalized Levenshtein
+ *  Levenshtein ratio
  */
 
 template<typename CharT>
-inline double normalized_levenshtein_impl_inner(proc_string s1, proc_string s2,
-    size_t insertion, size_t deletion, size_t substitution, double score_cutoff)
+inline double ratio_impl_inner(proc_string s1, proc_string s2)
 {
     switch(s2.kind){
-    case PyUnicode_1BYTE_KIND:
-        return string_metric::normalized_levenshtein(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint8_t>((uint8_t*)s2.data, s2.length),
-            {insertion, deletion, substitution}, score_cutoff
-        );
-    case PyUnicode_2BYTE_KIND:
-        return string_metric::normalized_levenshtein(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint16_t>((uint16_t*)s2.data, s2.length),
-            {insertion, deletion, substitution}, score_cutoff
-        );
-    default:
-        return string_metric::normalized_levenshtein(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint32_t>((uint32_t*)s2.data, s2.length),
-            {insertion, deletion, substitution}, score_cutoff
-        );
+# define X_ENUM(KIND, TYPE) case KIND: return string_metric::normalized_levenshtein(to_string_view<CharT>(s1), to_string_view<TYPE>(s2), {1, 1, 2}) / 100.0;
+    LIST_OF_CASES()
+# undef X_ENUM
     }
 }
 
-double normalized_levenshtein_impl(PyObject* s1, PyObject* s2,
-    size_t insertion, size_t deletion, size_t substitution, double score_cutoff)
+double ratio_impl(PyObject* s1, PyObject* s2)
 {
     proc_string c_s1 = convert_string(s1);
     proc_string c_s2 = convert_string(s2);
 
     switch(c_s1.kind){
-    case PyUnicode_1BYTE_KIND:
-        return normalized_levenshtein_impl_inner<uint8_t>(
-            c_s1, c_s2, insertion, deletion, substitution, score_cutoff);
-    case PyUnicode_2BYTE_KIND:
-        return normalized_levenshtein_impl_inner<uint16_t>(
-            c_s1, c_s2, insertion, deletion, substitution, score_cutoff);
-    default:
-        return normalized_levenshtein_impl_inner<uint32_t>(
-            c_s1, c_s2, insertion, deletion, substitution, score_cutoff);
+# define X_ENUM(KIND, TYPE) case KIND: return ratio_impl_inner<TYPE>(c_s1, c_s2);
+    LIST_OF_CASES()
+# undef X_ENUM
     }
 }
 
@@ -207,46 +190,25 @@ double normalized_levenshtein_impl(PyObject* s1, PyObject* s2,
  */
 
 template<typename CharT>
-size_t hamming_impl_inner(proc_string s1, proc_string s2, size_t max)
+size_t hamming_impl_inner(proc_string s1, proc_string s2)
 {
     switch(s2.kind){
-    case PyUnicode_1BYTE_KIND:
-        return string_metric::hamming(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint8_t>((uint8_t*)s2.data, s2.length),
-            max
-        );
-    case PyUnicode_2BYTE_KIND:
-        return string_metric::hamming(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint16_t>((uint16_t*)s2.data, s2.length),
-            max
-        );
-    default:
-        return string_metric::hamming(
-            rapidfuzz::basic_string_view<CharT>((CharT*)s1.data, s1.length),
-            rapidfuzz::basic_string_view<uint32_t>((uint32_t*)s2.data, s2.length),
-            max
-        );
+# define X_ENUM(KIND, TYPE) case KIND: return string_metric::hamming(to_string_view<CharT>(s1), to_string_view<TYPE>(s2));
+    LIST_OF_CASES()
+# undef X_ENUM
     }
 }
 
-PyObject* hamming_impl(PyObject* s1, PyObject* s2, size_t max)
+PyObject* hamming_impl(PyObject* s1, PyObject* s2)
 {
     size_t result = 0;
     proc_string c_s1 = convert_string(s1);
     proc_string c_s2 = convert_string(s2);
 
     switch(c_s1.kind){
-    case PyUnicode_1BYTE_KIND:
-        result = hamming_impl_inner<uint8_t>(c_s1, c_s2, max);
-        break;
-    case PyUnicode_2BYTE_KIND:
-        result = hamming_impl_inner<uint16_t>(c_s1, c_s2, max);
-        break;
-    default:
-        result = hamming_impl_inner<uint32_t>(c_s1, c_s2, max);
-        break;
+# define X_ENUM(KIND, TYPE) case KIND: result = hamming_impl_inner<TYPE>(c_s1, c_s2); break;
+    LIST_OF_CASES()
+# undef X_ENUM
     }
 
     if (result == (std::size_t)-1) {
