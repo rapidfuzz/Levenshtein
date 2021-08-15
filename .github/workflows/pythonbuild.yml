@@ -24,7 +24,9 @@ jobs:
           python-version: 2.7
 
       - name: Install Levenshtein
-        run: pip install .
+        run: |
+          pip install pytest hypothesis
+          pip install .
 
       - name: Test
         run: pytest tests
@@ -39,7 +41,7 @@ jobs:
         os: [windows-latest, macos-latest]
     env:
       CIBW_BUILD: ${{matrix.python_tag}}
-      CIBW_TEST_REQUIRES: pytest hypothesis pandas
+      CIBW_TEST_REQUIRES: pytest hypothesis
       CIBW_TEST_COMMAND: pytest {package}/tests
       CIBW_BUILD_VERBOSITY: 3
 
@@ -93,7 +95,7 @@ jobs:
       CIBW_ARCHS_LINUX: ${{matrix.arch}}
       CIBW_BUILD: ${{matrix.python_tag}}
       CIBW_TEST_SKIP: "*-manylinux_{aarch64,ppc64le,s390x}"
-      CIBW_TEST_REQUIRES: pytest hypothesis pandas
+      CIBW_TEST_REQUIRES: pytest hypothesis
       CIBW_TEST_COMMAND: pytest {package}/tests
       CIBW_BUILD_VERBOSITY: 3
 
@@ -125,7 +127,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     env:
       CIBW_BUILD: ${{matrix.python_tag}}
-      CIBW_TEST_REQUIRES: pytest hypothesis pandas
+      CIBW_TEST_REQUIRES: pytest hypothesis
       CIBW_TEST_COMMAND: pytest {package}/tests
       CIBW_BUILD_VERBOSITY: 3
 
