@@ -283,25 +283,6 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
   return i;
 }
 
-double
-lev_edit_distance_sod(size_t len, const lev_byte *string,
-                      size_t n, const size_t *lengths,
-                      const lev_byte *strings[],
-                      const double *weights,
-                      int xcost)
-{
-  size_t i, d;
-  double sum = 0.0;
-
-  for (i = 0; i < n; i++) {
-    d = lev_edit_distance(len, string, lengths[i], strings[i], xcost);
-    if (d == (size_t)-1)
-      return -1.0;
-    sum += weights[i]*d;
-  }
-  return sum;
-}
-
 /**
  * lev_u_edit_distance:
  * @len1: The length of @string1.
@@ -462,24 +443,6 @@ lev_u_edit_distance(size_t len1, const lev_wchar *string1,
   return i;
 }
 
-double
-lev_u_edit_distance_sod(size_t len, const lev_wchar *string,
-                        size_t n, const size_t *lengths,
-                        const lev_wchar *strings[],
-                        const double *weights,
-                        int xcost)
-{
-  size_t i, d;
-  double sum = 0.0;
-
-  for (i = 0; i < n; i++) {
-    d = lev_u_edit_distance(len, string, lengths[i], strings[i], xcost);
-    if (d == (size_t)-1)
-      return -1.0;
-    sum += weights[i]*d;
-  }
-  return sum;
-}
 /* }}} */
 
 

@@ -19,9 +19,6 @@ __license__ = "GPL"
 __version__ = "0.13.0"
 
 from Levenshtein._levenshtein import (
-    distance,
-    ratio,
-    hamming,
     jaro,
     jaro_winkler,
     median,
@@ -36,4 +33,10 @@ from Levenshtein._levenshtein import (
     apply_edit,
     matching_blocks,
     subtract_edit
+)
+
+from Levenshtein.cpp_levenshtein import (
+    distance,
+    ratio,
+    hamming
 )

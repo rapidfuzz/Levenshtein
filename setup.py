@@ -29,16 +29,30 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args += opts
             ext.extra_link_args += link_opts
+            if ext.language == 'c++' and ct == 'unix':
+                ext.extra_compile_args.append('-std=c++11')
         build_ext.build_extensions(self)
-
 
 ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
-            'Levenshtein/_levenshtein_impl.c',
-            'Levenshtein/_levenshtein.c'
-        ]
+            'src/Levenshtein-c/_levenshtein.c',
+            'src/_levenshtein.c'
+        ],
+        include_dirs=[
+            "src/Levenshtein-c/",
+        ],
+    ),
+    Extension(
+        name='Levenshtein.cpp_levenshtein',
+        sources=[
+            'src/cpp_levenshtein.cpp'
+        ],
+        include_dirs=[
+            "src/rapidfuzz-cpp/",
+        ],
+        language='c++'
     ),
 ]
 

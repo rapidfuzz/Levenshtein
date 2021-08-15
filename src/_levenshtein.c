@@ -56,9 +56,6 @@
 
 /* python interface and wrappers */
 /* declarations and docstrings {{{ */
-static PyObject* distance_py(PyObject *self, PyObject *args);
-static PyObject* ratio_py(PyObject *self, PyObject *args);
-static PyObject* hamming_py(PyObject *self, PyObject *args);
 static PyObject* jaro_py(PyObject *self, PyObject *args);
 static PyObject* jaro_winkler_py(PyObject *self, PyObject *args);
 static PyObject* median_py(PyObject *self, PyObject *args);
@@ -88,56 +85,6 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
   "It supports both normal and Unicode strings, but can't mix them, all\n" \
   "arguments to a function (method) have to be of the same type (or its\n" \
   "subclasses).\n"
-
-#define distance_DESC \
-  "Compute absolute Levenshtein distance of two strings.\n" \
-  "\n" \
-  "distance(string1, string2)\n" \
-  "\n" \
-  "Examples (it's hard to spell Levenshtein correctly):\n" \
-  "\n" \
-  ">>> distance('Levenshtein', 'Lenvinsten')\n" \
-  "4\n" \
-  ">>> distance('Levenshtein', 'Levensthein')\n" \
-  "2\n" \
-  ">>> distance('Levenshtein', 'Levenshten')\n" \
-  "1\n" \
-  ">>> distance('Levenshtein', 'Levenshtein')\n" \
-  "0\n" \
-  "\n" \
-  "Yeah, we've managed it at last.\n"
-
-#define ratio_DESC \
-  "Compute similarity of two strings.\n" \
-  "\n" \
-  "ratio(string1, string2)\n" \
-  "\n" \
-  "The similarity is a number between 0 and 1, it's usually equal or\n" \
-  "somewhat higher than difflib.SequenceMatcher.ratio(), because it's\n" \
-  "based on real minimal edit distance.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> ratio('Hello world!', 'Holly grail!')  # doctest: +ELLIPSIS\n" \
-  "0.583333...\n" \
-  ">>> ratio('Brian', 'Jesus')\n" \
-  "0.0\n" \
-  "\n" \
-  "Really?  I thought there was some similarity.\n"
-
-#define hamming_DESC \
-  "Compute Hamming distance of two strings.\n" \
-  "\n" \
-  "hamming(string1, string2)\n" \
-  "\n" \
-  "The Hamming distance is simply the number of differing characters.\n" \
-  "That means the length of the strings must be the same.\n" \
-  "\n" \
-  "Examples:\n" \
-  ">>> hamming('Hello world!', 'Holly grail!')\n" \
-  "7\n" \
-  ">>> hamming('Brian', 'Jesus')\n" \
-  "5\n"
 
 #define jaro_DESC \
   "Compute Jaro string similarity metric of two strings.\n" \
@@ -454,9 +401,6 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
 
 #define METHODS_ITEM(x) { #x, x##_py, METH_VARARGS, x##_DESC }
 static PyMethodDef methods[] = {
-  METHODS_ITEM(distance),
-  METHODS_ITEM(ratio),
-  METHODS_ITEM(hamming),
   METHODS_ITEM(jaro),
   METHODS_ITEM(jaro_winkler),
   METHODS_ITEM(median),
@@ -539,12 +483,6 @@ typedef struct {
   SetSeqFuncUnicode u;
 } SetSeqFuncs;
 
-static long int
-levenshtein_common(PyObject *args,
-                   const char *name,
-                   size_t xcost,
-                   size_t *lensum);
-
 static int
 extract_stringlist(PyObject *list,
                    const char *name,
@@ -590,139 +528,6 @@ safe_malloc(size_t nmemb, size_t size) {
  *
  ****************************************************************************/
 /* {{{ */
-
-static long int
-levenshtein_common(PyObject *args, const char *name, size_t xcost,
-                   size_t *lensum)
-{
-  PyObject *arg1, *arg2;
-  size_t len1, len2;
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 2, &arg1, &arg2))
-    return -1;
-
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
-    lev_byte *string1, *string2;
-
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    *lensum = len1 + len2;
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
-    {
-      size_t d = lev_edit_distance(len1, string1, len2, string2, xcost);
-      if (d == (size_t)(-1)) {
-        PyErr_NoMemory();
-        return -1;
-      }
-      return d;
-    }
-  }
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
-      && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
-    Py_UNICODE *string1, *string2;
-
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
-    *lensum = len1 + len2;
-    string1 = PyUnicode_AS_UNICODE(arg1);
-    string2 = PyUnicode_AS_UNICODE(arg2);
-    {
-      size_t d = lev_u_edit_distance(len1, string1, len2, string2, xcost);
-      if (d == (size_t)(-1)) {
-        PyErr_NoMemory();
-        return -1;
-      }
-      return d;
-    }
-  }
-  else {
-    PyErr_Format(PyExc_TypeError,
-                 "%s expected two Strings or two Unicodes", name);
-    return -1;
-  }
-}
-
-static PyObject*
-distance_py(PyObject *self, PyObject *args)
-{
-  size_t lensum;
-  long int ldist;
-  LEV_UNUSED(self);
-
-  if ((ldist = levenshtein_common(args, "distance", 0, &lensum)) < 0)
-    return NULL;
-
-  return PyInt_FromLong((long)ldist);
-}
-
-static PyObject*
-ratio_py(PyObject *self, PyObject *args)
-{
-  size_t lensum;
-  long int ldist;
-  LEV_UNUSED(self);
-
-  if ((ldist = levenshtein_common(args, "ratio", 1, &lensum)) < 0)
-    return NULL;
-
-  if (lensum == 0)
-    return PyFloat_FromDouble(1.0);
-
-  return PyFloat_FromDouble((double)(lensum - ldist)/(lensum));
-}
-
-static PyObject*
-hamming_py(PyObject *self, PyObject *args)
-{
-  PyObject *arg1, *arg2;
-  const char *name = "hamming";
-  size_t len1, len2;
-  long int dist;
-  LEV_UNUSED(self);
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 2, &arg1, &arg2))
-    return NULL;
-
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
-    lev_byte *string1, *string2;
-
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    if (len1 != len2) {
-      PyErr_Format(PyExc_ValueError,
-                   "%s expected two strings of the same length", name);
-      return NULL;
-    }
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
-    dist = lev_hamming_distance(len1, string1, string2);
-    return PyInt_FromLong(dist);
-  }
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
-      && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
-    Py_UNICODE *string1, *string2;
-
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
-    if (len1 != len2) {
-      PyErr_Format(PyExc_ValueError,
-                   "%s expected two unicodes of the same length", name);
-      return NULL;
-    }
-    string1 = PyUnicode_AS_UNICODE(arg1);
-    string2 = PyUnicode_AS_UNICODE(arg2);
-    dist = lev_u_hamming_distance(len1, string1, string2);
-    return PyInt_FromLong(dist);
-  }
-  else {
-    PyErr_Format(PyExc_TypeError,
-                 "%s expected two Strings or two Unicodes", name);
-    return NULL;
-  }
-}
 
 static PyObject*
 jaro_py(PyObject *self, PyObject *args)
@@ -894,7 +699,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   }
 
   if (stringtype == 0) {
-    lev_byte *medstr = foo.s(n, sizes, strings, weights, &len);
+    lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -903,7 +708,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
     }
   }
   else if (stringtype == 1) {
-    Py_UNICODE *medstr = foo.u(n, sizes, strings, weights, &len);
+    Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -979,7 +784,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   if (stringtype == 0) {
     lev_byte *s = (lev_byte*)PyString_AS_STRING(arg1);
     size_t l = PyString_GET_SIZE(arg1);
-    lev_byte *medstr = foo.s(l, s, n, sizes, strings, weights, &len);
+    lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -990,7 +795,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   else if (stringtype == 1) {
     Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
     size_t l = PyUnicode_GET_SIZE(arg1);
-    Py_UNICODE *medstr = foo.u(l, s, n, sizes, strings, weights, &len);
+    Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
@@ -1264,12 +1069,12 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
                   name);
   }
   else if (stringtype1 == 0) {
-    r = foo.s(n1, sizes1, strings1, n2, sizes2, strings2);
+    r = foo.s(n1, sizes1, (const lev_byte**)strings1, n2, sizes2, (const lev_byte**)strings2);
     if (r < 0.0)
       PyErr_NoMemory();
   }
   else if (stringtype1 == 1) {
-    r = foo.u(n1, sizes1, strings1, n2, sizes2, strings2);
+    r = foo.u(n1, sizes1, (const Py_UNICODE**)strings1, n2, sizes2, (const Py_UNICODE**)strings2);
     if (r < 0.0)
       PyErr_NoMemory();
   }
