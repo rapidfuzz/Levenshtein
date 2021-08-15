@@ -1,9 +1,6 @@
-============
- Changelog
-============
+## Changelog
 
-v0.13.0
-------
+### v0.13.0
 * Maintainership passed to Max Bachmann
 * use faster bitparallel implementations for distance and ratio
 * avoid string copies in distance, ratio and hamming
@@ -19,15 +16,13 @@ v0.13.0
 * Fixed incorrect allocation size in lev_editops_matching_blocks and
   lev_opcodes_matching_blocks
 
-v0.12.1
--------
+### v0.12.1
 * Fixed handling of numerous possible wraparounds in calculating the size
   of memory allocations; incorrect handling of which could cause denial
   of service or even possible remote code execution in previous versions
   of the library.
 
-v0.12.0
--------
+### v0.12.0
 * Fixed a bug in StringMatcher.StringMatcher.get_matching_blocks /
   extract_editops for Python 3; now allow only `str` editops on
   both Python 2 and Python 3, for simpler and working code.
@@ -37,54 +32,44 @@ v0.12.0
   class.
 * Fixed spelling errors.
 
-v0.11.2
--------
+### v0.11.2
 * Fixed a bug in setup.py: installation would fail on Python 3 if the locale
   did not specify UTF-8 charset (Felix Yan).
 
 * Added COPYING, StringMatcher.py, gendoc.sh and NEWS in MANIFEST.in, as they
   were missing from source distributions.
 
-v0.11.1
--------
+### v0.11.1
 * Added Levenshtein.h to MANIFEST.in
 
-v0.11.0
--------
+### v0.11.0
 * Python 3 support, maintainership passed to Antti Haapala
 
-v0.10.2
--------
+### v0.10.2
 * Made python-Lehvenstein Git compatible and use setuptools for PyPi upload
 * Created HISTORY.txt and made README reST compatible
 
-v0.10.1
--------
+### v0.10.1
 * apply_edit() broken for Unicodes was fixed (thanks to Radovan Garabik)
 * subtract_edit() function was added
 
-v0.10.0
--------
+### v0.10.0
 * Hamming distance, Jaro similarity metric and Jaro-Winkler similarity
       metric were added
 * ValueErrors raised on wrong argument types were fixed to TypeErrors
 
-v0.9.0
-------
+### v0.9.0
 * a poor-but-fast generalized median method quickmedian() was added
 * some auxiliary functions added to the C api (lev_set_median_index,
       lev_editops_normalize, ...)
 
-v0.8.2
-------
+### v0.8.2
 * fixed missing `static' in the method list
 
-v0.8.1
-------
+### v0.8.1
 * some compilation problems with non-gcc were fixed
 
 v0.8.0
-------
 * median_improve(), a generalized median improving function, was added
 * an arbitrary length limitation imposed on greedy median() result was
       removed
@@ -92,8 +77,7 @@ v0.8.0
       overcomitting)
 * the documentation now passes doctest
 
-v0.7.0
-------
+### v0.7.0
 * fixed greedy median() for Unicode characters > U+FFFF, it's now usable
       with whatever integer type wchar_t happens to be
 * added missing MANIFEST
@@ -104,40 +88,34 @@ v0.7.0
       for string averaging, and difflib-like for interoperability
 * added an example SequenceMatcher-like class StringMatcher
 
-v0.6.0
-------
+### v0.6.0
 * a segfault in seqratio()/setratio() on invalid input has been fixed
       to an exception
 * optimized ratio() and distance() (about 20%)
 * Levenshtein.h header file was added to make it easier to actually use
       it as a C library
 
-v0.5.0
-------
+### v0.5.0
 * a segfault in setratio() was fixed
 * median() handles all empty strings situation more gracefully
 
-v0.4.0
-------
+### v0.4.0
 * new functions seqratio() and setratio() computing similarity between
       string sequences and sets
 * Levenshtein optimizations (affects all routines except median())
 * all Sequence objects are accepted, not just Lists
 
-v0.3.0
-------
+### v0.3.0
 * setmedian() finding set median was added
 * median() initial overhead for Unicodes was reduced
 
-v0.2.0
-------
+### v0.2.0
 * ratio() and distance() now accept both Strings and Unicodes
 * removed uratio() and udistance()
 * Levenshtein.c is now compilable as a C library (with -DNO_PYTHON)
 * a median() function finding approximate weighted median of a string
       set was added
 
-v0.1.0
-------
+### v0.1.0
 * Inital release
 

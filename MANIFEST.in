@@ -1,6 +1,6 @@
 recursive-include src/ *.cpp *.c *.h *.hpp *.py
-include README.rst
-include HISTORY.txt
+include README.md
+include HISTORY.md
 include COPYING
 global-exclude *pyc
 global-exclude *so
