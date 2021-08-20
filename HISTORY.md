@@ -1,6 +1,12 @@
 ## Changelog
 
 ### v0.13.0
+* drop Python 2 support
+* implement distance, ratio, hamming, jaro and jaro_winkler using
+  rapidfuzz instead of providing a own implementation
+
+
+### v0.13.0
 * Maintainership passed to Max Bachmann
 * use faster bitparallel implementations for distance and ratio
 * avoid string copies in distance, ratio and hamming
