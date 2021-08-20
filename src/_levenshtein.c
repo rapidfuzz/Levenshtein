@@ -352,12 +352,13 @@ static PyMethodDef methods[] = {
 
 /* opcode names, these are to be initialized in the init func,
  * indexed by LevEditType values */
-struct {
+typedef struct {
   PyObject* pystring;
   const char *cstring;
   size_t len;
-}
-static opcode_names[] = {
+} OpcodeName;
+
+static OpcodeName opcode_names[] = {
   { NULL, "equal", 0 },
   { NULL, "replace", 0 },
   { NULL, "insert", 0 },
@@ -516,7 +517,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   }
   strseq = PySequence_Fast(strlist, name);
 
-  n = PySequence_Fast_GET_SIZE(strseq);
+  n = (size_t)PySequence_Fast_GET_SIZE(strseq);
   if (n == 0) {
     Py_INCREF(Py_None);
     Py_DECREF(strseq);
@@ -542,7 +543,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyBytes_FromStringAndSize((const char*)medstr, len);
+      result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
       free(medstr);
     }
   }
@@ -551,7 +552,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyUnicode_FromUnicode(medstr, len);
+      result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
       free(medstr);
     }
   }
@@ -598,7 +599,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   }
   strseq = PySequence_Fast(strlist, name);
 
-  n = PySequence_Fast_GET_SIZE(strseq);
+  n = (size_t)PySequence_Fast_GET_SIZE(strseq);
   if (n == 0) {
     Py_INCREF(Py_None);
     Py_DECREF(strseq);
@@ -622,23 +623,23 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   Py_DECREF(strseq);
   if (stringtype == 0) {
     lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
-    size_t l = PyBytes_GET_SIZE(arg1);
+    size_t l = (size_t)PyBytes_GET_SIZE(arg1);
     lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyBytes_FromStringAndSize((const char*)medstr, len);
+      result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
       free(medstr);
     }
   }
   else if (stringtype == 1) {
     Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
-    size_t l = PyUnicode_GET_SIZE(arg1);
+    size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
     Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyUnicode_FromUnicode(medstr, len);
+      result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
       free(medstr);
     }
   }
@@ -665,7 +666,7 @@ extract_weightlist(PyObject *wlist, const char *name, size_t n)
       return NULL;
     }
     seq = PySequence_Fast(wlist, name);
-    if (PySequence_Fast_GET_SIZE(wlist) != n) {
+    if ((size_t)PySequence_Fast_GET_SIZE(wlist) != n) {
       PyErr_Format(PyExc_ValueError,
                    "%s got %i strings but %i weights",
                    name, n, PyList_GET_SIZE(wlist));
@@ -752,7 +753,7 @@ extract_stringlist(PyObject *list, const char *name,
     }
 
     strings[0] = (lev_byte*)PyBytes_AS_STRING(first);
-    sizes[0] = PyBytes_GET_SIZE(first);
+    sizes[0] = (size_t)PyBytes_GET_SIZE(first);
     for (i = 1; i < n; i++) {
       PyObject *item = PySequence_Fast_GET_ITEM(list, i);
 
@@ -764,7 +765,7 @@ extract_stringlist(PyObject *list, const char *name,
         return -1;
       }
       strings[i] = (lev_byte*)PyBytes_AS_STRING(item);
-      sizes[i] = PyBytes_GET_SIZE(item);
+      sizes[i] = (size_t)PyBytes_GET_SIZE(item);
     }
 
     *(lev_byte***)strlist = strings;
@@ -788,7 +789,7 @@ extract_stringlist(PyObject *list, const char *name,
     }
 
     strings[0] = PyUnicode_AS_UNICODE(first);
-    sizes[0] = PyUnicode_GET_SIZE(first);
+    sizes[0] = (size_t)PyUnicode_GET_SIZE(first);
     for (i = 1; i < n; i++) {
       PyObject *item = PySequence_Fast_GET_ITEM(list, i);
 
@@ -800,7 +801,7 @@ extract_stringlist(PyObject *list, const char *name,
         return -1;
       }
       strings[i] = PyUnicode_AS_UNICODE(item);
-      sizes[i] = PyUnicode_GET_SIZE(item);
+      sizes[i] = (size_t)PyUnicode_GET_SIZE(item);
     }
 
     *(Py_UNICODE***)strlist = strings;
@@ -824,7 +825,7 @@ seqratio_py(PyObject *self, PyObject *args)
     return NULL;
   if (lensum == 0)
     return PyFloat_FromDouble(1.0);
-  return PyFloat_FromDouble((lensum - r)/lensum);
+  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
 }
 
 static PyObject*
@@ -838,7 +839,7 @@ setratio_py(PyObject *self, PyObject *args)
     return NULL;
   if (lensum == 0)
     return PyFloat_FromDouble(1.0);
-  return PyFloat_FromDouble((lensum - r)/lensum);
+  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
 }
 
 static double
@@ -874,8 +875,8 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
   strseq1 = PySequence_Fast(strlist1, name);
   strseq2 = PySequence_Fast(strlist2, name);
 
-  n1 = PySequence_Fast_GET_SIZE(strseq1);
-  n2 = PySequence_Fast_GET_SIZE(strseq2);
+  n1 = (size_t)PySequence_Fast_GET_SIZE(strseq1);
+  n2 = (size_t)PySequence_Fast_GET_SIZE(strseq2);
   *lensum = n1 + n2;
   if (n1 == 0) {
     Py_DECREF(strseq1);
@@ -959,7 +960,7 @@ extract_editops(PyObject *list)
   LevEditOp *ops;
   size_t i;
   LevEditType type;
-  size_t n = PyList_GET_SIZE(list);
+  size_t n = (size_t)PyList_GET_SIZE(list);
 
   ops = (LevEditOp*)safe_malloc(n, sizeof(LevEditOp));
   if (!ops)
@@ -1000,7 +1001,7 @@ extract_opcodes(PyObject *list)
   LevOpCode *bops;
   size_t i;
   LevEditType type;
-  size_t nb = PyList_GET_SIZE(list);
+  size_t nb = (size_t)PyList_GET_SIZE(list);
 
   bops = (LevOpCode*)safe_malloc(nb, sizeof(LevOpCode));
   if (!bops)
@@ -1058,7 +1059,7 @@ editops_to_tuple_list(size_t n, LevEditOp *ops)
   PyObject *list;
   size_t i;
 
-  list = PyList_New(n);
+  list = PyList_New((Py_ssize_t)n);
   for (i = 0; i < n; i++, ops++) {
     PyObject *tuple = PyTuple_New(3);
     PyObject *is = opcode_names[ops->type].pystring;
@@ -1079,7 +1080,7 @@ matching_blocks_to_tuple_list(size_t len1, size_t len2,
   PyObject *list, *tuple;
   size_t i;
 
-  list = PyList_New(nmb + 1);
+  list = PyList_New((Py_ssize_t)(nmb + 1));
   for (i = 0; i < nmb; i++, mblocks++) {
     tuple = PyTuple_New(3);
     PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong((long)mblocks->spos));
@@ -1106,7 +1107,7 @@ get_length_of_anything(PyObject *object)
     return (size_t)len;
   }
   if (PySequence_Check(object))
-    return PySequence_Length(object);
+    return (size_t)PySequence_Length(object);
   return (size_t)-1;
 }
 
@@ -1132,7 +1133,7 @@ editops_py(PyObject *self, PyObject *args)
                   "editops first argument must be a List of edit operations");
       return NULL;
     }
-    n = PyList_GET_SIZE(arg1);
+    n = (size_t)PyList_GET_SIZE(arg1);
     if (!n) {
       Py_INCREF(arg1);
       return arg1;
@@ -1184,8 +1185,8 @@ editops_py(PyObject *self, PyObject *args)
       && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
     lev_byte *string1, *string2;
 
-    len1 = PyBytes_GET_SIZE(arg1);
-    len2 = PyBytes_GET_SIZE(arg2);
+    len1 = (size_t)PyBytes_GET_SIZE(arg1);
+    len2 = (size_t)PyBytes_GET_SIZE(arg2);
     string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
     string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
     ops = lev_editops_find(len1, string1, len2, string2, &n);
@@ -1194,8 +1195,8 @@ editops_py(PyObject *self, PyObject *args)
       && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
     Py_UNICODE *string1, *string2;
 
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
+    len1 = (size_t)PyUnicode_GET_SIZE(arg1);
+    len2 = (size_t)PyUnicode_GET_SIZE(arg2);
     string1 = PyUnicode_AS_UNICODE(arg1);
     string2 = PyUnicode_AS_UNICODE(arg2);
     ops = lev_u_editops_find(len1, string1, len2, string2, &n);
@@ -1218,7 +1219,7 @@ opcodes_to_tuple_list(size_t nb, LevOpCode *bops)
   PyObject *list;
   size_t i;
 
-  list = PyList_New(nb);
+  list = PyList_New((Py_ssize_t)nb);
   for (i = 0; i < nb; i++, bops++) {
     PyObject *tuple = PyTuple_New(5);
     PyObject *is = opcode_names[bops->type].pystring;
@@ -1255,7 +1256,7 @@ opcodes_py(PyObject *self, PyObject *args)
                   "opcodes first argument must be a List of edit operations");
       return NULL;
     }
-    n = PyList_GET_SIZE(arg1);
+    n = (size_t)PyList_GET_SIZE(arg1);
     len1 = get_length_of_anything(arg2);
     len2 = get_length_of_anything(arg3);
     if (len1 == (size_t)-1 || len2 == (size_t)-1) {
@@ -1303,8 +1304,8 @@ opcodes_py(PyObject *self, PyObject *args)
       && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
     lev_byte *string1, *string2;
 
-    len1 = PyBytes_GET_SIZE(arg1);
-    len2 = PyBytes_GET_SIZE(arg2);
+    len1 = (size_t)PyBytes_GET_SIZE(arg1);
+    len2 = (size_t)PyBytes_GET_SIZE(arg2);
     string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
     string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
     ops = lev_editops_find(len1, string1, len2, string2, &n);
@@ -1313,8 +1314,8 @@ opcodes_py(PyObject *self, PyObject *args)
       && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
     Py_UNICODE *string1, *string2;
 
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
+    len1 = (size_t)PyUnicode_GET_SIZE(arg1);
+    len2 = (size_t)PyUnicode_GET_SIZE(arg2);
     string1 = PyUnicode_AS_UNICODE(arg1);
     string2 = PyUnicode_AS_UNICODE(arg2);
     ops = lev_u_editops_find(len1, string1, len2, string2, &n);
@@ -1348,7 +1349,7 @@ inverse_py(PyObject *self, PyObject *args)
       || !PyList_Check(list))
     return NULL;
 
-  n = PyList_GET_SIZE(list);
+  n = (size_t)PyList_GET_SIZE(list);
   if (!n) {
     Py_INCREF(list);
     return list;
@@ -1390,7 +1391,7 @@ apply_edit_py(PyObject *self, PyObject *args)
                  "apply_edit first argument must be a List of edit operations");
     return NULL;
   }
-  n = PyList_GET_SIZE(list);
+  n = (size_t)PyList_GET_SIZE(list);
 
   if (PyObject_TypeCheck(arg1, &PyBytes_Type)
       && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
@@ -1400,8 +1401,8 @@ apply_edit_py(PyObject *self, PyObject *args)
       Py_INCREF(arg1);
       return arg1;
     }
-    len1 = PyBytes_GET_SIZE(arg1);
-    len2 = PyBytes_GET_SIZE(arg2);
+    len1 = (size_t)PyBytes_GET_SIZE(arg1);
+    len2 = (size_t)PyBytes_GET_SIZE(arg2);
     string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
     string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
 
@@ -1417,7 +1418,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(ops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyBytes_FromStringAndSize((const char*)s, len);
+      result = PyBytes_FromStringAndSize((const char*)s, (Py_ssize_t)len);
       free(s);
       return result;
     }
@@ -1433,7 +1434,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(bops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyBytes_FromStringAndSize((const char*)s, len);
+      result = PyBytes_FromStringAndSize((const char*)s, (Py_ssize_t)len);
       free(s);
       return result;
     }
@@ -1452,8 +1453,8 @@ apply_edit_py(PyObject *self, PyObject *args)
       Py_INCREF(arg1);
       return arg1;
     }
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
+    len1 = (size_t)PyUnicode_GET_SIZE(arg1);
+    len2 = (size_t)PyUnicode_GET_SIZE(arg2);
     string1 = PyUnicode_AS_UNICODE(arg1);
     string2 = PyUnicode_AS_UNICODE(arg2);
 
@@ -1469,7 +1470,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(ops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyUnicode_FromUnicode(s, len);
+      result = PyUnicode_FromUnicode(s, (Py_ssize_t)len);
       free(s);
       return result;
     }
@@ -1485,7 +1486,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(bops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyUnicode_FromUnicode(s, len);
+      result = PyUnicode_FromUnicode(s, (Py_ssize_t)len);
       free(s);
       return result;
     }
@@ -1523,7 +1524,7 @@ matching_blocks_py(PyObject *self, PyObject *args)
                  "a List of edit operations");
     return NULL;
   }
-  n = PyList_GET_SIZE(list);
+  n = (size_t)PyList_GET_SIZE(list);
   len1 = get_length_of_anything(arg1);
   len2 = get_length_of_anything(arg2);
   if (len1 == (size_t)-1 || len2 == (size_t)-1) {
@@ -1582,12 +1583,12 @@ subtract_edit_py(PyObject *self, PyObject *args)
       || !PyList_Check(list))
     return NULL;
 
-  ns = PyList_GET_SIZE(sub);
+  ns = (size_t)PyList_GET_SIZE(sub);
   if (!ns) {
     Py_INCREF(list);
     return list;
   }
-  n = PyList_GET_SIZE(list);
+  n = (size_t)PyList_GET_SIZE(list);
   if (!n) {
     PyErr_SetString(PyExc_ValueError,
                  "subtract_edit subsequence is not a subsequence "
@@ -1601,7 +1602,7 @@ subtract_edit_py(PyObject *self, PyObject *args)
           free(ops);
           free(osub);
 
-          if (!orem && nr == -1) {
+          if (!orem && nr == (size_t)-1) {
               PyErr_SetString(PyExc_ValueError,
                            "subtract_edit subsequence is not a subsequence "
                            "or is invalid");

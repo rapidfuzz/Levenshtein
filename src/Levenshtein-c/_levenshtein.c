@@ -182,7 +182,7 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
   /* check len1 == 1 separately */
   if (len1 == 1) {
     if (xcost)
-      return len2 + 1 - 2*(memchr(string2, *string1, len2) != NULL);
+      return len2 + 1 - 2 * (size_t)(memchr(string2, *string1, len2) != NULL);
     else
       return len2 - (memchr(string2, *string1, len2) != NULL);
   }
@@ -616,7 +616,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
   }
   mediandist[0] = 0.0;
   for (i = 0; i < n; i++)
-    mediandist[0] += lengths[i]*weights[i];
+    mediandist[0] += (double)lengths[i]*weights[i];
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
@@ -649,8 +649,8 @@ lev_greedy_median(size_t n, const size_t *lengths,
           if (x < min)
             min = x;
         }
-        minsum += min*weights[i];
-        totaldist += x*weights[i];
+        minsum += (double)min*weights[i];
+        totaldist += (double)x*weights[i];
       }
       /* is this symbol better than all the others? */
       if (minsum < minminsum) {
@@ -738,7 +738,7 @@ finish_distance_computations(size_t len1, lev_byte *string1,
   /* catch trivia case */
   if (len1 == 0) {
     for (j = 0; j < n; j++)
-      distsum += rows[j][lengths[j]]*weights[j];
+      distsum += (double)rows[j][lengths[j]]*weights[j];
     return distsum;
   }
 
@@ -757,12 +757,12 @@ finish_distance_computations(size_t len1, lev_byte *string1,
 
     /* catch trivial cases */
     if (len == 0) {
-      distsum += rowi[leni]*weights[j];
+      distsum += (double)rowi[leni]*weights[j];
       continue;
     }
     offset = rowi[0];
     if (leni == 0) {
-      distsum += (offset + len)*weights[j];
+      distsum += (double)(offset + len)*weights[j];
       continue;
     }
 
@@ -789,7 +789,7 @@ finish_distance_computations(size_t len1, lev_byte *string1,
         *(p++) = x;
       }
     }
-    distsum += weights[j]*(*end);
+    distsum += weights[j]*(double)(*end);
   }
 
   return distsum;
@@ -1250,7 +1250,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
   }
   mediandist[0] = 0.0;
   for (i = 0; i < n; i++)
-    mediandist[0] += lengths[i]*weights[i];
+    mediandist[0] += (double)lengths[i] * weights[i];
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
@@ -1283,8 +1283,8 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
           if (x < min)
             min = x;
         }
-        minsum += min*weights[i];
-        totaldist += x*weights[i];
+        minsum += (double)min * weights[i];
+        totaldist += (double)x * weights[i];
       }
       /* is this symbol better than all the others? */
       if (minsum < minminsum) {
@@ -1372,7 +1372,7 @@ finish_udistance_computations(size_t len1, lev_wchar *string1,
   /* catch trivia case */
   if (len1 == 0) {
     for (j = 0; j < n; j++)
-      distsum += rows[j][lengths[j]]*weights[j];
+      distsum += (double)rows[j][lengths[j]] * weights[j];
     return distsum;
   }
 
@@ -1391,17 +1391,17 @@ finish_udistance_computations(size_t len1, lev_wchar *string1,
 
     /* catch trivial cases */
     if (len == 0) {
-      distsum += rowi[leni]*weights[j];
+      distsum += (double)rowi[leni] * weights[j];
       continue;
     }
     offset = rowi[0];
     if (leni == 0) {
-      distsum += (offset + len)*weights[j];
+      distsum += (double)(offset + len) * weights[j];
       continue;
     }
 
     /* complete the matrix */
-    memcpy(row, rowi, (leni + 1)*sizeof(size_t));
+    memcpy(row, rowi, (leni + 1) * sizeof(size_t));
     end = row + leni;
 
     for (i = 1; i <= len; i++) {
@@ -1423,7 +1423,7 @@ finish_udistance_computations(size_t len1, lev_wchar *string1,
         *(p++) = x;
       }
     }
-    distsum += weights[j]*(*end);
+    distsum += weights[j] * (double)(*end);
   }
 
   return distsum;
@@ -1735,7 +1735,7 @@ lev_quick_median(size_t n,
    * and compute resulting string length */
   ml = wl = 0.0;
   for (i = 0; i < n; i++) {
-    ml += lengths[i]*weights[i];
+    ml += (double)lengths[i] * weights[i];
     wl += weights[i];
   }
   if (wl == 0.0)
@@ -1776,8 +1776,8 @@ lev_quick_median(size_t n,
       const lev_byte *stri = strings[i];
       double weighti = weights[i];
       size_t lengthi = lengths[i];
-      double start = lengthi/ml*j;
-      double end = start + lengthi/ml;
+      double start = (double)lengthi / ml * (double)j;
+      double end = start + (double)lengthi / ml;
       size_t istart = (size_t)floor(start);
       size_t iend = (size_t)ceil(end);
 
@@ -1787,8 +1787,8 @@ lev_quick_median(size_t n,
 
       for (k = istart+1; k < iend; k++)
         symset[stri[k]] += weighti;
-      symset[stri[istart]] += weighti*(1+istart - start);
-      symset[stri[iend-1]] -= weighti*(iend - end);
+      symset[stri[istart]] += weighti * ((double)(1 + istart) - start);
+      symset[stri[iend-1]] -= weighti * ((double)iend - end);
     }
 
     /* find the elected symbol */
@@ -1928,7 +1928,7 @@ lev_u_quick_median(size_t n,
    * and compute resulting string length */
   ml = wl = 0.0;
   for (i = 0; i < n; i++) {
-    ml += lengths[i]*weights[i];
+    ml += (double)lengths[i] * weights[i];
     wl += weights[i];
   }
   if (wl == 0.0)
@@ -1972,8 +1972,8 @@ lev_u_quick_median(size_t n,
       const lev_wchar *stri = strings[i];
       double weighti = weights[i];
       size_t lengthi = lengths[i];
-      double start = lengthi/ml*j;
-      double end = start + lengthi/ml;
+      double start = (double)lengthi / ml * (double)j;
+      double end = start + (double)lengthi / ml;
       size_t istart = (size_t)floor(start);
       size_t iend = (size_t)ceil(end);
 
@@ -1997,7 +1997,7 @@ lev_u_quick_median(size_t n,
         HQItem *p = symmap + key;
         while (p->c != c)
           p = p->n;
-        p->s += weighti*(1+istart - start);
+        p->s += weighti * ((double)(1 + istart) - start);
       }
       /* subtract what we counted from the last character but doesn't
        * actually belong here.
@@ -2009,7 +2009,7 @@ lev_u_quick_median(size_t n,
         HQItem *p = symmap + key;
         while (p->c != c)
           p = p->n;
-        p->s -= weighti*(iend - end);
+        p->s -= weighti * ((double)iend - end);
       }
     }
 
@@ -2085,26 +2085,26 @@ lev_set_median_index(size_t n, const size_t *lengths,
       if (distances[dindex] >= 0)
         d = distances[dindex];
       else {
-        d = lev_edit_distance(lengths[j], strings[j], leni, stri, 0);
+        d = (long int)lev_edit_distance(lengths[j], strings[j], leni, stri, 0);
         if (d < 0) {
           free(distances);
           return (size_t)-1;
         }
       }
-      dist += weights[j]*d;
+      dist += weights[j] * (double)d;
       j++;
     }
     j++;  /* no need to compare item with itself */
     /* above diagonal */
     while (j < n && dist < mindist) {
       size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = lev_edit_distance(lengths[j], strings[j],
+      distances[dindex] = (long int)lev_edit_distance(lengths[j], strings[j],
                                             leni, stri, 0);
       if (distances[dindex] < 0) {
         free(distances);
         return (size_t)-1;
       }
-      dist += weights[j]*distances[dindex];
+      dist += weights[j] * (double)distances[dindex];
       j++;
     }
 
@@ -2158,26 +2158,26 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
       if (distances[dindex] >= 0)
         d = distances[dindex];
       else {
-        d = lev_u_edit_distance(lengths[j], strings[j], leni, stri, 0);
+        d = (long int)lev_u_edit_distance(lengths[j], strings[j], leni, stri, 0);
         if (d < 0) {
           free(distances);
           return (size_t)-1;
         }
       }
-      dist += weights[j]*d;
+      dist += weights[j] * (double)d;
       j++;
     }
     j++;  /* no need to compare item with itself */
     /* above diagonal */
     while (j < n && dist < mindist) {
       size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = lev_u_edit_distance(lengths[j], strings[j],
+      distances[dindex] = (long int)lev_u_edit_distance(lengths[j], strings[j],
                                               leni, stri, 0);
       if (distances[dindex] < 0) {
         free(distances);
         return (size_t)-1;
       }
-      dist += weights[j]*distances[dindex];
+      dist += weights[j] * (double)distances[dindex];
       j++;
     }
 
@@ -2323,9 +2323,9 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
 
   /* catch trivial cases */
   if (n1 == 0)
-    return n2;
+    return (double)n2;
   if (n2 == 0)
-    return n1;
+    return (double)n1;
 
   /* make the inner cycle (i.e. strings2) the longer one */
   if (n1 > n2) {
@@ -2359,8 +2359,8 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
     const size_t len1 = lengths1[i - 1];
     const lev_byte **str2p = strings2;
     const size_t *len2p = lengths2;
-    double D = i - 1.0;
-    double x = i;
+    double D = (double)i - 1.0;
+    double x = (double)i;
     while (p <= end) {
       size_t l = len1 + *len2p;
       double q;
@@ -2372,7 +2372,7 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
           free(row);
           return -1.0;
         }
-        q = D + 2.0/l*d;
+        q = D + 2.0 / (double)l * (double)d;
       }
       x += 1.0;
       if (x > q)
@@ -2479,8 +2479,8 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
     const size_t len1 = lengths1[i - 1];
     const lev_wchar **str2p = strings2;
     const size_t *len2p = lengths2;
-    double D = i - 1.0;
-    double x = i;
+    double D = (double)i - 1.0;
+    double x = (double)i;
     while (p <= end) {
       size_t l = len1 + *len2p;
       double q;
@@ -2492,7 +2492,7 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
           free(row);
           return -1.0;
         }
-        q = D + 2.0/l*d;
+        q = D + 2.0 / (double)l * (double)d;
       }
       x += 1.0;
       if (x > q)
@@ -2580,7 +2580,7 @@ lev_set_distance(size_t n1, const size_t *lengths1,
           free(r);
           return -1.0;
         }
-        *(r++) = (double)d/l;
+        *(r++) = (double)d / (double)l;
       }
     }
   }
@@ -2591,7 +2591,7 @@ lev_set_distance(size_t n1, const size_t *lengths1,
     return -1.0;
 
   /* sum the set distance */
-  sum = n2 - n1;
+  sum = (double)(n2 - n1);
   for (j = 0; j < n1; j++) {
     size_t l;
     i = map[j];
@@ -2603,7 +2603,7 @@ lev_set_distance(size_t n1, const size_t *lengths1,
         free(map);
         return -1.0;
       }
-      sum += 2.0*d/l;
+      sum += 2.0 * (double)d / (double)l;
     }
   }
   free(map);
@@ -2680,7 +2680,7 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
           free(r);
           return -1.0;
         }
-        *(r++) = (double)d/l;
+        *(r++) = (double)d / (double)l;
       }
     }
   }
@@ -2691,7 +2691,7 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
     return -1.0;
 
   /* sum the set distance */
-  sum = n2 - n1;
+  sum = (double)(n2 - n1);
   for (j = 0; j < n1; j++) {
     size_t l;
     i = map[j];
@@ -2703,7 +2703,7 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
         free(map);
         return -1.0;
       }
-      sum += 2.0*d/l;
+      sum += 2.0 * (double)d / (double)l;
     }
   }
   free(map);
@@ -3092,35 +3092,37 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
   for (i = n; i; i--, ops++) {
     /* XXX: this fine with gcc internal memcpy, but when memcpy is
      * actually a function, it may be pretty slow */
-    j = ops->spos - (spos - string1) + (ops->type == LEV_EDIT_KEEP);
+    j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
     if (j) {
       memcpy(dpos, spos, j*sizeof(lev_byte));
       spos += j;
       dpos += j;
     }
     switch (ops->type) {
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       spos++;
       break;
 
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_REPLACE:
       spos++;
-      case LEV_EDIT_INSERT:
+      *(dpos++) = string2[ops->dpos];
+      break;
+    case LEV_EDIT_INSERT:
       *(dpos++) = string2[ops->dpos];
       break;
 
-      default:
+    default:
       break;
     }
   }
-  j = len1 - (spos - string1);
+  j = len1 - (size_t)(spos - string1);
   if (j) {
     memcpy(dpos, spos, j*sizeof(lev_byte));
     spos += j;
     dpos += j;
   }
 
-  *len = dpos - dst;
+  *len = (size_t)(dpos - dst);
   /* possible realloc failure is detected with *len != 0 */
   return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
 }
@@ -3164,35 +3166,37 @@ lev_u_editops_apply(size_t len1, const lev_wchar *string1,
   for (i = n; i; i--, ops++) {
     /* XXX: this is fine with gcc internal memcpy, but when memcpy is
      * actually a function, it may be pretty slow */
-    j = ops->spos - (spos - string1) + (ops->type == LEV_EDIT_KEEP);
+    j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
     if (j) {
       memcpy(dpos, spos, j*sizeof(lev_wchar));
       spos += j;
       dpos += j;
     }
     switch (ops->type) {
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       spos++;
       break;
 
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_REPLACE:
       spos++;
-      case LEV_EDIT_INSERT:
+      *(dpos++) = string2[ops->dpos];
+      break;
+    case LEV_EDIT_INSERT:
       *(dpos++) = string2[ops->dpos];
       break;
 
-      default:
+    default:
       break;
     }
   }
-  j = len1 - (spos - string1);
+  j = len1 - (size_t)(spos - string1);
   if (j) {
     memcpy(dpos, spos, j*sizeof(lev_wchar));
     spos += j;
     dpos += j;
   }
 
-  *len = dpos - dst;
+  *len = (size_t)(dpos - dst);
   /* possible realloc failure is detected with *len != 0 */
   return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
@@ -3877,7 +3881,7 @@ lev_opcodes_apply(size_t len1, const lev_byte *string1,
     dpos += bops->dend - bops->dbeg;
   }
 
-  *len = dpos - dst;
+  *len = (size_t)(dpos - dst);
   /* possible realloc failure is detected with *len != 0 */
   return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
 }
@@ -3937,7 +3941,7 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
     dpos += bops->dend - bops->dbeg;
   }
 
-  *len = dpos - dst;
+  *len = (size_t)(dpos - dst);
   /* possible realloc failure is detected with *len != 0 */
   return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
@@ -4341,7 +4345,8 @@ lev_editops_subtract(size_t n,
      * to subtract *any* sequence of the right length to get an empty sequence
      * -- clrealy incorrectly; so we have to scan the list to check */
     rem = nr ? (LevEditOp*)safe_malloc(nr, sizeof(LevEditOp)) : NULL;
-    j = nn = shift = 0;
+    j = nn = 0;
+    shift = 0;
     for (i = 0; i < ns; i++) {
         while ((ops[j].spos != sub[i].spos
                 || ops[j].dpos != sub[i].dpos
@@ -4349,7 +4354,7 @@ lev_editops_subtract(size_t n,
                && j < n) {
             if (ops[j].type != LEV_EDIT_KEEP) {
                 rem[nn] = ops[j];
-                rem[nn].spos += shift;
+                rem[nn].spos = (size_t)((int)rem[nn].spos + shift);
                 nn++;
             }
             j++;
@@ -4366,7 +4371,7 @@ lev_editops_subtract(size_t n,
     while (j < n) {
         if (ops[j].type != LEV_EDIT_KEEP) {
             rem[nn] = ops[j];
-            rem[nn].spos += shift;
+            rem[nn].spos = (size_t)((int)rem[nn].spos + shift);
             nn++;
         }
         j++;
