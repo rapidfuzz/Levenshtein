@@ -42,17 +42,7 @@ ext_modules = [
         ],
         include_dirs=[
             "src/Levenshtein-c/",
-        ],
-    ),
-    Extension(
-        name='Levenshtein.cpp_levenshtein',
-        sources=[
-            'src/cpp_levenshtein.cpp'
-        ],
-        include_dirs=[
-            "src/rapidfuzz-cpp/",
-        ],
-        language='c++'
+        ]
     ),
 ]
 

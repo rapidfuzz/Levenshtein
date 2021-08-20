@@ -445,319 +445,6 @@ lev_u_edit_distance(size_t len1, const lev_wchar *string1,
 
 /* }}} */
 
-
-/****************************************************************************
- *
- * Other simple distances: Hamming, Jaro, Jaro-Winkler
- *
- ****************************************************************************/
-/* {{{ */
-/**
- * lev_hamming_distance:
- * @len: The length of @string1 and @string2.
- * @string1: A sequence of bytes of length @len1, may contain NUL characters.
- * @string2: A sequence of bytes of length @len2, may contain NUL characters.
- *
- * Computes Hamming distance of two strings.
- *
- * The strings must have the same length.
- *
- * Returns: The Hamming distance.
- **/
-size_t
-lev_hamming_distance(size_t len,
-                     const lev_byte *string1,
-                     const lev_byte *string2)
-{
-  size_t dist, i;
-
-  dist = 0;
-  for (i = len; i; i--) {
-    if (*(string1++) != *(string2++))
-      dist++;
-  }
-
-  return dist;
-}
-
-/**
- * lev_u_hamming_distance:
- * @len: The length of @string1 and @string2.
- * @string1: A sequence of Unicode characters of length @len1, may contain NUL
- *           characters.
- * @string2: A sequence of Unicode characters of length @len2, may contain NUL
- *           characters.
- *
- * Computes Hamming distance of two strings.
- *
- * The strings must have the same length.
- *
- * Returns: The Hamming distance.
- **/
-size_t
-lev_u_hamming_distance(size_t len,
-                       const lev_wchar *string1,
-                       const lev_wchar *string2)
-{
-  size_t dist, i;
-
-  dist = 0;
-  for (i = len; i; i--) {
-    if (*(string1++) != *(string2++))
-      dist++;
-  }
-
-  return dist;
-}
-
-/**
- * lev_jaro_ratio:
- * @len1: The length of @string1.
- * @string1: A sequence of bytes of length @len1, may contain NUL characters.
- * @len2: The length of @string2.
- * @string2: A sequence of bytes of length @len2, may contain NUL characters.
- *
- * Computes Jaro string similarity metric of two strings.
- *
- * Returns: The Jaro metric of @string1 and @string2.
- **/
-double
-lev_jaro_ratio(size_t len1, const lev_byte *string1,
-               size_t len2, const lev_byte *string2)
-{
-  size_t i, j, halflen, trans, match, to;
-  size_t *idx;
-  double md;
-
-  if (len1 == 0 || len2 == 0) {
-    if (len1 == 0 && len2 == 0)
-      return 1.0;
-    return 0.0;
-  }
-  /* make len1 always shorter (or equally long) */
-  if (len1 > len2) {
-    const lev_byte *b;
-
-    b = string1;
-    string1 = string2;
-    string2 = b;
-
-    i = len1;
-    len1 = len2;
-    len2 = i;
-  }
-
-  halflen = (len2 / 2) - 1;
-  idx = (size_t*)calloc(len1, sizeof(size_t));
-  if (!idx)
-    return -1.0;
-
-  /* The literature about Jaro metric is confusing as the method of assigment
-   * of common characters is nowhere specified.  There are several possible
-   * deterministic mutual assignments of common characters of two strings.
-   * We use earliest-position method, which is however suboptimal (e.g., it
-   * gives two transpositions in jaro("Jaro", "Joaro") because of assigment
-   * of the first `o').  No reasonable algorithm for the optimal one is
-   * currently known to me. */
-  match = 0;
-  /* the part with allowed range overlapping left */
-  for (i = 0; i < halflen; i++) {
-    for (j = 0; j <= i+halflen; j++) {
-      if (string1[j] == string2[i] && !idx[j]) {
-        match++;
-        idx[j] = match;
-        break;
-      }
-    }
-  }
-  /* the part with allowed range overlapping right */
-  to = len1+halflen < len2 ? len1+halflen : len2;
-  for (i = halflen; i < to; i++) {
-    for (j = i - halflen; j < len1; j++) {
-      if (string1[j] == string2[i] && !idx[j]) {
-        match++;
-        idx[j] = match;
-        break;
-      }
-    }
-  }
-  if (!match) {
-    free(idx);
-    return 0.0;
-  }
-  /* count transpositions */
-  i = 0;
-  trans = 0;
-  for (j = 0; j < len1; j++) {
-    if (idx[j]) {
-      i++;
-      if (idx[j] != i)
-        trans++;
-    }
-  }
-  free(idx);
-
-  md = (double)match;
-  return (md/len1 + md/len2 + 1.0 - trans/md/2.0)/3.0;
-}
-
-/**
- * lev_u_jaro_ratio:
- * @len1: The length of @string1.
- * @string1: A sequence of Unicode characters of length @len1, may contain NUL
- *           characters.
- * @len2: The length of @string2.
- * @string2: A sequence of Unicode characters of length @len2, may contain NUL
- *           characters.
- *
- * Computes Jaro string similarity metric of two Unicode strings.
- *
- * Returns: The Jaro metric of @string1 and @string2.
- **/
-double
-lev_u_jaro_ratio(size_t len1, const lev_wchar *string1,
-                 size_t len2, const lev_wchar *string2)
-{
-  size_t i, j, halflen, trans, match, to;
-  size_t *idx;
-  double md;
-
-  if (len1 == 0 || len2 == 0) {
-    if (len1 == 0 && len2 == 0)
-      return 1.0;
-    return 0.0;
-  }
-  /* make len1 always shorter (or equally long) */
-  if (len1 > len2) {
-    const lev_wchar *b;
-
-    b = string1;
-    string1 = string2;
-    string2 = b;
-
-    i = len1;
-    len1 = len2;
-    len2 = i;
-  }
-
-  halflen = (len1 + 1)/2;
-  idx = (size_t*)calloc(len1, sizeof(size_t));
-  if (!idx)
-    return -1.0;
-
-  match = 0;
-  /* the part with allowed range overlapping left */
-  for (i = 0; i < halflen; i++) {
-    for (j = 0; j <= i+halflen; j++) {
-      if (string1[j] == string2[i] && !idx[j]) {
-        match++;
-        idx[j] = match;
-        break;
-      }
-    }
-  }
-  /* the part with allowed range overlapping right */
-  to = len1+halflen < len2 ? len1+halflen : len2;
-  for (i = halflen; i < to; i++) {
-    for (j = i - halflen; j < len1; j++) {
-      if (string1[j] == string2[i] && !idx[j]) {
-        match++;
-        idx[j] = match;
-        break;
-      }
-    }
-  }
-  if (!match) {
-    free(idx);
-    return 0.0;
-  }
-  /* count transpositions */
-  i = 0;
-  trans = 0;
-  for (j = 0; j < len1; j++) {
-    if (idx[j]) {
-      i++;
-      if (idx[j] != i)
-        trans++;
-    }
-  }
-  free(idx);
-
-  md = (double)match;
-  return (md/len1 + md/len2 + 1.0 - trans/md/2.0)/3.0;
-}
-
-/**
- * lev_jaro_winkler_ratio:
- * @len1: The length of @string1.
- * @string1: A sequence of bytes of length @len1, may contain NUL characters.
- * @len2: The length of @string2.
- * @string2: A sequence of bytes of length @len2, may contain NUL characters.
- * @pfweight: Prefix weight, i.e., how much weight should be given to a
- *            common prefix.
- *
- * Computes Jaro-Winkler string similarity metric of two strings.
- *
- * The formula is J+@pfweight*P*(1-J), where J is Jaro metric and P is the
- * length of common prefix.
- *
- * Returns: The Jaro-Winkler metric of @string1 and @string2.
- **/
-double
-lev_jaro_winkler_ratio(size_t len1, const lev_byte *string1,
-                       size_t len2, const lev_byte *string2,
-                       double pfweight)
-{
-  double j;
-  size_t p, m;
-
-  j = lev_jaro_ratio(len1, string1, len2, string2);
-  m = len1 < len2 ? len1 : len2;
-  for (p = 0; p < m; p++) {
-    if (string1[p] != string2[p])
-      break;
-  }
-  j += (1.0 - j)*p*pfweight;
-  return j > 1.0 ? 1.0 : j;
-}
-
-/**
- * lev_u_jaro_winkler_ratio:
- * @len1: The length of @string1.
- * @string1: A sequence of Unicode characters of length @len1, may contain NUL
- *           characters.
- * @len2: The length of @string2.
- * @string2: A sequence of Unicode characters of length @len2, may contain NUL
- *           characters.
- * @pfweight: Prefix weight, i.e., how much weight should be given to a
- *            common prefix.
- *
- * Computes Jaro-Winkler string similarity metric of two Unicode strings.
- *
- * The formula is J+@pfweight*P*(1-J), where J is Jaro metric and P is the
- * length of common prefix.
- *
- * Returns: The Jaro-Winkler metric of @string1 and @string2.
- **/
-double
-lev_u_jaro_winkler_ratio(size_t len1, const lev_wchar *string1,
-                         size_t len2, const lev_wchar *string2,
-                         double pfweight)
-{
-  double j;
-  size_t p, m;
-
-  j = lev_u_jaro_ratio(len1, string1, len2, string2);
-  m = len1 < len2 ? len1 : len2;
-  for (p = 0; p < m; p++) {
-    if (string1[p] != string2[p])
-      break;
-  }
-  j += (1.0 - j)*p*pfweight;
-  return j > 1.0 ? 1.0 : j;
-}
-/* }}} */
-
 /****************************************************************************
  *
  * Generalized medians, the greedy algorithm, and greedy improvements
@@ -777,7 +464,7 @@ make_symlist(size_t n, const size_t *lengths,
   size_t i, j;
   lev_byte *symlist;
 
-  symset = calloc(0x100, sizeof(short int));
+  symset = (short int*)calloc(0x100, sizeof(short int));
   if (!symset) {
     *symlistlen = (size_t)(-1);
     return NULL;
@@ -870,7 +557,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_byte));
+      return (lev_byte*)calloc(1, sizeof(lev_byte));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -1162,7 +849,7 @@ lev_median_improve(size_t len, const lev_byte *s,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_byte));
+      return (lev_byte*)calloc(1, sizeof(lev_byte));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -1503,7 +1190,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_wchar));
+      return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -1795,7 +1482,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_wchar));
+      return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -2535,7 +2222,7 @@ lev_set_median(size_t n, const size_t *lengths,
   result = (lev_byte*)safe_malloc(lengths[minidx], sizeof(lev_byte));
   if (!result)
     return NULL;
-  return memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
+  return (lev_byte*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
 }
 
 /**
@@ -2571,7 +2258,7 @@ lev_u_set_median(size_t n, const size_t *lengths,
   result = (lev_wchar*)safe_malloc(lengths[minidx], sizeof(lev_wchar));
   if (!result)
     return NULL;
-  return memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
+  return (lev_wchar*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
 }
 /* }}} */
 
@@ -3037,28 +2724,28 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
   size_t *zstarr, *zstarc, *zprimer;
 
   /* allocate memory */
-  covc = calloc(n1, sizeof(size_t));
+  covc = (size_t*)calloc(n1, sizeof(size_t));
   if (!covc)
     return NULL;
-  zstarc = calloc(n1, sizeof(size_t));
+  zstarc = (size_t*)calloc(n1, sizeof(size_t));
   if (!zstarc) {
     free(covc);
     return NULL;
   }
-  covr = calloc(n2, sizeof(size_t));
+  covr = (size_t*)calloc(n2, sizeof(size_t));
   if (!covr) {
     free(zstarc);
     free(covc);
     return NULL;
   }
-  zstarr = calloc(n2, sizeof(size_t));
+  zstarr = (size_t*)calloc(n2, sizeof(size_t));
   if (!zstarr) {
     free(covr);
     free(zstarc);
     free(covc);
     return NULL;
   }
-  zprimer = calloc(n2, sizeof(size_t));
+  zprimer = (size_t*)calloc(n2, sizeof(size_t));
   if (!zprimer) {
     free(zstarr);
     free(covr);
@@ -3360,7 +3047,7 @@ lev_editops_invert(size_t n, LevEditOp *ops)
     ops->dpos = ops->spos;
     ops->spos = z;
     if (ops->type & 2)
-      ops->type ^= 1;
+      ops->type = (LevEditType)(ops->type ^ 1);
   }
 }
 
@@ -3433,7 +3120,7 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_byte));
+  return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
 }
 
 /**
@@ -3505,7 +3192,7 @@ lev_u_editops_apply(size_t len1, const lev_wchar *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_wchar));
+  return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
 
 /**
@@ -4190,7 +3877,7 @@ lev_opcodes_apply(size_t len1, const lev_byte *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_byte));
+  return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
 }
 
 /**
@@ -4250,7 +3937,7 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_wchar));
+  return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
 
 /**
@@ -4278,7 +3965,7 @@ lev_opcodes_invert(size_t nb, LevOpCode *bops)
     bops->dend = bops->send;
     bops->send = z;
     if (bops->type & 2)
-      bops->type ^= 1;
+      bops->type = (LevEditType)(bops->type ^ 1);
   }
 }
 

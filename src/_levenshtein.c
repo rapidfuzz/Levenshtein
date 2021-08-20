@@ -22,32 +22,9 @@
  **/
 #define lev_wchar Py_UNICODE
 #include <Python.h>
-#include <assert.h>
 #include "_levenshtein.h"
 
 #define LEV_UNUSED(x) ((void)x)
-
-#if PY_MAJOR_VERSION >= 3
-#define LEV_PYTHON3
-#define PyString_Type PyBytes_Type
-#define PyString_GET_SIZE PyBytes_GET_SIZE
-#define PyString_AS_STRING PyBytes_AS_STRING
-#define PyString_Check PyBytes_Check
-#define PyString_FromStringAndSize PyBytes_FromStringAndSize
-#define PyString_InternFromString PyUnicode_InternFromString
-#define PyInt_AS_LONG PyLong_AsLong
-#define PyInt_FromLong PyLong_FromLong
-#define PyInt_Check PyLong_Check
-#define PY_INIT_MOD(module, name, doc, methods) \
-        static struct PyModuleDef moduledef = { \
-            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
-        module = PyModule_Create(&moduledef);
-    #define PY_MOD_INIT_FUNC_DEF(name) PyObject* PyInit_##name(void)
-#else
-    #define PY_INIT_MOD(module, name, doc, methods) \
-            Py_InitModule3(name, methods, doc);
-    #define PY_MOD_INIT_FUNC_DEF(name) void init##name(void)
-#endif /* PY_MAJOR_VERSION */
 
 /* Me thinks the second argument of PyArg_UnpackTuple() should be const.
  * Anyway I habitually pass a constant string.
@@ -56,8 +33,6 @@
 
 /* python interface and wrappers */
 /* declarations and docstrings {{{ */
-static PyObject* jaro_py(PyObject *self, PyObject *args);
-static PyObject* jaro_winkler_py(PyObject *self, PyObject *args);
 static PyObject* median_py(PyObject *self, PyObject *args);
 static PyObject* median_improve_py(PyObject *self, PyObject *args);
 static PyObject* quickmedian_py(PyObject *self, PyObject *args);
@@ -85,47 +60,6 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
   "It supports both normal and Unicode strings, but can't mix them, all\n" \
   "arguments to a function (method) have to be of the same type (or its\n" \
   "subclasses).\n"
-
-#define jaro_DESC \
-  "Compute Jaro string similarity metric of two strings.\n" \
-  "\n" \
-  "jaro(string1, string2)\n" \
-  "\n" \
-  "The Jaro string similarity metric is intended for short strings like\n" \
-  "personal last names.  It is 0 for completely different strings and\n" \
-  "1 for identical strings.\n" \
-  "\n" \
-  "Examples:\n" \
-  ">>> jaro('Brian', 'Jesus')\n" \
-  "0.0\n" \
-  ">>> jaro('Thorkel', 'Thorgier')  # doctest: +ELLIPSIS\n" \
-  "0.779761...\n" \
-  ">>> jaro('Dinsdale', 'D')  # doctest: +ELLIPSIS\n" \
-  "0.708333...\n"
-
-#define jaro_winkler_DESC \
-  "Compute Jaro string similarity metric of two strings.\n" \
-  "\n" \
-  "jaro_winkler(string1, string2[, prefix_weight])\n" \
-  "\n" \
-  "The Jaro-Winkler string similarity metric is a modification of Jaro\n" \
-  "metric giving more weight to common prefix, as spelling mistakes are\n" \
-  "more likely to occur near ends of words.\n" \
-  "\n" \
-  "The prefix weight is inverse value of common prefix length sufficient\n" \
-  "to consider the strings *identical*.  If no prefix weight is\n" \
-  "specified, 1/10 is used.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> jaro_winkler('Brian', 'Jesus')\n" \
-  "0.0\n" \
-  ">>> jaro_winkler('Thorkel', 'Thorgier')  # doctest: +ELLIPSIS\n" \
-  "0.867857...\n" \
-  ">>> jaro_winkler('Dinsdale', 'D')  # doctest: +ELLIPSIS\n" \
-  "0.7375...\n" \
-  ">>> jaro_winkler('Thorkel', 'Thorgier', 0.25)\n" \
-  "1.0\n"
 
 #define median_DESC \
   "Find an approximate generalized median string using greedy algorithm.\n" \
@@ -401,8 +335,6 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
 
 #define METHODS_ITEM(x) { #x, x##_py, METH_VARARGS, x##_DESC }
 static PyMethodDef methods[] = {
-  METHODS_ITEM(jaro),
-  METHODS_ITEM(jaro_winkler),
   METHODS_ITEM(median),
   METHODS_ITEM(median_improve),
   METHODS_ITEM(quickmedian),
@@ -530,99 +462,6 @@ safe_malloc(size_t nmemb, size_t size) {
 /* {{{ */
 
 static PyObject*
-jaro_py(PyObject *self, PyObject *args)
-{
-  PyObject *arg1, *arg2;
-  const char *name = "jaro";
-  size_t len1, len2;
-  LEV_UNUSED(self);
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 2, &arg1, &arg2))
-    return NULL;
-
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
-    lev_byte *string1, *string2;
-
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
-    return PyFloat_FromDouble(lev_jaro_ratio(len1, string1, len2, string2));
-  }
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
-      && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
-    Py_UNICODE *string1, *string2;
-
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
-    string1 = PyUnicode_AS_UNICODE(arg1);
-    string2 = PyUnicode_AS_UNICODE(arg2);
-    return PyFloat_FromDouble(lev_u_jaro_ratio(len1, string1, len2, string2));
-  }
-  else {
-    PyErr_Format(PyExc_TypeError,
-                 "%s expected two Strings or two Unicodes", name);
-    return NULL;
-  }
-}
-
-static PyObject*
-jaro_winkler_py(PyObject *self, PyObject *args)
-{
-  PyObject *arg1, *arg2, *arg3 = NULL;
-  double pfweight = 0.1;
-  const char *name = "jaro_winkler";
-  size_t len1, len2;
-  LEV_UNUSED(self);
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 3, &arg1, &arg2, &arg3))
-    return NULL;
-
-  if (arg3) {
-    if (!PyObject_TypeCheck(arg3, &PyFloat_Type)) {
-      PyErr_Format(PyExc_TypeError, "%s third argument must be a Float", name);
-      return NULL;
-    }
-    pfweight = PyFloat_AS_DOUBLE(arg3);
-    if (pfweight < 0.0) {
-      PyErr_Format(PyExc_ValueError, "%s negative prefix weight", name);
-      return NULL;
-    }
-  }
-
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
-    lev_byte *string1, *string2;
-
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
-    return PyFloat_FromDouble(lev_jaro_winkler_ratio(len1, string1,
-                                                     len2, string2,
-                                                     pfweight));
-  }
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
-      && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
-    Py_UNICODE *string1, *string2;
-
-    len1 = PyUnicode_GET_SIZE(arg1);
-    len2 = PyUnicode_GET_SIZE(arg2);
-    string1 = PyUnicode_AS_UNICODE(arg1);
-    string2 = PyUnicode_AS_UNICODE(arg2);
-    return PyFloat_FromDouble(lev_u_jaro_winkler_ratio(len1, string1,
-                                                       len2, string2,
-                                                       pfweight));
-  }
-  else {
-    PyErr_Format(PyExc_TypeError,
-                 "%s expected two Strings or two Unicodes", name);
-    return NULL;
-  }
-}
-
-static PyObject*
 median_py(PyObject *self, PyObject *args)
 {
   MedianFuncs engines = { lev_greedy_median, lev_u_greedy_median };
@@ -703,7 +542,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyString_FromStringAndSize((const char*)medstr, len);
+      result = PyBytes_FromStringAndSize((const char*)medstr, len);
       free(medstr);
     }
   }
@@ -742,7 +581,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 3, &arg1, &strlist, &wlist))
     return NULL;
 
-  if (PyObject_TypeCheck(arg1, &PyString_Type))
+  if (PyObject_TypeCheck(arg1, &PyBytes_Type))
     stringtype = 0;
   else if (PyObject_TypeCheck(arg1, &PyUnicode_Type))
     stringtype = 1;
@@ -782,13 +621,13 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
 
   Py_DECREF(strseq);
   if (stringtype == 0) {
-    lev_byte *s = (lev_byte*)PyString_AS_STRING(arg1);
-    size_t l = PyString_GET_SIZE(arg1);
+    lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
+    size_t l = PyBytes_GET_SIZE(arg1);
     lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
     if (!medstr && len)
       result = PyErr_NoMemory();
     else {
-      result = PyString_FromStringAndSize((const char*)medstr, len);
+      result = PyBytes_FromStringAndSize((const char*)medstr, len);
       free(medstr);
     }
   }
@@ -894,7 +733,7 @@ extract_stringlist(PyObject *list, const char *name,
     return -1;
   }
 
-  if (PyObject_TypeCheck(first, &PyString_Type)) {
+  if (PyObject_TypeCheck(first, &PyBytes_Type)) {
     lev_byte **strings;
     size_t *sizes;
 
@@ -912,20 +751,20 @@ extract_stringlist(PyObject *list, const char *name,
       return -1;
     }
 
-    strings[0] = (lev_byte*)PyString_AS_STRING(first);
-    sizes[0] = PyString_GET_SIZE(first);
+    strings[0] = (lev_byte*)PyBytes_AS_STRING(first);
+    sizes[0] = PyBytes_GET_SIZE(first);
     for (i = 1; i < n; i++) {
       PyObject *item = PySequence_Fast_GET_ITEM(list, i);
 
-      if (!PyObject_TypeCheck(item, &PyString_Type)) {
+      if (!PyObject_TypeCheck(item, &PyBytes_Type)) {
         free(strings);
         free(sizes);
         PyErr_Format(PyExc_TypeError,
                      "%s item #%i is not a String", name, i);
         return -1;
       }
-      strings[i] = (lev_byte*)PyString_AS_STRING(item);
-      sizes[i] = PyString_GET_SIZE(item);
+      strings[i] = (lev_byte*)PyBytes_AS_STRING(item);
+      sizes[i] = PyBytes_GET_SIZE(item);
     }
 
     *(lev_byte***)strlist = strings;
@@ -1100,7 +939,6 @@ string_to_edittype(PyObject *string)
 
   /* With Python >= 2.2, we shouldn't get here, except when the strings are
    * not Strings but subtypes. */
-#ifdef LEV_PYTHON3
   /* For Python 3, the string is an unicode object; use CompareWithAsciiString */
   if (!PyUnicode_Check(string)) {
     return LEV_EDIT_LAST;
@@ -1111,25 +949,6 @@ string_to_edittype(PyObject *string)
       return (LevEditType)i;
     }
   }
-
-#else
-  {
-    const char *s;
-    size_t len;
-
-    if (!PyString_Check(string))
-      return LEV_EDIT_LAST;
-
-    s = (lev_byte*)PyString_AS_STRING(string);
-    len = PyString_GET_SIZE(string);
-    for (i = 0; i < N_OPCODE_NAMES; i++) {
-      if (len == opcode_names[i].len
-          && memcmp(s, opcode_names[i].cstring, len) == 0) {
-        return (LevEditType)i;
-      }
-    }
-  }
-#endif
 
   return LEV_EDIT_LAST;
 }
@@ -1160,17 +979,17 @@ extract_editops(PyObject *list)
     }
     ops[i].type = type;
     item = PyTuple_GET_ITEM(tuple, 1);
-    if (!PyInt_Check(item)) {
+    if (!PyLong_Check(item)) {
       free(ops);
       return NULL;
     }
-    ops[i].spos = (size_t)PyInt_AS_LONG(item);
+    ops[i].spos = (size_t)PyLong_AsLong(item);
     item = PyTuple_GET_ITEM(tuple, 2);
-    if (!PyInt_Check(item)) {
+    if (!PyLong_Check(item)) {
       free(ops);
       return NULL;
     }
-    ops[i].dpos = (size_t)PyInt_AS_LONG(item);
+    ops[i].dpos = (size_t)PyLong_AsLong(item);
   }
   return ops;
 }
@@ -1203,32 +1022,32 @@ extract_opcodes(PyObject *list)
     bops[i].type = type;
 
     item = PyTuple_GET_ITEM(tuple, 1);
-    if (!PyInt_Check(item)) {
+    if (!PyLong_Check(item)) {
       free(bops);
       return NULL;
     }
-    bops[i].sbeg = (size_t)PyInt_AS_LONG(item);
+    bops[i].sbeg = (size_t)PyLong_AsLong(item);
 
     item = PyTuple_GET_ITEM(tuple, 2);
-    if (!PyInt_Check(item)) {
+    if (!PyLong_Check(item)) {
       free(bops);
       return NULL;
     }
-    bops[i].send = (size_t)PyInt_AS_LONG(item);
+    bops[i].send = (size_t)PyLong_AsLong(item);
 
     item = PyTuple_GET_ITEM(tuple, 3);
-    if (!PyInt_Check(item)) {
+    if (!PyLong_Check(item)) {
       free(bops);
       return NULL;
     }
-    bops[i].dbeg = (size_t)PyInt_AS_LONG(item);
+    bops[i].dbeg = (size_t)PyLong_AsLong(item);
 
     item = PyTuple_GET_ITEM(tuple, 4);
-    if (!PyInt_Check(item)) {
+    if (!PyLong_Check(item)) {
       free(bops);
       return NULL;
     }
-    bops[i].dend = (size_t)PyInt_AS_LONG(item);
+    bops[i].dend = (size_t)PyLong_AsLong(item);
   }
   return bops;
 }
@@ -1245,8 +1064,8 @@ editops_to_tuple_list(size_t n, LevEditOp *ops)
     PyObject *is = opcode_names[ops->type].pystring;
     Py_INCREF(is);
     PyTuple_SET_ITEM(tuple, 0, is);
-    PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)ops->spos));
-    PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)ops->dpos));
+    PyTuple_SET_ITEM(tuple, 1, PyLong_FromLong((long)ops->spos));
+    PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong((long)ops->dpos));
     PyList_SET_ITEM(list, i, tuple);
   }
 
@@ -1263,15 +1082,15 @@ matching_blocks_to_tuple_list(size_t len1, size_t len2,
   list = PyList_New(nmb + 1);
   for (i = 0; i < nmb; i++, mblocks++) {
     tuple = PyTuple_New(3);
-    PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)mblocks->spos));
-    PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)mblocks->dpos));
-    PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)mblocks->len));
+    PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong((long)mblocks->spos));
+    PyTuple_SET_ITEM(tuple, 1, PyLong_FromLong((long)mblocks->dpos));
+    PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong((long)mblocks->len));
     PyList_SET_ITEM(list, i, tuple);
   }
   tuple = PyTuple_New(3);
-  PyTuple_SET_ITEM(tuple, 0, PyInt_FromLong((long)len1));
-  PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)len2));
-  PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)0));
+  PyTuple_SET_ITEM(tuple, 0, PyLong_FromLong((long)len1));
+  PyTuple_SET_ITEM(tuple, 1, PyLong_FromLong((long)len2));
+  PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong((long)0));
   PyList_SET_ITEM(list, nmb, tuple);
 
   return list;
@@ -1280,8 +1099,8 @@ matching_blocks_to_tuple_list(size_t len1, size_t len2,
 static size_t
 get_length_of_anything(PyObject *object)
 {
-  if (PyInt_Check(object)) {
-    long int len = PyInt_AS_LONG(object);
+  if (PyLong_Check(object)) {
+    long int len = PyLong_AsLong(object);
     if (len < 0)
       len = -1;
     return (size_t)len;
@@ -1361,14 +1180,14 @@ editops_py(PyObject *self, PyObject *args)
   }
 
   /* find editops: we were called (s1, s2) */
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
+  if (PyObject_TypeCheck(arg1, &PyBytes_Type)
+      && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
     lev_byte *string1, *string2;
 
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
+    len1 = PyBytes_GET_SIZE(arg1);
+    len2 = PyBytes_GET_SIZE(arg2);
+    string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
+    string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
     ops = lev_editops_find(len1, string1, len2, string2, &n);
   }
   else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
@@ -1405,10 +1224,10 @@ opcodes_to_tuple_list(size_t nb, LevOpCode *bops)
     PyObject *is = opcode_names[bops->type].pystring;
     Py_INCREF(is);
     PyTuple_SET_ITEM(tuple, 0, is);
-    PyTuple_SET_ITEM(tuple, 1, PyInt_FromLong((long)bops->sbeg));
-    PyTuple_SET_ITEM(tuple, 2, PyInt_FromLong((long)bops->send));
-    PyTuple_SET_ITEM(tuple, 3, PyInt_FromLong((long)bops->dbeg));
-    PyTuple_SET_ITEM(tuple, 4, PyInt_FromLong((long)bops->dend));
+    PyTuple_SET_ITEM(tuple, 1, PyLong_FromLong((long)bops->sbeg));
+    PyTuple_SET_ITEM(tuple, 2, PyLong_FromLong((long)bops->send));
+    PyTuple_SET_ITEM(tuple, 3, PyLong_FromLong((long)bops->dbeg));
+    PyTuple_SET_ITEM(tuple, 4, PyLong_FromLong((long)bops->dend));
     PyList_SET_ITEM(list, i, tuple);
   }
 
@@ -1480,14 +1299,14 @@ opcodes_py(PyObject *self, PyObject *args)
   }
 
   /* find opcodes: we were called (s1, s2) */
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
+  if (PyObject_TypeCheck(arg1, &PyBytes_Type)
+      && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
     lev_byte *string1, *string2;
 
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
+    len1 = PyBytes_GET_SIZE(arg1);
+    len2 = PyBytes_GET_SIZE(arg2);
+    string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
+    string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
     ops = lev_editops_find(len1, string1, len2, string2, &n);
   }
   else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
@@ -1573,18 +1392,18 @@ apply_edit_py(PyObject *self, PyObject *args)
   }
   n = PyList_GET_SIZE(list);
 
-  if (PyObject_TypeCheck(arg1, &PyString_Type)
-      && PyObject_TypeCheck(arg2, &PyString_Type)) {
+  if (PyObject_TypeCheck(arg1, &PyBytes_Type)
+      && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
     lev_byte *string1, *string2, *s;
 
     if (!n) {
       Py_INCREF(arg1);
       return arg1;
     }
-    len1 = PyString_GET_SIZE(arg1);
-    len2 = PyString_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyString_AS_STRING(arg1);
-    string2 = (lev_byte*)PyString_AS_STRING(arg2);
+    len1 = PyBytes_GET_SIZE(arg1);
+    len2 = PyBytes_GET_SIZE(arg2);
+    string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
+    string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
 
     if ((ops = extract_editops(list)) != NULL) {
       if (lev_editops_check_errors(len1, len2, n, ops)) {
@@ -1598,7 +1417,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(ops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyString_FromStringAndSize((const char*)s, len);
+      result = PyBytes_FromStringAndSize((const char*)s, len);
       free(s);
       return result;
     }
@@ -1614,7 +1433,7 @@ apply_edit_py(PyObject *self, PyObject *args)
       free(bops);
       if (!s && len)
         return PyErr_NoMemory();
-      result = PyString_FromStringAndSize((const char*)s, len);
+      result = PyBytes_FromStringAndSize((const char*)s, len);
       free(s);
       return result;
     }
@@ -1802,30 +1621,27 @@ subtract_edit_py(PyObject *self, PyObject *args)
   return NULL;
 }
 
+static PyModuleDef moduledef = {
+  PyModuleDef_HEAD_INIT,
+  "_levenshtein",
+  Levenshtein_DESC,
+  -1,
+  methods
+};
 
-PY_MOD_INIT_FUNC_DEF(_levenshtein)
+PyMODINIT_FUNC PyInit__levenshtein(void)
 {
-#ifdef LEV_PYTHON3
   PyObject *module;
-#endif
   size_t i;
 
-  PY_INIT_MOD(module, "_levenshtein", Levenshtein_DESC, methods)
+  module = PyModule_Create(&moduledef);
   /* create intern strings for edit operation names */
   if (opcode_names[0].pystring)
     abort();
   for (i = 0; i < N_OPCODE_NAMES; i++) {
-#ifdef LEV_PYTHON3
-    opcode_names[i].pystring
-      = PyUnicode_InternFromString(opcode_names[i].cstring);
-#else
-    opcode_names[i].pystring
-      = PyString_InternFromString(opcode_names[i].cstring);
-#endif
+    opcode_names[i].pystring = PyUnicode_InternFromString(opcode_names[i].cstring);
     opcode_names[i].len = strlen(opcode_names[i].cstring);
   }
-#ifdef LEV_PYTHON3
   return module;
-#endif
 }
 /* }}} */
