@@ -1,9 +1,9 @@
 /* @(#) $Id: Levenshtein.h,v 1.22 2005/01/13 20:02:56 yeti Exp $ */
-#ifndef LEVENSHTEIN_HPP
-#define LEVENSHTEIN_HPP
+#ifndef LEVENSHTEIN_H
+#define LEVENSHTEIN_H
 
 #ifndef size_t
-#  include <cstdlib>
+#  include <stdlib.h>
 #endif
 
 /* In C, this is just wchar_t and unsigned char, in Python, lev_wchar can
@@ -297,4 +297,4 @@ lev_editops_subtract(size_t n,
                      const LevEditOp *sub,
                      size_t *nrem);
 
-#endif /* not LEVENSHTEIN_HPP */
+#endif /* not LEVENSHTEIN_H */

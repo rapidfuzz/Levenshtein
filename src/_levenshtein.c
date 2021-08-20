@@ -22,7 +22,7 @@
  **/
 #define lev_wchar Py_UNICODE
 #include <Python.h>
-#include "_levenshtein.hpp"
+#include "_levenshtein.h"
 
 #define LEV_UNUSED(x) ((void)x)
 
@@ -1629,7 +1629,7 @@ static PyModuleDef moduledef = {
   methods
 };
 
-PyObject* PyInit__levenshtein(void)
+PyMODINIT_FUNC PyInit__levenshtein(void)
 {
   PyObject *module;
   size_t i;

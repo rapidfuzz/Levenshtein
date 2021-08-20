@@ -82,14 +82,14 @@
  *   who knows, it probably wouldn't help much.
  *
  **/
-#include <cstring>
-#include <cmath>
+#include <string.h>
+#include <math.h>
 /* for debugging */
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 
-#include <cassert>
-#include "_levenshtein.hpp"
+#include <assert.h>
+#include "_levenshtein.h"
 
 #define LEV_UNUSED(x) ((void)x)
 
