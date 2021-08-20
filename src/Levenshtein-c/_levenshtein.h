@@ -85,38 +85,6 @@ lev_u_edit_distance(size_t len1,
                     const lev_wchar *string2,
                     int xcost);
 
-size_t
-lev_hamming_distance(size_t len,
-                     const lev_byte *string1,
-                     const lev_byte *string2);
-
-size_t
-lev_u_hamming_distance(size_t len,
-                       const lev_wchar *string1,
-                       const lev_wchar *string2);
-
-double
-lev_jaro_ratio(size_t len1,
-               const lev_byte *string1,
-               size_t len2,
-               const lev_byte *string2);
-
-double
-lev_u_jaro_ratio(size_t len1,
-                 const lev_wchar *string1,
-                 size_t len2,
-                 const lev_wchar *string2);
-
-double
-lev_jaro_winkler_ratio(size_t len1, const lev_byte *string1,
-                       size_t len2, const lev_byte *string2,
-                       double pfweight);
-
-double
-lev_u_jaro_winkler_ratio(size_t len1, const lev_wchar *string1,
-                         size_t len2, const lev_wchar *string2,
-                         double pfweight);
-
 lev_byte*
 lev_greedy_median(size_t n,
                   const size_t *lengths,

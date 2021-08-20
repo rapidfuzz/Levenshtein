@@ -8,29 +8,6 @@ on:
       - published
 
 jobs:
-  # wheels for python2.7 are not build. However it should still be tested
-  test_python27:
-    name: Test for Python2.7
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'true'
-
-      - name: Set up Python 2.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 2.7
-
-      - name: Install Levenshtein
-        run: |
-          pip install pytest hypothesis
-          pip install .
-
-      - name: Test
-        run: pytest tests
-
   build_wheels:
     name: Build wheel on ${{ matrix.os }}/auto/${{matrix.python_tag}}
     runs-on: ${{ matrix.os }}
@@ -172,7 +149,7 @@ jobs:
 
   deploy-wheels:
     if: github.event_name == 'release' && github.event.action == 'published'
-    needs: [test_python27, build_wheels, build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
+    needs: [build_wheels, build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
     name: deploy wheels to pypi
     runs-on: ubuntu-18.04
 
