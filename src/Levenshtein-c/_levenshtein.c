@@ -1014,6 +1014,7 @@ lev_median_improve(size_t len, const lev_byte *s,
   {
     lev_byte *result = (lev_byte*)safe_malloc(medlen, sizeof(lev_byte));
     if (!result) {
+      median--;
       free(median);
       return NULL;
     }
@@ -1647,6 +1648,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
   {
     lev_wchar *result = (lev_wchar*)safe_malloc(medlen, sizeof(lev_wchar));
     if (!result) {
+      median--;
       free(median);
       return NULL;
     }

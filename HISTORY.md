@@ -1,10 +1,10 @@
 ## Changelog
 
-### v0.13.0
+### v0.14.0
 * drop Python 2 support
 * implement distance, ratio, hamming, jaro and jaro_winkler using
   rapidfuzz instead of providing a own implementation
-
+* fix free of non heap object due caused by zero offset on a heap object
 
 ### v0.13.0
 * Maintainership passed to Max Bachmann
