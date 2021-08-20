@@ -1,18 +1,15 @@
 /* @(#) $Id: Levenshtein.h,v 1.22 2005/01/13 20:02:56 yeti Exp $ */
-#ifndef LEVENSHTEIN_H
-#define LEVENSHTEIN_H
+#ifndef LEVENSHTEIN_HPP
+#define LEVENSHTEIN_HPP
 
 #ifndef size_t
-#  include <stdlib.h>
+#  include <cstdlib>
 #endif
 
 /* In C, this is just wchar_t and unsigned char, in Python, lev_wchar can
  * be anything.  If you really want to cheat, define wchar_t to any integer
  * type you like before including Levenshtein.h and recompile it. */
 #ifndef lev_wchar
-#  ifndef wchar_t
-#    include <wchar.h>
-#  endif
 #  define lev_wchar wchar_t
 #endif
 typedef unsigned char lev_byte;
@@ -300,4 +297,4 @@ lev_editops_subtract(size_t n,
                      const LevEditOp *sub,
                      size_t *nrem);
 
-#endif /* not LEVENSHTEIN_H */
+#endif /* not LEVENSHTEIN_HPP */

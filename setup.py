@@ -37,12 +37,13 @@ ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
-            'src/Levenshtein-c/_levenshtein.c',
-            'src/_levenshtein.c'
+            'src/Levenshtein-c/_levenshtein.cpp',
+            'src/_levenshtein.cpp'
         ],
         include_dirs=[
             "src/Levenshtein-c/",
         ],
+        language='c++'
     ),
     Extension(
         name='Levenshtein.cpp_levenshtein',

@@ -82,14 +82,14 @@
  *   who knows, it probably wouldn't help much.
  *
  **/
-#include <string.h>
-#include <math.h>
+#include <cstring>
+#include <cmath>
 /* for debugging */
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 
-#include <assert.h>
-#include "_levenshtein.h"
+#include <cassert>
+#include "_levenshtein.hpp"
 
 #define LEV_UNUSED(x) ((void)x)
 
@@ -464,7 +464,7 @@ make_symlist(size_t n, const size_t *lengths,
   size_t i, j;
   lev_byte *symlist;
 
-  symset = calloc(0x100, sizeof(short int));
+  symset = (short int*)calloc(0x100, sizeof(short int));
   if (!symset) {
     *symlistlen = (size_t)(-1);
     return NULL;
@@ -557,7 +557,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_byte));
+      return (lev_byte*)calloc(1, sizeof(lev_byte));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -849,7 +849,7 @@ lev_median_improve(size_t len, const lev_byte *s,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_byte));
+      return (lev_byte*)calloc(1, sizeof(lev_byte));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -1190,7 +1190,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_wchar));
+      return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -1482,7 +1482,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     if (symlistlen != 0)
       return NULL;
     else
-      return calloc(1, sizeof(lev_wchar));
+      return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -2222,7 +2222,7 @@ lev_set_median(size_t n, const size_t *lengths,
   result = (lev_byte*)safe_malloc(lengths[minidx], sizeof(lev_byte));
   if (!result)
     return NULL;
-  return memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
+  return (lev_byte*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
 }
 
 /**
@@ -2258,7 +2258,7 @@ lev_u_set_median(size_t n, const size_t *lengths,
   result = (lev_wchar*)safe_malloc(lengths[minidx], sizeof(lev_wchar));
   if (!result)
     return NULL;
-  return memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
+  return (lev_wchar*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
 }
 /* }}} */
 
@@ -2724,28 +2724,28 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
   size_t *zstarr, *zstarc, *zprimer;
 
   /* allocate memory */
-  covc = calloc(n1, sizeof(size_t));
+  covc = (size_t*)calloc(n1, sizeof(size_t));
   if (!covc)
     return NULL;
-  zstarc = calloc(n1, sizeof(size_t));
+  zstarc = (size_t*)calloc(n1, sizeof(size_t));
   if (!zstarc) {
     free(covc);
     return NULL;
   }
-  covr = calloc(n2, sizeof(size_t));
+  covr = (size_t*)calloc(n2, sizeof(size_t));
   if (!covr) {
     free(zstarc);
     free(covc);
     return NULL;
   }
-  zstarr = calloc(n2, sizeof(size_t));
+  zstarr = (size_t*)calloc(n2, sizeof(size_t));
   if (!zstarr) {
     free(covr);
     free(zstarc);
     free(covc);
     return NULL;
   }
-  zprimer = calloc(n2, sizeof(size_t));
+  zprimer = (size_t*)calloc(n2, sizeof(size_t));
   if (!zprimer) {
     free(zstarr);
     free(covr);
@@ -3047,7 +3047,7 @@ lev_editops_invert(size_t n, LevEditOp *ops)
     ops->dpos = ops->spos;
     ops->spos = z;
     if (ops->type & 2)
-      ops->type ^= 1;
+      ops->type = (LevEditType)(ops->type ^ 1);
   }
 }
 
@@ -3120,7 +3120,7 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_byte));
+  return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
 }
 
 /**
@@ -3192,7 +3192,7 @@ lev_u_editops_apply(size_t len1, const lev_wchar *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_wchar));
+  return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
 
 /**
@@ -3877,7 +3877,7 @@ lev_opcodes_apply(size_t len1, const lev_byte *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_byte));
+  return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
 }
 
 /**
@@ -3937,7 +3937,7 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
 
   *len = dpos - dst;
   /* possible realloc failure is detected with *len != 0 */
-  return realloc(dst, *len*sizeof(lev_wchar));
+  return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
 
 /**
@@ -3965,7 +3965,7 @@ lev_opcodes_invert(size_t nb, LevOpCode *bops)
     bops->dend = bops->send;
     bops->send = z;
     if (bops->type & 2)
-      bops->type ^= 1;
+      bops->type = (LevEditType)(bops->type ^ 1);
   }
 }
 
