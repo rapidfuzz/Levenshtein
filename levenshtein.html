@@ -188,8 +188,22 @@
 <dt class="sig sig-object py" id="Levenshtein.distance">
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.distance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute absolute Levenshtein distance of two strings.</p>
-<p>distance(string1, string2)</p>
-<p>Examples (it’s hard to spell Levenshtein correctly):</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
+<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>distance</strong> – distance between s1 and s2</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>it’s hard to spell Levenshtein correctly</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span><span class="p">(</span><span class="s1">&#39;Levenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenvinsten&#39;</span><span class="p">)</span>
 <span class="go">4</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span><span class="p">(</span><span class="s1">&#39;Levenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Levensthein&#39;</span><span class="p">)</span>
@@ -209,14 +223,33 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.ratio">
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.ratio" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute similarity of two strings.</p>
-<p>ratio(string1, string2)</p>
-<p>The similarity is a number between 0 and 1, it’s usually equal or
-somewhat higher than difflib.SequenceMatcher.ratio(), because it’s
-based on real minimal edit distance.</p>
-<p>Examples:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ratio</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">,</span> <span class="s1">&#39;Holly grail!&#39;</span><span class="p">)</span>  
-<span class="go">0.583333...</span>
+<dd><p>Compute similarity of two strings using the InDel distance.
+The InDel distance is similar to the Levenshtein distance with the following
+weights:
+- Insertion: 1
+- Deletion: 1
+- Substitution: 2</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
+<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The similarity is usually equal or somewhat higher than
+difflib.SequenceMatcher.ratio(), because it’s
+based on the real minimal edit distance.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ratio</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">,</span> <span class="s1">&#39;Holly grail!&#39;</span><span class="p">)</span>
+<span class="go">0.583333</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ratio</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
 <span class="go">0.0</span>
 </pre></div>
@@ -230,15 +263,33 @@ based on real minimal edit distance.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.hamming">
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.hamming" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute Hamming distance of two strings.</p>
-<p>hamming(string1, string2)</p>
-<p>The Hamming distance is simply the number of differing characters.
+<dd><p>Compute Hamming distance of two strings.
+The Hamming distance is simply the number of differing characters.
 That means the length of the strings must be the same.</p>
-<p>Examples:
-&gt;&gt;&gt; hamming(‘Hello world!’, ‘Holly grail!’)
-7
-&gt;&gt;&gt; hamming(‘Brian’, ‘Jesus’)
-5</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
+<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>distance</strong> – distance between s1 and s2</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If s1 and s2 have a different length</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hamming</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">,</span> <span class="s1">&#39;Holly grail!&#39;</span><span class="p">)</span>
+<span class="go">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hamming</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
+<span class="go">5</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -246,19 +297,33 @@ That means the length of the strings must be the same.</p>
 <h2>jaro<a class="headerlink" href="#jaro" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.jaro">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute Jaro string similarity metric of two strings.</p>
-<p>jaro(string1, string2)</p>
-<p>The Jaro string similarity metric is intended for short strings like
-personal last names.  It is 0 for completely different strings and
-1 for identical strings.</p>
-<p>Examples:
-&gt;&gt;&gt; jaro(‘Brian’, ‘Jesus’)
-0.0
-&gt;&gt;&gt; jaro(‘Thorkel’, ‘Thorgier’)  # doctest: +ELLIPSIS
-0.779761…
-&gt;&gt;&gt; jaro(‘Dinsdale’, ‘D’)  # doctest: +ELLIPSIS
-0.708333…</p>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Jaro string similarity metric of two strings.
+The Jaro string similarity metric is intended for short strings like
+personal last names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
+<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jaro</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">)</span>  
+<span class="go">0.779761...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro</span><span class="p">(</span><span class="s1">&#39;Dinsdale&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>  
+<span class="go">0.708333...</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
@@ -266,23 +331,45 @@ personal last names.  It is 0 for completely different strings and
 <h2>jaro_winkler<a class="headerlink" href="#jaro-winkler" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.jaro_winkler">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro_winkler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro_winkler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute Jaro string similarity metric of two strings.</p>
-<p>jaro_winkler(string1, string2[, prefix_weight])</p>
-<p>The Jaro-Winkler string similarity metric is a modification of Jaro
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro_winkler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro_winkler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Jaro string similarity metric of two strings.
+The Jaro-Winkler string similarity metric is a modification of Jaro
 metric giving more weight to common prefix, as spelling mistakes are
 more likely to occur near ends of words.</p>
 <p>The prefix weight is inverse value of common prefix length sufficient
 to consider the strings <em>identical</em>.  If no prefix weight is
 specified, 1/10 is used.</p>
-<p>Examples:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
+<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+<li><p><strong>prefix_weight</strong> (<em>float</em><em>, </em><em>optional</em>) – weight used for the common prefix of the two strings.
+Has to be between 0 and 0.25. Default is 0.1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If prefix_weight is invalid</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
 <span class="go">0.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">)</span>  
-<span class="go">0.867857...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Dinsdale&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>  
-<span class="go">0.7375...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">)</span>
+<span class="go">0.867857</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Dinsdale&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
+<span class="go">0.7375</span>
+</pre></div>
+</div>
+<p>When using a prefix_weight of 0.25 any all strings with a common prefix of 4
+will have a similarity of 1.0</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
 <span class="go">1.0</span>
 </pre></div>
 </div>
