@@ -68,19 +68,23 @@ typedef struct {
   size_t len;
 } LevMatchingBlock;
 
-size_t
-lev_edit_distance(size_t len1,
-                  const lev_byte *string1,
-                  size_t len2,
-                  const lev_byte *string2,
-                  int xcost);
+static void *
+safe_malloc(size_t nmemb, size_t size) {
+  /* extra-conservative overflow check */
+  if (SIZE_MAX / size <= nmemb) {
+    return NULL;
+  }
+  return malloc(nmemb * size);
+}
 
-size_t
-lev_u_edit_distance(size_t len1,
-                    const lev_wchar *string1,
-                    size_t len2,
-                    const lev_wchar *string2,
-                    int xcost);
+static void *
+safe_malloc_3(size_t nmemb1, size_t nmemb2, size_t size) {
+  /* extra-conservative overflow check */
+  if (SIZE_MAX / size <= nmemb2) {
+    return NULL;
+  }
+  return safe_malloc(nmemb1, nmemb2 * size);
+}
 
 lev_byte*
 lev_greedy_median(size_t n,

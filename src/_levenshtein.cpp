@@ -22,7 +22,7 @@
  **/
 #define lev_wchar Py_UNICODE
 #include <Python.h>
-#include "_levenshtein.h"
+#include "_levenshtein.hpp"
 
 #define LEV_UNUSED(x) ((void)x)
 
@@ -39,9 +39,6 @@ static PyObject* quickmedian_py(PyObject *self, PyObject *args);
 static PyObject* setmedian_py(PyObject *self, PyObject *args);
 static PyObject* seqratio_py(PyObject *self, PyObject *args);
 static PyObject* setratio_py(PyObject *self, PyObject *args);
-static PyObject* editops_py(PyObject *self, PyObject *args);
-static PyObject* opcodes_py(PyObject *self, PyObject *args);
-static PyObject* inverse_py(PyObject *self, PyObject *args);
 static PyObject* apply_edit_py(PyObject *self, PyObject *args);
 static PyObject* matching_blocks_py(PyObject *self, PyObject *args);
 static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
@@ -178,70 +175,6 @@ static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
   "No, even reordering doesn't help the tinny words to match the\n" \
   "woody ones.\n"
 
-#define editops_DESC \
-  "Find sequence of edit operations transforming one string to another.\n" \
-  "\n" \
-  "editops(source_string, destination_string)\n" \
-  "editops(edit_operations, source_length, destination_length)\n" \
-  "\n" \
-  "The result is a list of triples (operation, spos, dpos), where\n" \
-  "operation is one of 'equal', 'replace', 'insert', or 'delete';  spos\n" \
-  "and dpos are position of characters in the first (source) and the\n" \
-  "second (destination) strings.  These are operations on signle\n" \
-  "characters.  In fact the returned list doesn't contain the 'equal',\n" \
-  "but all the related functions accept both lists with and without\n" \
-  "'equal's.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> editops('spam', 'park')\n" \
-  "[('delete', 0, 0), ('insert', 3, 2), ('replace', 3, 3)]\n" \
-  "\n" \
-  "The alternate form editops(opcodes, source_string, destination_string)\n" \
-  "can be used for conversion from opcodes (5-tuples) to editops (you can\n" \
-  "pass strings or their lengths, it doesn't matter).\n"
-
-#define opcodes_DESC \
-  "Find sequence of edit operations transforming one string to another.\n" \
-  "\n" \
-  "opcodes(source_string, destination_string)\n" \
-  "opcodes(edit_operations, source_length, destination_length)\n" \
-  "\n" \
-  "The result is a list of 5-tuples with the same meaning as in\n" \
-  "SequenceMatcher's get_opcodes() output.  But since the algorithms\n" \
-  "differ, the actual sequences from Levenshtein and SequenceMatcher\n" \
-  "may differ too.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> for x in opcodes('spam', 'park'):\n" \
-  "...     print(x)\n" \
-  "...\n" \
-  "('delete', 0, 1, 0, 0)\n" \
-  "('equal', 1, 3, 0, 2)\n" \
-  "('insert', 3, 3, 2, 3)\n" \
-  "('replace', 3, 4, 3, 4)\n" \
-  "\n" \
-  "The alternate form opcodes(editops, source_string, destination_string)\n" \
-  "can be used for conversion from editops (triples) to opcodes (you can\n" \
-  "pass strings or their lengths, it doesn't matter).\n"
-
-#define inverse_DESC \
-  "Invert the sense of an edit operation sequence.\n" \
-  "\n" \
-  "inverse(edit_operations)\n" \
-  "\n" \
-  "In other words, it returns a list of edit operations transforming the\n" \
-  "second (destination) string to the first (source).  It can be used\n" \
-  "with both editops and opcodes.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> inverse(editops('spam', 'park'))\n" \
-  "[('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]\n" \
-  ">>> editops('park', 'spam')\n" \
-  "[('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]\n"
-
 #define apply_edit_DESC \
   "Apply a sequence of edit operations to a string.\n" \
   "\n" \
@@ -341,9 +274,6 @@ static PyMethodDef methods[] = {
   METHODS_ITEM(setmedian),
   METHODS_ITEM(seqratio),
   METHODS_ITEM(setratio),
-  METHODS_ITEM(editops),
-  METHODS_ITEM(opcodes),
-  METHODS_ITEM(inverse),
   METHODS_ITEM(apply_edit),
   METHODS_ITEM(matching_blocks),
   METHODS_ITEM(subtract_edit),
@@ -443,15 +373,6 @@ setseq_common(PyObject *args,
               const char *name,
               SetSeqFuncs foo,
               size_t *lensum);
-
-static void *
-safe_malloc(size_t nmemb, size_t size) {
-  /* extra-conservative overflow check */
-  if (SIZE_MAX / size <= nmemb) {
-    return NULL;
-  }
-  return malloc(nmemb * size);
-}
 
 /* }}} */
 
@@ -1112,108 +1033,6 @@ get_length_of_anything(PyObject *object)
 }
 
 static PyObject*
-editops_py(PyObject *self, PyObject *args)
-{
-  PyObject *arg1, *arg2, *arg3 = NULL;
-  PyObject *oplist;
-  size_t len1, len2, n;
-  LevEditOp *ops;
-  LevOpCode *bops;
-  LEV_UNUSED(self);
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX("editops"), 2, 3,
-                         &arg1, &arg2, &arg3)) {
-    return NULL;
-  }
-
-  /* convert: we were called (bops, s1, s2) */
-  if (arg3) {
-    if (!PyList_Check(arg1)) {
-      PyErr_SetString(PyExc_ValueError,
-                  "editops first argument must be a List of edit operations");
-      return NULL;
-    }
-    n = (size_t)PyList_GET_SIZE(arg1);
-    if (!n) {
-      Py_INCREF(arg1);
-      return arg1;
-    }
-    len1 = get_length_of_anything(arg2);
-    len2 = get_length_of_anything(arg3);
-    if (len1 == (size_t)-1 || len2 == (size_t)-1) {
-      PyErr_SetString(PyExc_ValueError,
-                  "editops second and third argument must specify sizes");
-      return NULL;
-    }
-
-    if ((bops = extract_opcodes(arg1)) != NULL) {
-      if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-        PyErr_SetString(PyExc_ValueError,
-                    "editops edit operation list is invalid");
-        free(bops);
-        return NULL;
-      }
-      ops = lev_opcodes_to_editops(n, bops, &n, 0); /* XXX: different n's! */
-      if (!ops && n) {
-        free(bops);
-        return PyErr_NoMemory();
-      }
-      oplist = editops_to_tuple_list(n, ops);
-      free(ops);
-      free(bops);
-      return oplist;
-    }
-    if ((ops = extract_editops(arg1)) != NULL) {
-      if (lev_editops_check_errors(len1, len2, n, ops)) {
-        PyErr_SetString(PyExc_ValueError,
-                    "editops edit operation list is invalid");
-        free(ops);
-        return NULL;
-      }
-      free(ops);
-      Py_INCREF(arg1);  /* editops -> editops is identity */
-      return arg1;
-    }
-    if (!PyErr_Occurred())
-      PyErr_SetString(PyExc_TypeError,
-                  "editops first argument must be a List of edit operations");
-    return NULL;
-  }
-
-  /* find editops: we were called (s1, s2) */
-  if (PyObject_TypeCheck(arg1, &PyBytes_Type)
-      && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
-    lev_byte *string1, *string2;
-
-    len1 = (size_t)PyBytes_GET_SIZE(arg1);
-    len2 = (size_t)PyBytes_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
-    string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
-    ops = lev_editops_find(len1, string1, len2, string2, &n);
-  }
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
-      && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
-    Py_UNICODE *string1, *string2;
-
-    len1 = (size_t)PyUnicode_GET_SIZE(arg1);
-    len2 = (size_t)PyUnicode_GET_SIZE(arg2);
-    string1 = PyUnicode_AS_UNICODE(arg1);
-    string2 = PyUnicode_AS_UNICODE(arg2);
-    ops = lev_u_editops_find(len1, string1, len2, string2, &n);
-  }
-  else {
-    PyErr_SetString(PyExc_TypeError,
-                 "editops expected two Strings or two Unicodes");
-    return NULL;
-  }
-  if (!ops && n)
-    return PyErr_NoMemory();
-  oplist = editops_to_tuple_list(n, ops);
-  free(ops);
-  return oplist;
-}
-
-static PyObject*
 opcodes_to_tuple_list(size_t nb, LevOpCode *bops)
 {
   PyObject *list;
@@ -1233,144 +1052,6 @@ opcodes_to_tuple_list(size_t nb, LevOpCode *bops)
   }
 
   return list;
-}
-
-static PyObject*
-opcodes_py(PyObject *self, PyObject *args)
-{
-  PyObject *arg1, *arg2, *arg3 = NULL;
-  PyObject *oplist;
-  size_t len1, len2, n, nb;
-  LevEditOp *ops;
-  LevOpCode *bops;
-  LEV_UNUSED(self);
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX("opcodes"), 2, 3,
-                         &arg1, &arg2, &arg3))
-    return NULL;
-
-  /* convert: we were called (ops, s1, s2) */
-  if (arg3) {
-    if (!PyList_Check(arg1)) {
-      PyErr_SetString(PyExc_TypeError,
-                  "opcodes first argument must be a List of edit operations");
-      return NULL;
-    }
-    n = (size_t)PyList_GET_SIZE(arg1);
-    len1 = get_length_of_anything(arg2);
-    len2 = get_length_of_anything(arg3);
-    if (len1 == (size_t)-1 || len2 == (size_t)-1) {
-      PyErr_SetString(PyExc_ValueError,
-                  "opcodes second and third argument must specify sizes");
-      return NULL;
-    }
-
-    if ((ops = extract_editops(arg1)) != NULL) {
-      if (lev_editops_check_errors(len1, len2, n, ops)) {
-        PyErr_SetString(PyExc_ValueError,
-                    "opcodes edit operation list is invalid");
-        free(ops);
-        return NULL;
-      }
-      bops = lev_editops_to_opcodes(n, ops, &n, len1, len2);  /* XXX: n != n */
-      if (!bops && n) {
-        free(ops);
-        return PyErr_NoMemory();
-      }
-      oplist = opcodes_to_tuple_list(n, bops);
-      free(bops);
-      free(ops);
-      return oplist;
-    }
-    if ((bops = extract_opcodes(arg1)) != NULL) {
-      if (lev_opcodes_check_errors(len1, len2, n, bops)) {
-        PyErr_SetString(PyExc_ValueError,
-                    "opcodes edit operation list is invalid");
-        free(bops);
-        return NULL;
-      }
-      free(bops);
-      Py_INCREF(arg1);  /* opcodes -> opcodes is identity */
-      return arg1;
-    }
-    if (!PyErr_Occurred())
-      PyErr_SetString(PyExc_TypeError,
-                  "opcodes first argument must be a List of edit operations");
-    return NULL;
-  }
-
-  /* find opcodes: we were called (s1, s2) */
-  if (PyObject_TypeCheck(arg1, &PyBytes_Type)
-      && PyObject_TypeCheck(arg2, &PyBytes_Type)) {
-    lev_byte *string1, *string2;
-
-    len1 = (size_t)PyBytes_GET_SIZE(arg1);
-    len2 = (size_t)PyBytes_GET_SIZE(arg2);
-    string1 = (lev_byte*)PyBytes_AS_STRING(arg1);
-    string2 = (lev_byte*)PyBytes_AS_STRING(arg2);
-    ops = lev_editops_find(len1, string1, len2, string2, &n);
-  }
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type)
-      && PyObject_TypeCheck(arg2, &PyUnicode_Type)) {
-    Py_UNICODE *string1, *string2;
-
-    len1 = (size_t)PyUnicode_GET_SIZE(arg1);
-    len2 = (size_t)PyUnicode_GET_SIZE(arg2);
-    string1 = PyUnicode_AS_UNICODE(arg1);
-    string2 = PyUnicode_AS_UNICODE(arg2);
-    ops = lev_u_editops_find(len1, string1, len2, string2, &n);
-  }
-  else {
-    PyErr_SetString(PyExc_TypeError,
-                 "opcodes expected two Strings or two Unicodes");
-    return NULL;
-  }
-  if (!ops && n)
-    return PyErr_NoMemory();
-  bops = lev_editops_to_opcodes(n, ops, &nb, len1, len2);
-  free(ops);
-  if (!bops && nb)
-    return PyErr_NoMemory();
-  oplist = opcodes_to_tuple_list(nb, bops);
-  free(bops);
-  return oplist;
-}
-
-static PyObject*
-inverse_py(PyObject *self, PyObject *args)
-{
-  PyObject *list, *result;
-  size_t n;
-  LevEditOp *ops;
-  LevOpCode *bops;
-  LEV_UNUSED(self);
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX("inverse"), 1, 1, &list)
-      || !PyList_Check(list))
-    return NULL;
-
-  n = (size_t)PyList_GET_SIZE(list);
-  if (!n) {
-    Py_INCREF(list);
-    return list;
-  }
-  if ((ops = extract_editops(list)) != NULL) {
-    lev_editops_invert(n, ops);
-    result = editops_to_tuple_list(n, ops);
-    free(ops);
-    return result;
-  }
-  if ((bops = extract_opcodes(list)) != NULL) {
-    lev_opcodes_invert(n, bops);
-    result = opcodes_to_tuple_list(n, bops);
-    free(bops);
-    return result;
-  }
-
-  if (!PyErr_Occurred())
-    PyErr_SetString(PyExc_TypeError,
-                "inverse expected a list of edit operations");
-  return NULL;
 }
 
 static PyObject*

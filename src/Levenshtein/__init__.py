@@ -27,12 +27,15 @@ from Levenshtein._levenshtein import (
     setmedian,
     seqratio,
     setratio,
-    editops,
-    opcodes,
-    inverse,
     apply_edit,
     matching_blocks,
     subtract_edit
+)
+
+from Levenshtein.cpp_levenshtein import (
+    inverse,
+    editops,
+    opcodes
 )
 
 def distance(string1, string2):

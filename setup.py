@@ -6,7 +6,7 @@ class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
         'msvc': ['/EHsc', '/O2', '/W4'],
-        'unix': ['-O3', '-Wextra', '-Wall', '-Wconversion', '-g0'],
+        'unix': ['-std=c++11', '-O3', '-Wextra', '-Wall', '-Wconversion', '-g0'],
     }
     l_opts = {
         'msvc': [],
@@ -29,16 +29,24 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args += opts
             ext.extra_link_args += link_opts
-            if ext.language == 'c++' and ct == 'unix':
-                ext.extra_compile_args.append('-std=c++11')
         build_ext.build_extensions(self)
 
 ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
-            'src/Levenshtein-c/_levenshtein.c',
-            'src/_levenshtein.c'
+            'src/Levenshtein-c/_levenshtein.cpp',
+            'src/_levenshtein.cpp'
+        ],
+        include_dirs=[
+            "src/Levenshtein-c/",
+        ]
+    ),
+    Extension(
+        name='Levenshtein.cpp_levenshtein',
+        sources=[
+            'src/Levenshtein-c/_levenshtein.cpp',
+            'src/cpp_levenshtein.cpp'
         ],
         include_dirs=[
             "src/Levenshtein-c/",
