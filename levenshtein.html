@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Levenshtein module &mdash; Levenshtein 0.13.0 documentation</title>
+  <title>Levenshtein module &mdash; Levenshtein 0.14.0 documentation</title>
   
 
   
@@ -616,16 +616,17 @@ such a tricks, because it has to always span over complete strings,
 subsets can be created by carefully replacing blocks with ‘equal’
 blocks, or by enlarging ‘equal’ block at the expense of other blocks
 and adjusting the other blocks accordingly.</p>
-<p>Examples:
-&gt;&gt;&gt; a, b = ‘spam and eggs’, ‘foo and bar’
-&gt;&gt;&gt; e = opcodes(a, b)
-&gt;&gt;&gt; apply_edit(inverse(e), b, a)
-‘spam and eggs’
-&gt;&gt;&gt; e[4] = (‘equal’, 10, 13, 8, 11)
-&gt;&gt;&gt; e
-[(‘delete’, 0, 1, 0, 0), (‘replace’, 1, 4, 0, 3), (‘equal’, 4, 9, 3, 8), (‘delete’, 9, 10, 8, 8), (‘equal’, 10, 13, 8, 11)]
-&gt;&gt;&gt; apply_edit(e, a, b)
-‘foo and ggs’</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="s1">&#39;spam and eggs&#39;</span><span class="p">,</span> <span class="s1">&#39;foo and bar&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">opcodes</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">apply_edit</span><span class="p">(</span><span class="n">inverse</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+<span class="go">&#39;spam and eggs&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span>
+<span class="go">[(&#39;delete&#39;, 0, 1, 0, 0), (&#39;replace&#39;, 1, 4, 0, 3), (&#39;equal&#39;, 4, 9, 3, 8), (&#39;delete&#39;, 9, 10, 8, 8), (&#39;equal&#39;, 10, 13, 8, 11)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">apply_edit</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="go">&#39;foo and ggs&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
