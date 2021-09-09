@@ -514,7 +514,7 @@ woody ones.</p>
 <h2>editops<a class="headerlink" href="#editops" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.editops">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">editops</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.editops" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">editops</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.editops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find sequence of edit operations transforming one string to another.</p>
 <p>editops(source_string, destination_string)
 editops(edit_operations, source_length, destination_length)</p>
@@ -525,7 +525,7 @@ second (destination) strings.  These are operations on signle
 characters.  In fact the returned list doesn’t contain the ‘equal’,
 but all the related functions accept both lists with and without
 ‘equal’s.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">)</span>
 <span class="go">[(&#39;delete&#39;, 0, 0), (&#39;insert&#39;, 3, 2), (&#39;replace&#39;, 3, 3)]</span>
 </pre></div>
@@ -540,7 +540,7 @@ pass strings or their lengths, it doesn’t matter).</p>
 <h2>opcodes<a class="headerlink" href="#opcodes" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.opcodes">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">opcodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.opcodes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">opcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.opcodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find sequence of edit operations transforming one string to another.</p>
 <p>opcodes(source_string, destination_string)
 opcodes(edit_operations, source_length, destination_length)</p>
@@ -548,7 +548,7 @@ opcodes(edit_operations, source_length, destination_length)</p>
 SequenceMatcher’s get_opcodes() output.  But since the algorithms
 differ, the actual sequences from Levenshtein and SequenceMatcher
 may differ too.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">opcodes</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="gp">...</span>
@@ -568,13 +568,23 @@ pass strings or their lengths, it doesn’t matter).</p>
 <h2>inverse<a class="headerlink" href="#inverse" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.inverse">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.inverse" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edit_operations</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.inverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Invert the sense of an edit operation sequence.</p>
-<p>inverse(edit_operations)</p>
 <p>In other words, it returns a list of edit operations transforming the
 second (destination) string to the first (source).  It can be used
 with both editops and opcodes.</p>
-<p>Examples:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>edit_operations</strong> (<em>list</em><em>[</em><em>]</em>) – edit operations to invert</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>edit_operations</strong> – inverted edit operations</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list[]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inverse</span><span class="p">(</span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">))</span>
 <span class="go">[(&#39;insert&#39;, 0, 0), (&#39;delete&#39;, 2, 3), (&#39;replace&#39;, 3, 3)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;park&#39;</span><span class="p">,</span> <span class="s1">&#39;spam&#39;</span><span class="p">)</span>
@@ -588,12 +598,12 @@ with both editops and opcodes.</p>
 <h2>apply_edit<a class="headerlink" href="#apply-edit" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.apply_edit">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">apply_edit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.apply_edit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">apply_edit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edit_operations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.apply_edit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a sequence of edit operations to a string.</p>
 <p>apply_edit(edit_operations, source_string, destination_string)</p>
 <p>In the case of editops, the sequence can be arbitrary ordered subset
 of the edit sequence transforming source_string to destination_string.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">editops</span><span class="p">(</span><span class="s1">&#39;man&#39;</span><span class="p">,</span> <span class="s1">&#39;scotsman&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">apply_edit</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s1">&#39;man&#39;</span><span class="p">,</span> <span class="s1">&#39;scotsman&#39;</span><span class="p">)</span>
 <span class="go">&#39;scotsman&#39;</span>
@@ -623,14 +633,25 @@ and adjusting the other blocks accordingly.</p>
 <h2>matching_blocks<a class="headerlink" href="#matching-blocks" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.matching_blocks">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">matching_blocks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.matching_blocks" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">matching_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edit_operations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.matching_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find identical blocks in two strings.</p>
-<p>matching_blocks(edit_operations, source_length, destination_length)</p>
-<p>The result is a list of triples with the same meaning as in
-SequenceMatcher’s get_matching_blocks() output.  It can be used with
-both editops and opcodes.  The second and third arguments don’t
-have to be actually strings, their lengths are enough.</p>
-<p>Examples:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edit_operations</strong> (<em>list</em><em>[</em><em>]</em>) – editops or opcodes created for the source and destination string</p></li>
+<li><p><strong>source_string</strong> (<em>str</em><em> | </em><em>int</em>) – source string or the length of the source string</p></li>
+<li><p><strong>destination_string</strong> (<em>str</em><em> | </em><em>int</em>) – destination string or the length of the destination string</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>matching_blocks</strong> – List of triples with the same meaning as in SequenceMatcher’s
+get_matching_blocks() output.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list[]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">matching_blocks</span><span class="p">(</span><span class="n">editops</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="go">[(1, 0, 2), (4, 4, 0)]</span>
@@ -654,7 +675,7 @@ compatibility with difflib which always emits it.</p>
 <h2>subtract_edit<a class="headerlink" href="#subtract-edit" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.subtract_edit">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">subtract_edit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.subtract_edit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">subtract_edit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edit_operations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.subtract_edit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Subtract an edit subsequence from a sequence.</p>
 <p>subtract_edit(edit_operations, subsequence)</p>
 <p>The result is equivalent to
@@ -668,7 +689,7 @@ next to the same character).</p>
 edit_operations.</p>
 <p>Note this function does not accept difflib-style opcodes as no one in
 his right mind wants to create subsequences from them.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">editops</span><span class="p">(</span><span class="s1">&#39;man&#39;</span><span class="p">,</span> <span class="s1">&#39;scotsman&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">e1</span> <span class="o">=</span> <span class="n">e</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bastard</span> <span class="o">=</span> <span class="n">apply_edit</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="s1">&#39;man&#39;</span><span class="p">,</span> <span class="s1">&#39;scotsman&#39;</span><span class="p">)</span>
