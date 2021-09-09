@@ -6,17 +6,12 @@ class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
         'msvc': ['/EHsc', '/O2', '/W4'],
-        'unix': ['-std=c++11', '-O3', '-Wextra', '-Wall', '-Wconversion', '-g0'],
+        'unix': ['-O3', '-Wextra', '-Wall', '-Wconversion', '-g0'],
     }
     l_opts = {
         'msvc': [],
         'unix': [],
     }
-
-    if sys.platform == 'darwin':
-        darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
-        c_opts['unix'] += darwin_opts
-        l_opts['unix'] += darwin_opts
 
     def build_extensions(self):
         ct = self.compiler.compiler_type
@@ -35,18 +30,18 @@ ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
-            'src/Levenshtein-c/_levenshtein.cpp',
-            'src/_levenshtein.cpp'
+            'src/Levenshtein-c/_levenshtein.c',
+            'src/_levenshtein.c'
         ],
         include_dirs=[
             "src/Levenshtein-c/",
         ]
     ),
     Extension(
-        name='Levenshtein.cpp_levenshtein',
+        name='Levenshtein.c_levenshtein',
         sources=[
-            'src/Levenshtein-c/_levenshtein.cpp',
-            'src/cpp_levenshtein.cpp'
+            'src/Levenshtein-c/_levenshtein.c',
+            'src/c_levenshtein.c'
         ],
         include_dirs=[
             "src/Levenshtein-c/",

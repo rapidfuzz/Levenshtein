@@ -22,7 +22,7 @@
  **/
 #define lev_wchar Py_UNICODE
 #include <Python.h>
-#include "_levenshtein.hpp"
+#include "_levenshtein.h"
 
 #define LEV_UNUSED(x) ((void)x)
 

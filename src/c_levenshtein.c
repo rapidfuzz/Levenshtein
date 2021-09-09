@@ -360,33 +360,19 @@
   #endif
 #endif
 
-#ifndef __cplusplus
-  #error "Cython files generated with the C++ option must be compiled with a C++ compiler."
-#endif
 #ifndef CYTHON_INLINE
   #if defined(__clang__)
     #define CYTHON_INLINE __inline__ __attribute__ ((__unused__))
-  #else
+  #elif defined(__GNUC__)
+    #define CYTHON_INLINE __inline__
+  #elif defined(_MSC_VER)
+    #define CYTHON_INLINE __inline
+  #elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
     #define CYTHON_INLINE inline
+  #else
+    #define CYTHON_INLINE
   #endif
 #endif
-template<typename T>
-void __Pyx_call_destructor(T& x) {
-    x.~T();
-}
-template<typename T>
-class __Pyx_FakeReference {
-  public:
-    __Pyx_FakeReference() : ptr(NULL) { }
-    __Pyx_FakeReference(const T& ref) : ptr(const_cast<T*>(&ref)) { }
-    T *operator->() { return ptr; }
-    T *operator&() { return ptr; }
-    operator T&() { return *ptr; }
-    template<typename U> bool operator ==(U other) { return *ptr == other; }
-    template<typename U> bool operator !=(U other) { return *ptr != other; }
-  private:
-    T *ptr;
-};
 
 #if CYTHON_COMPILING_IN_PYPY && PY_VERSION_HEX < 0x02070600 && !defined(Py_OptimizeFlag)
   #define Py_OptimizeFlag 0
@@ -805,14 +791,14 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__cpp_levenshtein
-#define __PYX_HAVE_API__cpp_levenshtein
+#define __PYX_HAVE__c_levenshtein
+#define __PYX_HAVE_API__c_levenshtein
 /* Early includes */
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
-#include "_levenshtein.hpp"
+#include "_levenshtein.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -1034,7 +1020,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "cpp_levenshtein.pyx",
+  "c_levenshtein.pyx",
   "type.pxd",
 };
 /* #### Code section: utility_code_proto_before_types ### */
@@ -1043,17 +1029,17 @@ static const char *__pyx_f[] = {
 /* #### Code section: type_declarations ### */
 
 /*--- Type declarations ---*/
-struct __pyx_t_15cpp_levenshtein_OpcodeName;
-typedef struct __pyx_t_15cpp_levenshtein_OpcodeName __pyx_t_15cpp_levenshtein_OpcodeName;
+struct __pyx_t_13c_levenshtein_OpcodeName;
+typedef struct __pyx_t_13c_levenshtein_OpcodeName __pyx_t_13c_levenshtein_OpcodeName;
 
-/* "cpp_levenshtein.pyx":72
+/* "c_levenshtein.pyx":72
  *     LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem)
  * 
  * ctypedef struct OpcodeName:             # <<<<<<<<<<<<<<
  *     PyObject* pystring
  *     const char *cstring
  */
-struct __pyx_t_15cpp_levenshtein_OpcodeName {
+struct __pyx_t_13c_levenshtein_OpcodeName {
   PyObject *pystring;
   char const *cstring;
   size_t len;
@@ -1602,25 +1588,25 @@ static PyTypeObject *__pyx_ptype_7cpython_4type_type = 0;
 #if !CYTHON_USE_MODULE_STATE
 #endif
 
-/* Module declarations from "cpp_levenshtein" */
+/* Module declarations from "c_levenshtein" */
 #if !CYTHON_USE_MODULE_STATE
 #endif
-static __pyx_t_15cpp_levenshtein_OpcodeName __pyx_v_15cpp_levenshtein_opcode_names[4];
-static size_t __pyx_v_15cpp_levenshtein_N_OPCODE_NAMES;
-static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *); /*proto*/
-static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *); /*proto*/
-static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *); /*proto*/
-static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *); /*proto*/
-static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t, LevEditOp *); /*proto*/
-static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t, LevOpCode *); /*proto*/
-static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t, size_t, size_t, LevMatchingBlock *); /*proto*/
+static __pyx_t_13c_levenshtein_OpcodeName __pyx_v_13c_levenshtein_opcode_names[4];
+static size_t __pyx_v_13c_levenshtein_N_OPCODE_NAMES;
+static size_t __pyx_f_13c_levenshtein_get_length_of_anything(PyObject *); /*proto*/
+static LevEditType __pyx_f_13c_levenshtein_string_to_edittype(PyObject *); /*proto*/
+static LevEditOp *__pyx_f_13c_levenshtein_extract_editops(PyObject *); /*proto*/
+static LevOpCode *__pyx_f_13c_levenshtein_extract_opcodes(PyObject *); /*proto*/
+static PyObject *__pyx_f_13c_levenshtein_editops_to_tuple_list(size_t, LevEditOp *); /*proto*/
+static PyObject *__pyx_f_13c_levenshtein_opcodes_to_tuple_list(size_t, LevOpCode *); /*proto*/
+static PyObject *__pyx_f_13c_levenshtein_matching_blocks_to_tuple_list(size_t, size_t, size_t, LevMatchingBlock *); /*proto*/
 /* #### Code section: typeinfo ### */
 /* #### Code section: before_global_var ### */
-#define __Pyx_MODULE_NAME "cpp_levenshtein"
-extern int __pyx_module_is_main_cpp_levenshtein;
-int __pyx_module_is_main_cpp_levenshtein = 0;
+#define __Pyx_MODULE_NAME "c_levenshtein"
+extern int __pyx_module_is_main_c_levenshtein;
+int __pyx_module_is_main_c_levenshtein = 0;
 
-/* Implementation of "cpp_levenshtein" */
+/* Implementation of "c_levenshtein" */
 /* #### Code section: global_var ### */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_MemoryError;
@@ -1670,19 +1656,19 @@ static const char __pyx_k_apply_edit[] = "apply_edit";
 static const char __pyx_k_MemoryError[] = "MemoryError";
 static const char __pyx_k_subsequence[] = "subsequence";
 static const char __pyx_k_is_coroutine[] = "_is_coroutine";
+static const char __pyx_k_c_levenshtein[] = "c_levenshtein";
 static const char __pyx_k_source_string[] = "source_string";
 static const char __pyx_k_subtract_edit[] = "subtract_edit";
-static const char __pyx_k_cpp_levenshtein[] = "cpp_levenshtein";
 static const char __pyx_k_edit_operations[] = "edit_operations";
 static const char __pyx_k_matching_blocks[] = "matching_blocks";
 static const char __pyx_k_editops_line_268[] = "editops (line 268)";
 static const char __pyx_k_inverse_line_214[] = "inverse (line 214)";
 static const char __pyx_k_opcodes_line_370[] = "opcodes (line 370)";
+static const char __pyx_k_c_levenshtein_pyx[] = "c_levenshtein.pyx";
 static const char __pyx_k_asyncio_coroutines[] = "asyncio.coroutines";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static const char __pyx_k_destination_string[] = "destination_string";
 static const char __pyx_k_apply_edit_line_629[] = "apply_edit (line 629)";
-static const char __pyx_k_cpp_levenshtein_pyx[] = "cpp_levenshtein.pyx";
 static const char __pyx_k_subtract_edit_line_562[] = "subtract_edit (line 562)";
 static const char __pyx_k_matching_blocks_line_476[] = "matching_blocks (line 476)";
 static const char __pyx_k_Apply_a_sequence_of_edit_operat[] = "\n    Apply a sequence of edit operations to a string.\n    \n    apply_edit(edit_operations, source_string, destination_string)\n    \n    In the case of editops, the sequence can be arbitrary ordered subset\n    of the edit sequence transforming source_string to destination_string.\n    \n    Examples\n    --------\n    >>> e = editops('man', 'scotsman')\n    >>> apply_edit(e, 'man', 'scotsman')\n    'scotsman'\n    >>> apply_edit(e[:3], 'man', 'scotsman')\n    'scoman'\n    \n    The other form of edit operations, opcodes, is not very suitable for\n    such a tricks, because it has to always span over complete strings,\n    subsets can be created by carefully replacing blocks with 'equal'\n    blocks, or by enlarging 'equal' block at the expense of other blocks\n    and adjusting the other blocks accordingly.\n    \n    Examples:\n    >>> a, b = 'spam and eggs', 'foo and bar'\n    >>> e = opcodes(a, b)\n    >>> apply_edit(inverse(e), b, a)\n    'spam and eggs'\n    >>> e[4] = ('equal', 10, 13, 8, 11)\n    >>> e\n    [('delete', 0, 1, 0, 0), ('replace', 1, 4, 0, 3), ('equal', 4, 9, 3, 8), ('delete', 9, 10, 8, 8), ('equal', 10, 13, 8, 11)]\n    >>> apply_edit(e, a, b)\n    'foo and ggs'\n    ";
@@ -1733,9 +1719,9 @@ static PyObject *__pyx_n_s_arg3;
 static PyObject *__pyx_n_s_args;
 static PyObject *__pyx_n_s_asyncio_coroutines;
 static PyObject *__pyx_n_s_bops;
+static PyObject *__pyx_n_s_c_levenshtein;
+static PyObject *__pyx_kp_s_c_levenshtein_pyx;
 static PyObject *__pyx_n_s_cline_in_traceback;
-static PyObject *__pyx_n_s_cpp_levenshtein;
-static PyObject *__pyx_kp_s_cpp_levenshtein_pyx;
 static PyObject *__pyx_n_s_cstring;
 static PyObject *__pyx_n_u_delete;
 static PyObject *__pyx_n_s_destination_string;
@@ -1796,12 +1782,12 @@ static PyObject *__pyx_kp_u_subtract_edit_subsequence_is_not;
 static PyObject *__pyx_n_s_test;
 #endif
 /* #### Code section: decls ### */
-static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations); /* proto */
-static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args); /* proto */
-static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args); /* proto */
-static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string); /* proto */
-static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_subsequence); /* proto */
-static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string); /* proto */
+static PyObject *__pyx_pf_13c_levenshtein_inverse(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations); /* proto */
+static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args); /* proto */
+static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args); /* proto */
+static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string); /* proto */
+static PyObject *__pyx_pf_13c_levenshtein_8subtract_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_subsequence); /* proto */
+static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string); /* proto */
 #if !CYTHON_USE_MODULE_STATE
 static PyObject *__pyx_int_0;
 #endif
@@ -1877,9 +1863,9 @@ typedef struct {
   PyObject *__pyx_n_s_args;
   PyObject *__pyx_n_s_asyncio_coroutines;
   PyObject *__pyx_n_s_bops;
+  PyObject *__pyx_n_s_c_levenshtein;
+  PyObject *__pyx_kp_s_c_levenshtein_pyx;
   PyObject *__pyx_n_s_cline_in_traceback;
-  PyObject *__pyx_n_s_cpp_levenshtein;
-  PyObject *__pyx_kp_s_cpp_levenshtein_pyx;
   PyObject *__pyx_n_s_cstring;
   PyObject *__pyx_n_u_delete;
   PyObject *__pyx_n_s_destination_string;
@@ -2026,9 +2012,9 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_args);
   Py_CLEAR(clear_module_state->__pyx_n_s_asyncio_coroutines);
   Py_CLEAR(clear_module_state->__pyx_n_s_bops);
+  Py_CLEAR(clear_module_state->__pyx_n_s_c_levenshtein);
+  Py_CLEAR(clear_module_state->__pyx_kp_s_c_levenshtein_pyx);
   Py_CLEAR(clear_module_state->__pyx_n_s_cline_in_traceback);
-  Py_CLEAR(clear_module_state->__pyx_n_s_cpp_levenshtein);
-  Py_CLEAR(clear_module_state->__pyx_kp_s_cpp_levenshtein_pyx);
   Py_CLEAR(clear_module_state->__pyx_n_s_cstring);
   Py_CLEAR(clear_module_state->__pyx_n_u_delete);
   Py_CLEAR(clear_module_state->__pyx_n_s_destination_string);
@@ -2162,9 +2148,9 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_args);
   Py_VISIT(traverse_module_state->__pyx_n_s_asyncio_coroutines);
   Py_VISIT(traverse_module_state->__pyx_n_s_bops);
+  Py_VISIT(traverse_module_state->__pyx_n_s_c_levenshtein);
+  Py_VISIT(traverse_module_state->__pyx_kp_s_c_levenshtein_pyx);
   Py_VISIT(traverse_module_state->__pyx_n_s_cline_in_traceback);
-  Py_VISIT(traverse_module_state->__pyx_n_s_cpp_levenshtein);
-  Py_VISIT(traverse_module_state->__pyx_kp_s_cpp_levenshtein_pyx);
   Py_VISIT(traverse_module_state->__pyx_n_s_cstring);
   Py_VISIT(traverse_module_state->__pyx_n_u_delete);
   Py_VISIT(traverse_module_state->__pyx_n_s_destination_string);
@@ -2295,9 +2281,9 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_args __pyx_mstate_global->__pyx_n_s_args
 #define __pyx_n_s_asyncio_coroutines __pyx_mstate_global->__pyx_n_s_asyncio_coroutines
 #define __pyx_n_s_bops __pyx_mstate_global->__pyx_n_s_bops
+#define __pyx_n_s_c_levenshtein __pyx_mstate_global->__pyx_n_s_c_levenshtein
+#define __pyx_kp_s_c_levenshtein_pyx __pyx_mstate_global->__pyx_kp_s_c_levenshtein_pyx
 #define __pyx_n_s_cline_in_traceback __pyx_mstate_global->__pyx_n_s_cline_in_traceback
-#define __pyx_n_s_cpp_levenshtein __pyx_mstate_global->__pyx_n_s_cpp_levenshtein
-#define __pyx_kp_s_cpp_levenshtein_pyx __pyx_mstate_global->__pyx_kp_s_cpp_levenshtein_pyx
 #define __pyx_n_s_cstring __pyx_mstate_global->__pyx_n_s_cstring
 #define __pyx_n_u_delete __pyx_mstate_global->__pyx_n_u_delete
 #define __pyx_n_s_destination_string __pyx_mstate_global->__pyx_n_s_destination_string
@@ -2391,7 +2377,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #endif
 /* #### Code section: module_code ### */
 
-/* "cpp_levenshtein.pyx":84
+/* "c_levenshtein.pyx":84
  * cdef size_t N_OPCODE_NAMES = 4
  * 
  * cdef size_t get_length_of_anything(o):             # <<<<<<<<<<<<<<
@@ -2399,7 +2385,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
  *     if isinstance(o, int):
  */
 
-static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v_o) {
+static size_t __pyx_f_13c_levenshtein_get_length_of_anything(PyObject *__pyx_v_o) {
   Py_ssize_t __pyx_v_length;
   size_t __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -2411,7 +2397,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_length_of_anything", 0);
 
-  /* "cpp_levenshtein.pyx":86
+  /* "c_levenshtein.pyx":86
  * cdef size_t get_length_of_anything(o):
  *     cdef Py_ssize_t length
  *     if isinstance(o, int):             # <<<<<<<<<<<<<<
@@ -2422,7 +2408,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":87
+    /* "c_levenshtein.pyx":87
  *     cdef Py_ssize_t length
  *     if isinstance(o, int):
  *         length = <Py_ssize_t>o             # <<<<<<<<<<<<<<
@@ -2432,7 +2418,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
     __pyx_t_3 = __Pyx_PyIndex_AsSsize_t(__pyx_v_o); if (unlikely((__pyx_t_3 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 87, __pyx_L1_error)
     __pyx_v_length = ((Py_ssize_t)__pyx_t_3);
 
-    /* "cpp_levenshtein.pyx":88
+    /* "c_levenshtein.pyx":88
  *     if isinstance(o, int):
  *         length = <Py_ssize_t>o
  *         if length < 0:             # <<<<<<<<<<<<<<
@@ -2442,7 +2428,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
     __pyx_t_2 = ((__pyx_v_length < 0) != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":89
+      /* "c_levenshtein.pyx":89
  *         length = <Py_ssize_t>o
  *         if length < 0:
  *             return <size_t>-1             # <<<<<<<<<<<<<<
@@ -2452,7 +2438,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
       __pyx_r = ((size_t)-1L);
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":88
+      /* "c_levenshtein.pyx":88
  *     if isinstance(o, int):
  *         length = <Py_ssize_t>o
  *         if length < 0:             # <<<<<<<<<<<<<<
@@ -2461,7 +2447,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
  */
     }
 
-    /* "cpp_levenshtein.pyx":90
+    /* "c_levenshtein.pyx":90
  *         if length < 0:
  *             return <size_t>-1
  *         return <size_t>length             # <<<<<<<<<<<<<<
@@ -2471,7 +2457,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
     __pyx_r = ((size_t)__pyx_v_length);
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":86
+    /* "c_levenshtein.pyx":86
  * cdef size_t get_length_of_anything(o):
  *     cdef Py_ssize_t length
  *     if isinstance(o, int):             # <<<<<<<<<<<<<<
@@ -2480,7 +2466,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
  */
   }
 
-  /* "cpp_levenshtein.pyx":92
+  /* "c_levenshtein.pyx":92
  *         return <size_t>length
  * 
  *     if PySequence_Check(o):             # <<<<<<<<<<<<<<
@@ -2490,7 +2476,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
   __pyx_t_2 = (PySequence_Check(__pyx_v_o) != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":93
+    /* "c_levenshtein.pyx":93
  * 
  *     if PySequence_Check(o):
  *         return <size_t>PySequence_Length(o)             # <<<<<<<<<<<<<<
@@ -2501,7 +2487,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
     __pyx_r = ((size_t)__pyx_t_3);
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":92
+    /* "c_levenshtein.pyx":92
  *         return <size_t>length
  * 
  *     if PySequence_Check(o):             # <<<<<<<<<<<<<<
@@ -2510,7 +2496,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
  */
   }
 
-  /* "cpp_levenshtein.pyx":95
+  /* "c_levenshtein.pyx":95
  *         return <size_t>PySequence_Length(o)
  * 
  *     return <size_t>-1             # <<<<<<<<<<<<<<
@@ -2520,7 +2506,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
   __pyx_r = ((size_t)-1L);
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":84
+  /* "c_levenshtein.pyx":84
  * cdef size_t N_OPCODE_NAMES = 4
  * 
  * cdef size_t get_length_of_anything(o):             # <<<<<<<<<<<<<<
@@ -2530,14 +2516,14 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("cpp_levenshtein.get_length_of_anything", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
+  __Pyx_WriteUnraisable("c_levenshtein.get_length_of_anything", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":97
+/* "c_levenshtein.pyx":97
  *     return <size_t>-1
  * 
  * cdef LevEditType string_to_edittype(string):             # <<<<<<<<<<<<<<
@@ -2545,7 +2531,7 @@ static size_t __pyx_f_15cpp_levenshtein_get_length_of_anything(PyObject *__pyx_v
  *         if <PyObject*>string == opcode_names[i].pystring:
  */
 
-static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_v_string) {
+static LevEditType __pyx_f_13c_levenshtein_string_to_edittype(PyObject *__pyx_v_string) {
   size_t __pyx_v_i;
   LevEditType __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -2560,29 +2546,29 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("string_to_edittype", 0);
 
-  /* "cpp_levenshtein.pyx":98
+  /* "c_levenshtein.pyx":98
  * 
  * cdef LevEditType string_to_edittype(string):
  *     for i in range(N_OPCODE_NAMES):             # <<<<<<<<<<<<<<
  *         if <PyObject*>string == opcode_names[i].pystring:
  *            return <LevEditType>i
  */
-  __pyx_t_1 = __pyx_v_15cpp_levenshtein_N_OPCODE_NAMES;
+  __pyx_t_1 = __pyx_v_13c_levenshtein_N_OPCODE_NAMES;
   __pyx_t_2 = __pyx_t_1;
   for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
     __pyx_v_i = __pyx_t_3;
 
-    /* "cpp_levenshtein.pyx":99
+    /* "c_levenshtein.pyx":99
  * cdef LevEditType string_to_edittype(string):
  *     for i in range(N_OPCODE_NAMES):
  *         if <PyObject*>string == opcode_names[i].pystring:             # <<<<<<<<<<<<<<
  *            return <LevEditType>i
  * 
  */
-    __pyx_t_4 = ((((PyObject *)__pyx_v_string) == (__pyx_v_15cpp_levenshtein_opcode_names[__pyx_v_i]).pystring) != 0);
+    __pyx_t_4 = ((((PyObject *)__pyx_v_string) == (__pyx_v_13c_levenshtein_opcode_names[__pyx_v_i]).pystring) != 0);
     if (__pyx_t_4) {
 
-      /* "cpp_levenshtein.pyx":100
+      /* "c_levenshtein.pyx":100
  *     for i in range(N_OPCODE_NAMES):
  *         if <PyObject*>string == opcode_names[i].pystring:
  *            return <LevEditType>i             # <<<<<<<<<<<<<<
@@ -2592,7 +2578,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
       __pyx_r = ((LevEditType)__pyx_v_i);
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":99
+      /* "c_levenshtein.pyx":99
  * cdef LevEditType string_to_edittype(string):
  *     for i in range(N_OPCODE_NAMES):
  *         if <PyObject*>string == opcode_names[i].pystring:             # <<<<<<<<<<<<<<
@@ -2602,7 +2588,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
     }
   }
 
-  /* "cpp_levenshtein.pyx":102
+  /* "c_levenshtein.pyx":102
  *            return <LevEditType>i
  * 
  *     if not isinstance(string, str):             # <<<<<<<<<<<<<<
@@ -2613,7 +2599,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
   __pyx_t_5 = ((!(__pyx_t_4 != 0)) != 0);
   if (__pyx_t_5) {
 
-    /* "cpp_levenshtein.pyx":103
+    /* "c_levenshtein.pyx":103
  * 
  *     if not isinstance(string, str):
  *         return LEV_EDIT_LAST             # <<<<<<<<<<<<<<
@@ -2623,7 +2609,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
     __pyx_r = LEV_EDIT_LAST;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":102
+    /* "c_levenshtein.pyx":102
  *            return <LevEditType>i
  * 
  *     if not isinstance(string, str):             # <<<<<<<<<<<<<<
@@ -2632,30 +2618,30 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
  */
   }
 
-  /* "cpp_levenshtein.pyx":105
+  /* "c_levenshtein.pyx":105
  *         return LEV_EDIT_LAST
  * 
  *     for i in range(N_OPCODE_NAMES):             # <<<<<<<<<<<<<<
  *         if not PyUnicode_CompareWithASCIIString(string, <char*>opcode_names[i].cstring):
  *             return <LevEditType>i
  */
-  __pyx_t_1 = __pyx_v_15cpp_levenshtein_N_OPCODE_NAMES;
+  __pyx_t_1 = __pyx_v_13c_levenshtein_N_OPCODE_NAMES;
   __pyx_t_2 = __pyx_t_1;
   for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
     __pyx_v_i = __pyx_t_3;
 
-    /* "cpp_levenshtein.pyx":106
+    /* "c_levenshtein.pyx":106
  * 
  *     for i in range(N_OPCODE_NAMES):
  *         if not PyUnicode_CompareWithASCIIString(string, <char*>opcode_names[i].cstring):             # <<<<<<<<<<<<<<
  *             return <LevEditType>i
  * 
  */
-    __pyx_t_6 = PyUnicode_CompareWithASCIIString(__pyx_v_string, ((char *)(__pyx_v_15cpp_levenshtein_opcode_names[__pyx_v_i]).cstring)); if (unlikely(__pyx_t_6 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_6 = PyUnicode_CompareWithASCIIString(__pyx_v_string, ((char *)(__pyx_v_13c_levenshtein_opcode_names[__pyx_v_i]).cstring)); if (unlikely(__pyx_t_6 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 106, __pyx_L1_error)
     __pyx_t_5 = ((!(__pyx_t_6 != 0)) != 0);
     if (__pyx_t_5) {
 
-      /* "cpp_levenshtein.pyx":107
+      /* "c_levenshtein.pyx":107
  *     for i in range(N_OPCODE_NAMES):
  *         if not PyUnicode_CompareWithASCIIString(string, <char*>opcode_names[i].cstring):
  *             return <LevEditType>i             # <<<<<<<<<<<<<<
@@ -2665,7 +2651,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
       __pyx_r = ((LevEditType)__pyx_v_i);
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":106
+      /* "c_levenshtein.pyx":106
  * 
  *     for i in range(N_OPCODE_NAMES):
  *         if not PyUnicode_CompareWithASCIIString(string, <char*>opcode_names[i].cstring):             # <<<<<<<<<<<<<<
@@ -2675,7 +2661,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
     }
   }
 
-  /* "cpp_levenshtein.pyx":109
+  /* "c_levenshtein.pyx":109
  *             return <LevEditType>i
  * 
  *     return LEV_EDIT_LAST             # <<<<<<<<<<<<<<
@@ -2685,7 +2671,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
   __pyx_r = LEV_EDIT_LAST;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":97
+  /* "c_levenshtein.pyx":97
  *     return <size_t>-1
  * 
  * cdef LevEditType string_to_edittype(string):             # <<<<<<<<<<<<<<
@@ -2695,14 +2681,14 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("cpp_levenshtein.string_to_edittype", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
+  __Pyx_WriteUnraisable("c_levenshtein.string_to_edittype", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_r = (LevEditType) 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":112
+/* "c_levenshtein.pyx":112
  * 
  * 
  * cdef LevEditOp* extract_editops(list editops) except *:             # <<<<<<<<<<<<<<
@@ -2710,7 +2696,7 @@ static LevEditType __pyx_f_15cpp_levenshtein_string_to_edittype(PyObject *__pyx_
  *     cdef LevEditOp* ops = <LevEditOp*>safe_malloc(n, sizeof(LevEditOp))
  */
 
-static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_editops) {
+static LevEditOp *__pyx_f_13c_levenshtein_extract_editops(PyObject *__pyx_v_editops) {
   size_t __pyx_v_n;
   LevEditOp *__pyx_v_ops;
   size_t __pyx_v_i;
@@ -2737,7 +2723,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("extract_editops", 0);
 
-  /* "cpp_levenshtein.pyx":113
+  /* "c_levenshtein.pyx":113
  * 
  * cdef LevEditOp* extract_editops(list editops) except *:
  *     cdef size_t n = <size_t>len(editops)             # <<<<<<<<<<<<<<
@@ -2751,7 +2737,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   __pyx_t_1 = PyList_GET_SIZE(__pyx_v_editops); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 113, __pyx_L1_error)
   __pyx_v_n = ((size_t)__pyx_t_1);
 
-  /* "cpp_levenshtein.pyx":114
+  /* "c_levenshtein.pyx":114
  * cdef LevEditOp* extract_editops(list editops) except *:
  *     cdef size_t n = <size_t>len(editops)
  *     cdef LevEditOp* ops = <LevEditOp*>safe_malloc(n, sizeof(LevEditOp))             # <<<<<<<<<<<<<<
@@ -2760,7 +2746,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
   __pyx_v_ops = ((LevEditOp *)safe_malloc(__pyx_v_n, (sizeof(LevEditOp))));
 
-  /* "cpp_levenshtein.pyx":116
+  /* "c_levenshtein.pyx":116
  *     cdef LevEditOp* ops = <LevEditOp*>safe_malloc(n, sizeof(LevEditOp))
  * 
  *     if not ops:             # <<<<<<<<<<<<<<
@@ -2770,7 +2756,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   __pyx_t_2 = ((!(__pyx_v_ops != 0)) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "cpp_levenshtein.pyx":117
+    /* "c_levenshtein.pyx":117
  * 
  *     if not ops:
  *         raise MemoryError             # <<<<<<<<<<<<<<
@@ -2779,7 +2765,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
     PyErr_NoMemory(); __PYX_ERR(0, 117, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":116
+    /* "c_levenshtein.pyx":116
  *     cdef LevEditOp* ops = <LevEditOp*>safe_malloc(n, sizeof(LevEditOp))
  * 
  *     if not ops:             # <<<<<<<<<<<<<<
@@ -2788,7 +2774,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
   }
 
-  /* "cpp_levenshtein.pyx":119
+  /* "c_levenshtein.pyx":119
  *         raise MemoryError
  * 
  *     for i in range(n):             # <<<<<<<<<<<<<<
@@ -2800,7 +2786,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_i = __pyx_t_5;
 
-    /* "cpp_levenshtein.pyx":120
+    /* "c_levenshtein.pyx":120
  * 
  *     for i in range(n):
  *         editop = editops[i]             # <<<<<<<<<<<<<<
@@ -2816,7 +2802,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __Pyx_XDECREF_SET(__pyx_v_editop, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "cpp_levenshtein.pyx":122
+    /* "c_levenshtein.pyx":122
  *         editop = editops[i]
  * 
  *         if not isinstance(editop, tuple) or len(<tuple>editop) != 3:             # <<<<<<<<<<<<<<
@@ -2840,7 +2826,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __pyx_L7_bool_binop_done:;
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":123
+      /* "c_levenshtein.pyx":123
  * 
  *         if not isinstance(editop, tuple) or len(<tuple>editop) != 3:
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -2849,7 +2835,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":124
+      /* "c_levenshtein.pyx":124
  *         if not isinstance(editop, tuple) or len(<tuple>editop) != 3:
  *             free(ops)
  *             return NULL             # <<<<<<<<<<<<<<
@@ -2859,7 +2845,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
       __pyx_r = NULL;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":122
+      /* "c_levenshtein.pyx":122
  *         editop = editops[i]
  * 
  *         if not isinstance(editop, tuple) or len(<tuple>editop) != 3:             # <<<<<<<<<<<<<<
@@ -2868,7 +2854,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
     }
 
-    /* "cpp_levenshtein.pyx":126
+    /* "c_levenshtein.pyx":126
  *             return NULL
  * 
  *         _type, spos, dpos = <tuple>editop             # <<<<<<<<<<<<<<
@@ -2911,7 +2897,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __Pyx_XDECREF_SET(__pyx_v_dpos, __pyx_t_11);
     __pyx_t_11 = 0;
 
-    /* "cpp_levenshtein.pyx":127
+    /* "c_levenshtein.pyx":127
  * 
  *         _type, spos, dpos = <tuple>editop
  *         if not isinstance(spos, int) or not isinstance(dpos, int):             # <<<<<<<<<<<<<<
@@ -2931,7 +2917,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __pyx_L10_bool_binop_done:;
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":128
+      /* "c_levenshtein.pyx":128
  *         _type, spos, dpos = <tuple>editop
  *         if not isinstance(spos, int) or not isinstance(dpos, int):
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -2940,7 +2926,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":129
+      /* "c_levenshtein.pyx":129
  *         if not isinstance(spos, int) or not isinstance(dpos, int):
  *             free(ops)
  *             return NULL             # <<<<<<<<<<<<<<
@@ -2950,7 +2936,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
       __pyx_r = NULL;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":127
+      /* "c_levenshtein.pyx":127
  * 
  *         _type, spos, dpos = <tuple>editop
  *         if not isinstance(spos, int) or not isinstance(dpos, int):             # <<<<<<<<<<<<<<
@@ -2959,7 +2945,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
     }
 
-    /* "cpp_levenshtein.pyx":131
+    /* "c_levenshtein.pyx":131
  *             return NULL
  * 
  *         ops[i].spos = <size_t>spos             # <<<<<<<<<<<<<<
@@ -2969,7 +2955,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __pyx_t_12 = __Pyx_PyInt_As_size_t(__pyx_v_spos); if (unlikely((__pyx_t_12 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 131, __pyx_L1_error)
     (__pyx_v_ops[__pyx_v_i]).spos = ((size_t)__pyx_t_12);
 
-    /* "cpp_levenshtein.pyx":132
+    /* "c_levenshtein.pyx":132
  * 
  *         ops[i].spos = <size_t>spos
  *         ops[i].dpos = <size_t>dpos             # <<<<<<<<<<<<<<
@@ -2979,16 +2965,16 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __pyx_t_12 = __Pyx_PyInt_As_size_t(__pyx_v_dpos); if (unlikely((__pyx_t_12 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 132, __pyx_L1_error)
     (__pyx_v_ops[__pyx_v_i]).dpos = ((size_t)__pyx_t_12);
 
-    /* "cpp_levenshtein.pyx":133
+    /* "c_levenshtein.pyx":133
  *         ops[i].spos = <size_t>spos
  *         ops[i].dpos = <size_t>dpos
  *         ops[i].type = string_to_edittype(_type)             # <<<<<<<<<<<<<<
  *         if ops[i].type == LEV_EDIT_LAST:
  *             free(ops)
  */
-    (__pyx_v_ops[__pyx_v_i]).type = __pyx_f_15cpp_levenshtein_string_to_edittype(__pyx_v__type);
+    (__pyx_v_ops[__pyx_v_i]).type = __pyx_f_13c_levenshtein_string_to_edittype(__pyx_v__type);
 
-    /* "cpp_levenshtein.pyx":134
+    /* "c_levenshtein.pyx":134
  *         ops[i].dpos = <size_t>dpos
  *         ops[i].type = string_to_edittype(_type)
  *         if ops[i].type == LEV_EDIT_LAST:             # <<<<<<<<<<<<<<
@@ -2998,7 +2984,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     __pyx_t_2 = (((__pyx_v_ops[__pyx_v_i]).type == LEV_EDIT_LAST) != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":135
+      /* "c_levenshtein.pyx":135
  *         ops[i].type = string_to_edittype(_type)
  *         if ops[i].type == LEV_EDIT_LAST:
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -3007,7 +2993,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":136
+      /* "c_levenshtein.pyx":136
  *         if ops[i].type == LEV_EDIT_LAST:
  *             free(ops)
  *             return NULL             # <<<<<<<<<<<<<<
@@ -3017,7 +3003,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
       __pyx_r = NULL;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":134
+      /* "c_levenshtein.pyx":134
  *         ops[i].dpos = <size_t>dpos
  *         ops[i].type = string_to_edittype(_type)
  *         if ops[i].type == LEV_EDIT_LAST:             # <<<<<<<<<<<<<<
@@ -3027,7 +3013,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
     }
   }
 
-  /* "cpp_levenshtein.pyx":138
+  /* "c_levenshtein.pyx":138
  *             return NULL
  * 
  *     return ops             # <<<<<<<<<<<<<<
@@ -3037,7 +3023,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   __pyx_r = __pyx_v_ops;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":112
+  /* "c_levenshtein.pyx":112
  * 
  * 
  * cdef LevEditOp* extract_editops(list editops) except *:             # <<<<<<<<<<<<<<
@@ -3051,7 +3037,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_11);
-  __Pyx_AddTraceback("cpp_levenshtein.extract_editops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.extract_editops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_editop);
@@ -3062,7 +3048,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":141
+/* "c_levenshtein.pyx":141
  * 
  * 
  * cdef LevOpCode* extract_opcodes(list opcodes) except *:             # <<<<<<<<<<<<<<
@@ -3070,7 +3056,7 @@ static LevEditOp *__pyx_f_15cpp_levenshtein_extract_editops(PyObject *__pyx_v_ed
  *     cdef LevOpCode* bops = <LevOpCode*>safe_malloc(nb, sizeof(LevOpCode))
  */
 
-static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_opcodes) {
+static LevOpCode *__pyx_f_13c_levenshtein_extract_opcodes(PyObject *__pyx_v_opcodes) {
   size_t __pyx_v_nb;
   LevOpCode *__pyx_v_bops;
   size_t __pyx_v_i;
@@ -3101,7 +3087,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("extract_opcodes", 0);
 
-  /* "cpp_levenshtein.pyx":142
+  /* "c_levenshtein.pyx":142
  * 
  * cdef LevOpCode* extract_opcodes(list opcodes) except *:
  *     cdef size_t nb = <size_t>len(opcodes)             # <<<<<<<<<<<<<<
@@ -3115,7 +3101,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   __pyx_t_1 = PyList_GET_SIZE(__pyx_v_opcodes); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 142, __pyx_L1_error)
   __pyx_v_nb = ((size_t)__pyx_t_1);
 
-  /* "cpp_levenshtein.pyx":143
+  /* "c_levenshtein.pyx":143
  * cdef LevOpCode* extract_opcodes(list opcodes) except *:
  *     cdef size_t nb = <size_t>len(opcodes)
  *     cdef LevOpCode* bops = <LevOpCode*>safe_malloc(nb, sizeof(LevOpCode))             # <<<<<<<<<<<<<<
@@ -3124,7 +3110,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
   __pyx_v_bops = ((LevOpCode *)safe_malloc(__pyx_v_nb, (sizeof(LevOpCode))));
 
-  /* "cpp_levenshtein.pyx":145
+  /* "c_levenshtein.pyx":145
  *     cdef LevOpCode* bops = <LevOpCode*>safe_malloc(nb, sizeof(LevOpCode))
  * 
  *     if not bops:             # <<<<<<<<<<<<<<
@@ -3134,7 +3120,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   __pyx_t_2 = ((!(__pyx_v_bops != 0)) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "cpp_levenshtein.pyx":146
+    /* "c_levenshtein.pyx":146
  * 
  *     if not bops:
  *         raise MemoryError             # <<<<<<<<<<<<<<
@@ -3143,7 +3129,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
     PyErr_NoMemory(); __PYX_ERR(0, 146, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":145
+    /* "c_levenshtein.pyx":145
  *     cdef LevOpCode* bops = <LevOpCode*>safe_malloc(nb, sizeof(LevOpCode))
  * 
  *     if not bops:             # <<<<<<<<<<<<<<
@@ -3152,7 +3138,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
   }
 
-  /* "cpp_levenshtein.pyx":148
+  /* "c_levenshtein.pyx":148
  *         raise MemoryError
  * 
  *     for i in range(nb):             # <<<<<<<<<<<<<<
@@ -3164,7 +3150,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   for (__pyx_t_5 = 0; __pyx_t_5 < __pyx_t_4; __pyx_t_5+=1) {
     __pyx_v_i = __pyx_t_5;
 
-    /* "cpp_levenshtein.pyx":149
+    /* "c_levenshtein.pyx":149
  * 
  *     for i in range(nb):
  *         opcode = opcodes[i]             # <<<<<<<<<<<<<<
@@ -3180,7 +3166,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __Pyx_XDECREF_SET(__pyx_v_opcode, __pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "cpp_levenshtein.pyx":151
+    /* "c_levenshtein.pyx":151
  *         opcode = opcodes[i]
  * 
  *         if not isinstance(opcode, tuple) or len(<tuple>opcode) !=5:             # <<<<<<<<<<<<<<
@@ -3204,7 +3190,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_L7_bool_binop_done:;
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":152
+      /* "c_levenshtein.pyx":152
  * 
  *         if not isinstance(opcode, tuple) or len(<tuple>opcode) !=5:
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -3213,7 +3199,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":153
+      /* "c_levenshtein.pyx":153
  *         if not isinstance(opcode, tuple) or len(<tuple>opcode) !=5:
  *             free(bops)
  *             return NULL             # <<<<<<<<<<<<<<
@@ -3223,7 +3209,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
       __pyx_r = NULL;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":151
+      /* "c_levenshtein.pyx":151
  *         opcode = opcodes[i]
  * 
  *         if not isinstance(opcode, tuple) or len(<tuple>opcode) !=5:             # <<<<<<<<<<<<<<
@@ -3232,7 +3218,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
     }
 
-    /* "cpp_levenshtein.pyx":155
+    /* "c_levenshtein.pyx":155
  *             return NULL
  * 
  *         _type, sbeg, send, dbeg, dend = <tuple>opcode             # <<<<<<<<<<<<<<
@@ -3286,7 +3272,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __Pyx_XDECREF_SET(__pyx_v_dend, __pyx_t_13);
     __pyx_t_13 = 0;
 
-    /* "cpp_levenshtein.pyx":156
+    /* "c_levenshtein.pyx":156
  * 
  *         _type, sbeg, send, dbeg, dend = <tuple>opcode
  *         if (not isinstance(sbeg, int) or not isinstance(send, int) or             # <<<<<<<<<<<<<<
@@ -3308,7 +3294,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
       goto __pyx_L10_bool_binop_done;
     }
 
-    /* "cpp_levenshtein.pyx":157
+    /* "c_levenshtein.pyx":157
  *         _type, sbeg, send, dbeg, dend = <tuple>opcode
  *         if (not isinstance(sbeg, int) or not isinstance(send, int) or
  *                not isinstance(dbeg, int) or not isinstance(dend, int)):             # <<<<<<<<<<<<<<
@@ -3327,7 +3313,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_t_2 = __pyx_t_8;
     __pyx_L10_bool_binop_done:;
 
-    /* "cpp_levenshtein.pyx":156
+    /* "c_levenshtein.pyx":156
  * 
  *         _type, sbeg, send, dbeg, dend = <tuple>opcode
  *         if (not isinstance(sbeg, int) or not isinstance(send, int) or             # <<<<<<<<<<<<<<
@@ -3336,7 +3322,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":158
+      /* "c_levenshtein.pyx":158
  *         if (not isinstance(sbeg, int) or not isinstance(send, int) or
  *                not isinstance(dbeg, int) or not isinstance(dend, int)):
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -3345,7 +3331,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":159
+      /* "c_levenshtein.pyx":159
  *                not isinstance(dbeg, int) or not isinstance(dend, int)):
  *             free(bops)
  *             return NULL             # <<<<<<<<<<<<<<
@@ -3355,7 +3341,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
       __pyx_r = NULL;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":156
+      /* "c_levenshtein.pyx":156
  * 
  *         _type, sbeg, send, dbeg, dend = <tuple>opcode
  *         if (not isinstance(sbeg, int) or not isinstance(send, int) or             # <<<<<<<<<<<<<<
@@ -3364,7 +3350,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
     }
 
-    /* "cpp_levenshtein.pyx":161
+    /* "c_levenshtein.pyx":161
  *             return NULL
  * 
  *         bops[i].sbeg = <size_t>sbeg             # <<<<<<<<<<<<<<
@@ -3374,7 +3360,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_t_14 = __Pyx_PyInt_As_size_t(__pyx_v_sbeg); if (unlikely((__pyx_t_14 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 161, __pyx_L1_error)
     (__pyx_v_bops[__pyx_v_i]).sbeg = ((size_t)__pyx_t_14);
 
-    /* "cpp_levenshtein.pyx":162
+    /* "c_levenshtein.pyx":162
  * 
  *         bops[i].sbeg = <size_t>sbeg
  *         bops[i].send = <size_t>send             # <<<<<<<<<<<<<<
@@ -3384,7 +3370,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_t_14 = __Pyx_PyInt_As_size_t(__pyx_v_send); if (unlikely((__pyx_t_14 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 162, __pyx_L1_error)
     (__pyx_v_bops[__pyx_v_i]).send = ((size_t)__pyx_t_14);
 
-    /* "cpp_levenshtein.pyx":163
+    /* "c_levenshtein.pyx":163
  *         bops[i].sbeg = <size_t>sbeg
  *         bops[i].send = <size_t>send
  *         bops[i].dbeg = <size_t>dbeg             # <<<<<<<<<<<<<<
@@ -3394,7 +3380,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_t_14 = __Pyx_PyInt_As_size_t(__pyx_v_dbeg); if (unlikely((__pyx_t_14 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 163, __pyx_L1_error)
     (__pyx_v_bops[__pyx_v_i]).dbeg = ((size_t)__pyx_t_14);
 
-    /* "cpp_levenshtein.pyx":164
+    /* "c_levenshtein.pyx":164
  *         bops[i].send = <size_t>send
  *         bops[i].dbeg = <size_t>dbeg
  *         bops[i].dend = <size_t>dend             # <<<<<<<<<<<<<<
@@ -3404,16 +3390,16 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_t_14 = __Pyx_PyInt_As_size_t(__pyx_v_dend); if (unlikely((__pyx_t_14 == (size_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 164, __pyx_L1_error)
     (__pyx_v_bops[__pyx_v_i]).dend = ((size_t)__pyx_t_14);
 
-    /* "cpp_levenshtein.pyx":165
+    /* "c_levenshtein.pyx":165
  *         bops[i].dbeg = <size_t>dbeg
  *         bops[i].dend = <size_t>dend
  *         bops[i].type = string_to_edittype(_type)             # <<<<<<<<<<<<<<
  *         if bops[i].type == LEV_EDIT_LAST:
  *             free(bops)
  */
-    (__pyx_v_bops[__pyx_v_i]).type = __pyx_f_15cpp_levenshtein_string_to_edittype(__pyx_v__type);
+    (__pyx_v_bops[__pyx_v_i]).type = __pyx_f_13c_levenshtein_string_to_edittype(__pyx_v__type);
 
-    /* "cpp_levenshtein.pyx":166
+    /* "c_levenshtein.pyx":166
  *         bops[i].dend = <size_t>dend
  *         bops[i].type = string_to_edittype(_type)
  *         if bops[i].type == LEV_EDIT_LAST:             # <<<<<<<<<<<<<<
@@ -3423,7 +3409,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     __pyx_t_2 = (((__pyx_v_bops[__pyx_v_i]).type == LEV_EDIT_LAST) != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":167
+      /* "c_levenshtein.pyx":167
  *         bops[i].type = string_to_edittype(_type)
  *         if bops[i].type == LEV_EDIT_LAST:
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -3432,7 +3418,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":168
+      /* "c_levenshtein.pyx":168
  *         if bops[i].type == LEV_EDIT_LAST:
  *             free(bops)
  *             return NULL             # <<<<<<<<<<<<<<
@@ -3442,7 +3428,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
       __pyx_r = NULL;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":166
+      /* "c_levenshtein.pyx":166
  *         bops[i].dend = <size_t>dend
  *         bops[i].type = string_to_edittype(_type)
  *         if bops[i].type == LEV_EDIT_LAST:             # <<<<<<<<<<<<<<
@@ -3452,7 +3438,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
     }
   }
 
-  /* "cpp_levenshtein.pyx":170
+  /* "c_levenshtein.pyx":170
  *             return NULL
  * 
  *     return bops             # <<<<<<<<<<<<<<
@@ -3462,7 +3448,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   __pyx_r = __pyx_v_bops;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":141
+  /* "c_levenshtein.pyx":141
  * 
  * 
  * cdef LevOpCode* extract_opcodes(list opcodes) except *:             # <<<<<<<<<<<<<<
@@ -3478,7 +3464,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   __Pyx_XDECREF(__pyx_t_11);
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_13);
-  __Pyx_AddTraceback("cpp_levenshtein.extract_opcodes", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.extract_opcodes", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_opcode);
@@ -3491,7 +3477,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":173
+/* "c_levenshtein.pyx":173
  * 
  * 
  * cdef editops_to_tuple_list(size_t n, LevEditOp *ops):             # <<<<<<<<<<<<<<
@@ -3499,7 +3485,7 @@ static LevOpCode *__pyx_f_15cpp_levenshtein_extract_opcodes(PyObject *__pyx_v_op
  * 
  */
 
-static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_n, LevEditOp *__pyx_v_ops) {
+static PyObject *__pyx_f_13c_levenshtein_editops_to_tuple_list(size_t __pyx_v_n, LevEditOp *__pyx_v_ops) {
   PyObject *__pyx_v_tuple_list = 0;
   size_t __pyx_v_i;
   PyObject *__pyx_v_result_item = NULL;
@@ -3516,7 +3502,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("editops_to_tuple_list", 0);
 
-  /* "cpp_levenshtein.pyx":174
+  /* "c_levenshtein.pyx":174
  * 
  * cdef editops_to_tuple_list(size_t n, LevEditOp *ops):
  *     cdef list tuple_list = PyList_New(<Py_ssize_t>n)             # <<<<<<<<<<<<<<
@@ -3528,7 +3514,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
   __pyx_v_tuple_list = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":176
+  /* "c_levenshtein.pyx":176
  *     cdef list tuple_list = PyList_New(<Py_ssize_t>n)
  * 
  *     for i in range(n):             # <<<<<<<<<<<<<<
@@ -3540,7 +3526,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
     __pyx_v_i = __pyx_t_4;
 
-    /* "cpp_levenshtein.pyx":179
+    /* "c_levenshtein.pyx":179
  *         result_item = (
  *             <object>opcode_names[<size_t>ops[i].type].pystring,
  *             ops[i].spos, ops[i].dpos)             # <<<<<<<<<<<<<<
@@ -3552,7 +3538,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
     __pyx_t_5 = __Pyx_PyInt_FromSize_t((__pyx_v_ops[__pyx_v_i]).dpos); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 179, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
 
-    /* "cpp_levenshtein.pyx":178
+    /* "c_levenshtein.pyx":178
  *     for i in range(n):
  *         result_item = (
  *             <object>opcode_names[<size_t>ops[i].type].pystring,             # <<<<<<<<<<<<<<
@@ -3561,9 +3547,9 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
  */
     __pyx_t_6 = PyTuple_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 178, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_INCREF(((PyObject *)(__pyx_v_15cpp_levenshtein_opcode_names[((size_t)(__pyx_v_ops[__pyx_v_i]).type)]).pystring));
-    __Pyx_GIVEREF(((PyObject *)(__pyx_v_15cpp_levenshtein_opcode_names[((size_t)(__pyx_v_ops[__pyx_v_i]).type)]).pystring));
-    PyTuple_SET_ITEM(__pyx_t_6, 0, ((PyObject *)(__pyx_v_15cpp_levenshtein_opcode_names[((size_t)(__pyx_v_ops[__pyx_v_i]).type)]).pystring));
+    __Pyx_INCREF(((PyObject *)(__pyx_v_13c_levenshtein_opcode_names[((size_t)(__pyx_v_ops[__pyx_v_i]).type)]).pystring));
+    __Pyx_GIVEREF(((PyObject *)(__pyx_v_13c_levenshtein_opcode_names[((size_t)(__pyx_v_ops[__pyx_v_i]).type)]).pystring));
+    PyTuple_SET_ITEM(__pyx_t_6, 0, ((PyObject *)(__pyx_v_13c_levenshtein_opcode_names[((size_t)(__pyx_v_ops[__pyx_v_i]).type)]).pystring));
     __Pyx_GIVEREF(__pyx_t_1);
     PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_5);
@@ -3573,7 +3559,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
     __Pyx_XDECREF_SET(__pyx_v_result_item, ((PyObject*)__pyx_t_6));
     __pyx_t_6 = 0;
 
-    /* "cpp_levenshtein.pyx":180
+    /* "c_levenshtein.pyx":180
  *             <object>opcode_names[<size_t>ops[i].type].pystring,
  *             ops[i].spos, ops[i].dpos)
  *         Py_INCREF(result_item)             # <<<<<<<<<<<<<<
@@ -3582,7 +3568,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
  */
     Py_INCREF(__pyx_v_result_item);
 
-    /* "cpp_levenshtein.pyx":181
+    /* "c_levenshtein.pyx":181
  *             ops[i].spos, ops[i].dpos)
  *         Py_INCREF(result_item)
  *         PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)             # <<<<<<<<<<<<<<
@@ -3592,7 +3578,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
     PyList_SET_ITEM(__pyx_v_tuple_list, ((Py_ssize_t)__pyx_v_i), __pyx_v_result_item);
   }
 
-  /* "cpp_levenshtein.pyx":183
+  /* "c_levenshtein.pyx":183
  *         PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)
  * 
  *     return tuple_list             # <<<<<<<<<<<<<<
@@ -3604,7 +3590,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
   __pyx_r = __pyx_v_tuple_list;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":173
+  /* "c_levenshtein.pyx":173
  * 
  * 
  * cdef editops_to_tuple_list(size_t n, LevEditOp *ops):             # <<<<<<<<<<<<<<
@@ -3617,7 +3603,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("cpp_levenshtein.editops_to_tuple_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.editops_to_tuple_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_tuple_list);
@@ -3627,7 +3613,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":186
+/* "c_levenshtein.pyx":186
  * 
  * 
  * cdef opcodes_to_tuple_list(size_t nb, LevOpCode *bops):             # <<<<<<<<<<<<<<
@@ -3635,7 +3621,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_editops_to_tuple_list(size_t __pyx_v_
  * 
  */
 
-static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_nb, LevOpCode *__pyx_v_bops) {
+static PyObject *__pyx_f_13c_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_nb, LevOpCode *__pyx_v_bops) {
   PyObject *__pyx_v_tuple_list = 0;
   size_t __pyx_v_i;
   PyObject *__pyx_v_result_item = NULL;
@@ -3654,7 +3640,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("opcodes_to_tuple_list", 0);
 
-  /* "cpp_levenshtein.pyx":187
+  /* "c_levenshtein.pyx":187
  * 
  * cdef opcodes_to_tuple_list(size_t nb, LevOpCode *bops):
  *     cdef list tuple_list = PyList_New(<Py_ssize_t>nb)             # <<<<<<<<<<<<<<
@@ -3666,7 +3652,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
   __pyx_v_tuple_list = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":189
+  /* "c_levenshtein.pyx":189
  *     cdef list tuple_list = PyList_New(<Py_ssize_t>nb)
  * 
  *     for i in range(nb):             # <<<<<<<<<<<<<<
@@ -3678,7 +3664,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
     __pyx_v_i = __pyx_t_4;
 
-    /* "cpp_levenshtein.pyx":192
+    /* "c_levenshtein.pyx":192
  *         result_item = (
  *             <object>opcode_names[<size_t>bops[i].type].pystring,
  *             bops[i].sbeg, bops[i].send,             # <<<<<<<<<<<<<<
@@ -3690,7 +3676,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
     __pyx_t_5 = __Pyx_PyInt_FromSize_t((__pyx_v_bops[__pyx_v_i]).send); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 192, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
 
-    /* "cpp_levenshtein.pyx":193
+    /* "c_levenshtein.pyx":193
  *             <object>opcode_names[<size_t>bops[i].type].pystring,
  *             bops[i].sbeg, bops[i].send,
  *             bops[i].dbeg, bops[i].dend)             # <<<<<<<<<<<<<<
@@ -3702,7 +3688,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
     __pyx_t_7 = __Pyx_PyInt_FromSize_t((__pyx_v_bops[__pyx_v_i]).dend); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 193, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
 
-    /* "cpp_levenshtein.pyx":191
+    /* "c_levenshtein.pyx":191
  *     for i in range(nb):
  *         result_item = (
  *             <object>opcode_names[<size_t>bops[i].type].pystring,             # <<<<<<<<<<<<<<
@@ -3711,9 +3697,9 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
  */
     __pyx_t_8 = PyTuple_New(5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 191, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __Pyx_INCREF(((PyObject *)(__pyx_v_15cpp_levenshtein_opcode_names[((size_t)(__pyx_v_bops[__pyx_v_i]).type)]).pystring));
-    __Pyx_GIVEREF(((PyObject *)(__pyx_v_15cpp_levenshtein_opcode_names[((size_t)(__pyx_v_bops[__pyx_v_i]).type)]).pystring));
-    PyTuple_SET_ITEM(__pyx_t_8, 0, ((PyObject *)(__pyx_v_15cpp_levenshtein_opcode_names[((size_t)(__pyx_v_bops[__pyx_v_i]).type)]).pystring));
+    __Pyx_INCREF(((PyObject *)(__pyx_v_13c_levenshtein_opcode_names[((size_t)(__pyx_v_bops[__pyx_v_i]).type)]).pystring));
+    __Pyx_GIVEREF(((PyObject *)(__pyx_v_13c_levenshtein_opcode_names[((size_t)(__pyx_v_bops[__pyx_v_i]).type)]).pystring));
+    PyTuple_SET_ITEM(__pyx_t_8, 0, ((PyObject *)(__pyx_v_13c_levenshtein_opcode_names[((size_t)(__pyx_v_bops[__pyx_v_i]).type)]).pystring));
     __Pyx_GIVEREF(__pyx_t_1);
     PyTuple_SET_ITEM(__pyx_t_8, 1, __pyx_t_1);
     __Pyx_GIVEREF(__pyx_t_5);
@@ -3729,7 +3715,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
     __Pyx_XDECREF_SET(__pyx_v_result_item, ((PyObject*)__pyx_t_8));
     __pyx_t_8 = 0;
 
-    /* "cpp_levenshtein.pyx":194
+    /* "c_levenshtein.pyx":194
  *             bops[i].sbeg, bops[i].send,
  *             bops[i].dbeg, bops[i].dend)
  *         Py_INCREF(result_item)             # <<<<<<<<<<<<<<
@@ -3738,7 +3724,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
  */
     Py_INCREF(__pyx_v_result_item);
 
-    /* "cpp_levenshtein.pyx":195
+    /* "c_levenshtein.pyx":195
  *             bops[i].dbeg, bops[i].dend)
  *         Py_INCREF(result_item)
  *         PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)             # <<<<<<<<<<<<<<
@@ -3748,7 +3734,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
     PyList_SET_ITEM(__pyx_v_tuple_list, ((Py_ssize_t)__pyx_v_i), __pyx_v_result_item);
   }
 
-  /* "cpp_levenshtein.pyx":197
+  /* "c_levenshtein.pyx":197
  *         PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)
  * 
  *     return tuple_list             # <<<<<<<<<<<<<<
@@ -3760,7 +3746,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
   __pyx_r = __pyx_v_tuple_list;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":186
+  /* "c_levenshtein.pyx":186
  * 
  * 
  * cdef opcodes_to_tuple_list(size_t nb, LevOpCode *bops):             # <<<<<<<<<<<<<<
@@ -3775,7 +3761,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_AddTraceback("cpp_levenshtein.opcodes_to_tuple_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.opcodes_to_tuple_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_tuple_list);
@@ -3785,7 +3771,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":201
+/* "c_levenshtein.pyx":201
  * 
  * 
  * cdef matching_blocks_to_tuple_list(size_t len1, size_t len2, size_t nmb, LevMatchingBlock *mblocks):             # <<<<<<<<<<<<<<
@@ -3793,7 +3779,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(size_t __pyx_v_
  * 
  */
 
-static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t __pyx_v_len1, size_t __pyx_v_len2, size_t __pyx_v_nmb, LevMatchingBlock *__pyx_v_mblocks) {
+static PyObject *__pyx_f_13c_levenshtein_matching_blocks_to_tuple_list(size_t __pyx_v_len1, size_t __pyx_v_len2, size_t __pyx_v_nmb, LevMatchingBlock *__pyx_v_mblocks) {
   PyObject *__pyx_v_tuple_list = 0;
   size_t __pyx_v_i;
   PyObject *__pyx_v_result_item = NULL;
@@ -3811,7 +3797,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("matching_blocks_to_tuple_list", 0);
 
-  /* "cpp_levenshtein.pyx":202
+  /* "c_levenshtein.pyx":202
  * 
  * cdef matching_blocks_to_tuple_list(size_t len1, size_t len2, size_t nmb, LevMatchingBlock *mblocks):
  *     cdef list tuple_list = PyList_New(<Py_ssize_t>nmb + 1)             # <<<<<<<<<<<<<<
@@ -3823,7 +3809,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   __pyx_v_tuple_list = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":204
+  /* "c_levenshtein.pyx":204
  *     cdef list tuple_list = PyList_New(<Py_ssize_t>nmb + 1)
  * 
  *     for i in range(nmb):             # <<<<<<<<<<<<<<
@@ -3835,7 +3821,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
     __pyx_v_i = __pyx_t_4;
 
-    /* "cpp_levenshtein.pyx":205
+    /* "c_levenshtein.pyx":205
  * 
  *     for i in range(nmb):
  *         result_item = (mblocks[i].spos, mblocks[i].dpos, mblocks[i].len)             # <<<<<<<<<<<<<<
@@ -3862,7 +3848,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
     __Pyx_XDECREF_SET(__pyx_v_result_item, __pyx_t_7);
     __pyx_t_7 = 0;
 
-    /* "cpp_levenshtein.pyx":206
+    /* "c_levenshtein.pyx":206
  *     for i in range(nmb):
  *         result_item = (mblocks[i].spos, mblocks[i].dpos, mblocks[i].len)
  *         Py_INCREF(result_item)             # <<<<<<<<<<<<<<
@@ -3871,7 +3857,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
  */
     Py_INCREF(__pyx_v_result_item);
 
-    /* "cpp_levenshtein.pyx":207
+    /* "c_levenshtein.pyx":207
  *         result_item = (mblocks[i].spos, mblocks[i].dpos, mblocks[i].len)
  *         Py_INCREF(result_item)
  *         PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)             # <<<<<<<<<<<<<<
@@ -3881,7 +3867,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
     PyList_SET_ITEM(__pyx_v_tuple_list, ((Py_ssize_t)__pyx_v_i), __pyx_v_result_item);
   }
 
-  /* "cpp_levenshtein.pyx":209
+  /* "c_levenshtein.pyx":209
  *         PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)
  * 
  *     result_item = (len1, len2, 0)             # <<<<<<<<<<<<<<
@@ -3906,7 +3892,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   __Pyx_XDECREF_SET(__pyx_v_result_item, __pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "cpp_levenshtein.pyx":210
+  /* "c_levenshtein.pyx":210
  * 
  *     result_item = (len1, len2, 0)
  *     Py_INCREF(result_item)             # <<<<<<<<<<<<<<
@@ -3915,7 +3901,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
  */
   Py_INCREF(__pyx_v_result_item);
 
-  /* "cpp_levenshtein.pyx":211
+  /* "c_levenshtein.pyx":211
  *     result_item = (len1, len2, 0)
  *     Py_INCREF(result_item)
  *     PyList_SET_ITEM(tuple_list, <Py_ssize_t>nmb, result_item)             # <<<<<<<<<<<<<<
@@ -3924,7 +3910,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
  */
   PyList_SET_ITEM(__pyx_v_tuple_list, ((Py_ssize_t)__pyx_v_nmb), __pyx_v_result_item);
 
-  /* "cpp_levenshtein.pyx":212
+  /* "c_levenshtein.pyx":212
  *     Py_INCREF(result_item)
  *     PyList_SET_ITEM(tuple_list, <Py_ssize_t>nmb, result_item)
  *     return tuple_list             # <<<<<<<<<<<<<<
@@ -3936,7 +3922,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   __pyx_r = __pyx_v_tuple_list;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":201
+  /* "c_levenshtein.pyx":201
  * 
  * 
  * cdef matching_blocks_to_tuple_list(size_t len1, size_t len2, size_t nmb, LevMatchingBlock *mblocks):             # <<<<<<<<<<<<<<
@@ -3950,7 +3936,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("cpp_levenshtein.matching_blocks_to_tuple_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.matching_blocks_to_tuple_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_tuple_list);
@@ -3960,7 +3946,7 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":214
+/* "c_levenshtein.pyx":214
  *     return tuple_list
  * 
  * def inverse(edit_operations):             # <<<<<<<<<<<<<<
@@ -3969,16 +3955,16 @@ static PyObject *__pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(size_t 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_15cpp_levenshtein_1inverse(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_13c_levenshtein_1inverse(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_15cpp_levenshtein_inverse, "\n    Invert the sense of an edit operation sequence.\n\n    In other words, it returns a list of edit operations transforming the\n    second (destination) string to the first (source).  It can be used\n    with both editops and opcodes.\n\n    Parameters\n    ----------\n    edit_operations : list[]\n        edit operations to invert\n\n    Returns\n    -------\n    edit_operations : list[]\n        inverted edit operations\n\n    Examples\n    --------\n    >>> inverse(editops('spam', 'park'))\n    [('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]\n    >>> editops('park', 'spam')\n    [('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]\n    ");
-static PyMethodDef __pyx_mdef_15cpp_levenshtein_1inverse = {"inverse", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_15cpp_levenshtein_1inverse, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_15cpp_levenshtein_inverse};
-static PyObject *__pyx_pw_15cpp_levenshtein_1inverse(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_13c_levenshtein_inverse, "\n    Invert the sense of an edit operation sequence.\n\n    In other words, it returns a list of edit operations transforming the\n    second (destination) string to the first (source).  It can be used\n    with both editops and opcodes.\n\n    Parameters\n    ----------\n    edit_operations : list[]\n        edit operations to invert\n\n    Returns\n    -------\n    edit_operations : list[]\n        inverted edit operations\n\n    Examples\n    --------\n    >>> inverse(editops('spam', 'park'))\n    [('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]\n    >>> editops('park', 'spam')\n    [('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]\n    ");
+static PyMethodDef __pyx_mdef_13c_levenshtein_1inverse = {"inverse", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_13c_levenshtein_1inverse, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_13c_levenshtein_inverse};
+static PyObject *__pyx_pw_13c_levenshtein_1inverse(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -4033,18 +4019,18 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("inverse", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 214, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("cpp_levenshtein.inverse", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.inverse", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_15cpp_levenshtein_inverse(__pyx_self, __pyx_v_edit_operations);
+  __pyx_r = __pyx_pf_13c_levenshtein_inverse(__pyx_self, __pyx_v_edit_operations);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations) {
+static PyObject *__pyx_pf_13c_levenshtein_inverse(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations) {
   size_t __pyx_v_n;
   LevEditOp *__pyx_v_ops;
   LevOpCode *__pyx_v_bops;
@@ -4062,7 +4048,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("inverse", 0);
 
-  /* "cpp_levenshtein.pyx":243
+  /* "c_levenshtein.pyx":243
  *     cdef LevOpCode* bops
  * 
  *     if not isinstance(edit_operations, list):             # <<<<<<<<<<<<<<
@@ -4073,7 +4059,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   __pyx_t_2 = ((!(__pyx_t_1 != 0)) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "cpp_levenshtein.pyx":244
+    /* "c_levenshtein.pyx":244
  * 
  *     if not isinstance(edit_operations, list):
  *         raise TypeError("inverse expected a list of edit operations")             # <<<<<<<<<<<<<<
@@ -4086,7 +4072,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(0, 244, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":243
+    /* "c_levenshtein.pyx":243
  *     cdef LevOpCode* bops
  * 
  *     if not isinstance(edit_operations, list):             # <<<<<<<<<<<<<<
@@ -4095,7 +4081,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "cpp_levenshtein.pyx":246
+  /* "c_levenshtein.pyx":246
  *         raise TypeError("inverse expected a list of edit operations")
  * 
  *     n = <size_t>len(<list>edit_operations)             # <<<<<<<<<<<<<<
@@ -4109,7 +4095,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   __pyx_t_4 = PyList_GET_SIZE(((PyObject*)__pyx_v_edit_operations)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 246, __pyx_L1_error)
   __pyx_v_n = ((size_t)__pyx_t_4);
 
-  /* "cpp_levenshtein.pyx":247
+  /* "c_levenshtein.pyx":247
  * 
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:             # <<<<<<<<<<<<<<
@@ -4119,7 +4105,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   __pyx_t_2 = ((!(__pyx_v_n != 0)) != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":248
+    /* "c_levenshtein.pyx":248
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:
  *         return edit_operations             # <<<<<<<<<<<<<<
@@ -4131,7 +4117,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
     __pyx_r = __pyx_v_edit_operations;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":247
+    /* "c_levenshtein.pyx":247
  * 
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:             # <<<<<<<<<<<<<<
@@ -4140,7 +4126,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "cpp_levenshtein.pyx":250
+  /* "c_levenshtein.pyx":250
  *         return edit_operations
  * 
  *     ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
@@ -4148,10 +4134,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  *         lev_editops_invert(n, ops)
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 250, __pyx_L1_error)
-  __pyx_t_5 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 250, __pyx_L1_error)
+  __pyx_t_5 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 250, __pyx_L1_error)
   __pyx_v_ops = __pyx_t_5;
 
-  /* "cpp_levenshtein.pyx":251
+  /* "c_levenshtein.pyx":251
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
@@ -4161,7 +4147,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   __pyx_t_2 = (__pyx_v_ops != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":252
+    /* "c_levenshtein.pyx":252
  *     ops = extract_editops(edit_operations)
  *     if ops:
  *         lev_editops_invert(n, ops)             # <<<<<<<<<<<<<<
@@ -4170,19 +4156,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
     lev_editops_invert(__pyx_v_n, __pyx_v_ops);
 
-    /* "cpp_levenshtein.pyx":253
+    /* "c_levenshtein.pyx":253
  *     if ops:
  *         lev_editops_invert(n, ops)
  *         result = editops_to_tuple_list(n, ops)             # <<<<<<<<<<<<<<
  *         free(ops)
  *         return result
  */
-    __pyx_t_3 = __pyx_f_15cpp_levenshtein_editops_to_tuple_list(__pyx_v_n, __pyx_v_ops); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 253, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_13c_levenshtein_editops_to_tuple_list(__pyx_v_n, __pyx_v_ops); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 253, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_result = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "cpp_levenshtein.pyx":254
+    /* "c_levenshtein.pyx":254
  *         lev_editops_invert(n, ops)
  *         result = editops_to_tuple_list(n, ops)
  *         free(ops)             # <<<<<<<<<<<<<<
@@ -4191,7 +4177,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
     free(__pyx_v_ops);
 
-    /* "cpp_levenshtein.pyx":255
+    /* "c_levenshtein.pyx":255
  *         result = editops_to_tuple_list(n, ops)
  *         free(ops)
  *         return result             # <<<<<<<<<<<<<<
@@ -4203,7 +4189,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
     __pyx_r = __pyx_v_result;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":251
+    /* "c_levenshtein.pyx":251
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
@@ -4212,7 +4198,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "cpp_levenshtein.pyx":257
+  /* "c_levenshtein.pyx":257
  *         return result
  * 
  *     bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
@@ -4220,10 +4206,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  *        lev_opcodes_invert(n, bops)
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 257, __pyx_L1_error)
-  __pyx_t_6 = __pyx_f_15cpp_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 257, __pyx_L1_error)
+  __pyx_t_6 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 257, __pyx_L1_error)
   __pyx_v_bops = __pyx_t_6;
 
-  /* "cpp_levenshtein.pyx":258
+  /* "c_levenshtein.pyx":258
  * 
  *     bops = extract_opcodes(edit_operations)
  *     if bops:             # <<<<<<<<<<<<<<
@@ -4233,7 +4219,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   __pyx_t_2 = (__pyx_v_bops != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":259
+    /* "c_levenshtein.pyx":259
  *     bops = extract_opcodes(edit_operations)
  *     if bops:
  *        lev_opcodes_invert(n, bops)             # <<<<<<<<<<<<<<
@@ -4242,19 +4228,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
     lev_opcodes_invert(__pyx_v_n, __pyx_v_bops);
 
-    /* "cpp_levenshtein.pyx":260
+    /* "c_levenshtein.pyx":260
  *     if bops:
  *        lev_opcodes_invert(n, bops)
  *        result = opcodes_to_tuple_list(n, bops)             # <<<<<<<<<<<<<<
  *        free(bops)
  *        return result
  */
-    __pyx_t_3 = __pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(__pyx_v_n, __pyx_v_bops); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 260, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_13c_levenshtein_opcodes_to_tuple_list(__pyx_v_n, __pyx_v_bops); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 260, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_result = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "cpp_levenshtein.pyx":261
+    /* "c_levenshtein.pyx":261
  *        lev_opcodes_invert(n, bops)
  *        result = opcodes_to_tuple_list(n, bops)
  *        free(bops)             # <<<<<<<<<<<<<<
@@ -4263,7 +4249,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
     free(__pyx_v_bops);
 
-    /* "cpp_levenshtein.pyx":262
+    /* "c_levenshtein.pyx":262
  *        result = opcodes_to_tuple_list(n, bops)
  *        free(bops)
  *        return result             # <<<<<<<<<<<<<<
@@ -4275,7 +4261,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
     __pyx_r = __pyx_v_result;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":258
+    /* "c_levenshtein.pyx":258
  * 
  *     bops = extract_opcodes(edit_operations)
  *     if bops:             # <<<<<<<<<<<<<<
@@ -4284,7 +4270,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
   }
 
-  /* "cpp_levenshtein.pyx":265
+  /* "c_levenshtein.pyx":265
  * 
  * 
  *     raise TypeError("inverse expected a list of edit operations")             # <<<<<<<<<<<<<<
@@ -4297,7 +4283,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __PYX_ERR(0, 265, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":214
+  /* "c_levenshtein.pyx":214
  *     return tuple_list
  * 
  * def inverse(edit_operations):             # <<<<<<<<<<<<<<
@@ -4308,7 +4294,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("cpp_levenshtein.inverse", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.inverse", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
@@ -4317,7 +4303,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":268
+/* "c_levenshtein.pyx":268
  * 
  * 
  * def editops(*args):             # <<<<<<<<<<<<<<
@@ -4326,10 +4312,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_inverse(CYTHON_UNUSED PyObject *__py
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_15cpp_levenshtein_3editops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-PyDoc_STRVAR(__pyx_doc_15cpp_levenshtein_2editops, "\n    Find sequence of edit operations transforming one string to another.\n    \n    editops(source_string, destination_string)\n    editops(edit_operations, source_length, destination_length)\n    \n    The result is a list of triples (operation, spos, dpos), where\n    operation is one of 'equal', 'replace', 'insert', or 'delete';  spos\n    and dpos are position of characters in the first (source) and the\n    second (destination) strings.  These are operations on signle\n    characters.  In fact the returned list doesn't contain the 'equal',\n    but all the related functions accept both lists with and without\n    'equal's.\n    \n    Examples\n    --------\n    >>> editops('spam', 'park')\n    [('delete', 0, 0), ('insert', 3, 2), ('replace', 3, 3)]\n    \n    The alternate form editops(opcodes, source_string, destination_string)\n    can be used for conversion from opcodes (5-tuples) to editops (you can\n    pass strings or their lengths, it doesn't matter).\n    ");
-static PyMethodDef __pyx_mdef_15cpp_levenshtein_3editops = {"editops", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_15cpp_levenshtein_3editops, METH_VARARGS|METH_KEYWORDS, __pyx_doc_15cpp_levenshtein_2editops};
-static PyObject *__pyx_pw_15cpp_levenshtein_3editops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_13c_levenshtein_3editops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+PyDoc_STRVAR(__pyx_doc_13c_levenshtein_2editops, "\n    Find sequence of edit operations transforming one string to another.\n    \n    editops(source_string, destination_string)\n    editops(edit_operations, source_length, destination_length)\n    \n    The result is a list of triples (operation, spos, dpos), where\n    operation is one of 'equal', 'replace', 'insert', or 'delete';  spos\n    and dpos are position of characters in the first (source) and the\n    second (destination) strings.  These are operations on signle\n    characters.  In fact the returned list doesn't contain the 'equal',\n    but all the related functions accept both lists with and without\n    'equal's.\n    \n    Examples\n    --------\n    >>> editops('spam', 'park')\n    [('delete', 0, 0), ('insert', 3, 2), ('replace', 3, 3)]\n    \n    The alternate form editops(opcodes, source_string, destination_string)\n    can be used for conversion from opcodes (5-tuples) to editops (you can\n    pass strings or their lengths, it doesn't matter).\n    ");
+static PyMethodDef __pyx_mdef_13c_levenshtein_3editops = {"editops", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13c_levenshtein_3editops, METH_VARARGS|METH_KEYWORDS, __pyx_doc_13c_levenshtein_2editops};
+static PyObject *__pyx_pw_13c_levenshtein_3editops(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_args = 0;
   CYTHON_UNUSED const Py_ssize_t __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
@@ -4339,7 +4325,7 @@ static PyObject *__pyx_pw_15cpp_levenshtein_3editops(PyObject *__pyx_self, PyObj
   if (unlikely(__pyx_kwds) && __Pyx_NumKwargs_VARARGS(__pyx_kwds) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "editops", 0))) return NULL;
   __Pyx_INCREF(__pyx_args);
   __pyx_v_args = __pyx_args;
-  __pyx_r = __pyx_pf_15cpp_levenshtein_2editops(__pyx_self, __pyx_v_args);
+  __pyx_r = __pyx_pf_13c_levenshtein_2editops(__pyx_self, __pyx_v_args);
 
   /* function exit code */
   __Pyx_DECREF(__pyx_v_args);
@@ -4347,7 +4333,7 @@ static PyObject *__pyx_pw_15cpp_levenshtein_3editops(PyObject *__pyx_self, PyObj
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args) {
+static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args) {
   size_t __pyx_v_n;
   size_t __pyx_v_len1;
   size_t __pyx_v_len2;
@@ -4373,7 +4359,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("editops", 0);
 
-  /* "cpp_levenshtein.pyx":297
+  /* "c_levenshtein.pyx":297
  * 
  *     # convert: we were called (bops, s1, s2)
  *     if len(args) == 3:             # <<<<<<<<<<<<<<
@@ -4384,7 +4370,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __pyx_t_2 = ((__pyx_t_1 == 3) != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":298
+    /* "c_levenshtein.pyx":298
  *     # convert: we were called (bops, s1, s2)
  *     if len(args) == 3:
  *         arg1, arg2, arg3 = args             # <<<<<<<<<<<<<<
@@ -4422,7 +4408,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_v_arg3 = __pyx_t_5;
     __pyx_t_5 = 0;
 
-    /* "cpp_levenshtein.pyx":300
+    /* "c_levenshtein.pyx":300
  *         arg1, arg2, arg3 = args
  * 
  *         if not isinstance(arg1, list):             # <<<<<<<<<<<<<<
@@ -4433,7 +4419,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = ((!(__pyx_t_2 != 0)) != 0);
     if (unlikely(__pyx_t_6)) {
 
-      /* "cpp_levenshtein.pyx":301
+      /* "c_levenshtein.pyx":301
  * 
  *         if not isinstance(arg1, list):
  *             raise ValueError("editops first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -4446,7 +4432,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __PYX_ERR(0, 301, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":300
+      /* "c_levenshtein.pyx":300
  *         arg1, arg2, arg3 = args
  * 
  *         if not isinstance(arg1, list):             # <<<<<<<<<<<<<<
@@ -4455,7 +4441,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":303
+    /* "c_levenshtein.pyx":303
  *             raise ValueError("editops first argument must be a List of edit operations")
  * 
  *         n = <size_t>len(<list>arg1)             # <<<<<<<<<<<<<<
@@ -4469,7 +4455,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = PyList_GET_SIZE(((PyObject*)__pyx_v_arg1)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 303, __pyx_L1_error)
     __pyx_v_n = ((size_t)__pyx_t_1);
 
-    /* "cpp_levenshtein.pyx":304
+    /* "c_levenshtein.pyx":304
  * 
  *         n = <size_t>len(<list>arg1)
  *         if not n:             # <<<<<<<<<<<<<<
@@ -4479,7 +4465,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = ((!(__pyx_v_n != 0)) != 0);
     if (__pyx_t_6) {
 
-      /* "cpp_levenshtein.pyx":305
+      /* "c_levenshtein.pyx":305
  *         n = <size_t>len(<list>arg1)
  *         if not n:
  *             return arg1             # <<<<<<<<<<<<<<
@@ -4491,7 +4477,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __pyx_r = __pyx_v_arg1;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":304
+      /* "c_levenshtein.pyx":304
  * 
  *         n = <size_t>len(<list>arg1)
  *         if not n:             # <<<<<<<<<<<<<<
@@ -4500,25 +4486,25 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":307
+    /* "c_levenshtein.pyx":307
  *             return arg1
  * 
  *         len1 = get_length_of_anything(arg2)             # <<<<<<<<<<<<<<
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  */
-    __pyx_v_len1 = __pyx_f_15cpp_levenshtein_get_length_of_anything(__pyx_v_arg2);
+    __pyx_v_len1 = __pyx_f_13c_levenshtein_get_length_of_anything(__pyx_v_arg2);
 
-    /* "cpp_levenshtein.pyx":308
+    /* "c_levenshtein.pyx":308
  * 
  *         len1 = get_length_of_anything(arg2)
  *         len2 = get_length_of_anything(arg3)             # <<<<<<<<<<<<<<
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  *             raise ValueError("editops second and third argument must specify sizes")
  */
-    __pyx_v_len2 = __pyx_f_15cpp_levenshtein_get_length_of_anything(__pyx_v_arg3);
+    __pyx_v_len2 = __pyx_f_13c_levenshtein_get_length_of_anything(__pyx_v_arg3);
 
-    /* "cpp_levenshtein.pyx":309
+    /* "c_levenshtein.pyx":309
  *         len1 = get_length_of_anything(arg2)
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -4536,7 +4522,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_L7_bool_binop_done:;
     if (unlikely(__pyx_t_6)) {
 
-      /* "cpp_levenshtein.pyx":310
+      /* "c_levenshtein.pyx":310
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  *             raise ValueError("editops second and third argument must specify sizes")             # <<<<<<<<<<<<<<
@@ -4549,7 +4535,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __PYX_ERR(0, 310, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":309
+      /* "c_levenshtein.pyx":309
  *         len1 = get_length_of_anything(arg2)
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -4558,7 +4544,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":312
+    /* "c_levenshtein.pyx":312
  *             raise ValueError("editops second and third argument must specify sizes")
  * 
  *         bops = extract_opcodes(arg1)             # <<<<<<<<<<<<<<
@@ -4566,10 +4552,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 312, __pyx_L1_error)
-    __pyx_t_7 = __pyx_f_15cpp_levenshtein_extract_opcodes(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 312, __pyx_L1_error)
+    __pyx_t_7 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 312, __pyx_L1_error)
     __pyx_v_bops = __pyx_t_7;
 
-    /* "cpp_levenshtein.pyx":313
+    /* "c_levenshtein.pyx":313
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -4579,7 +4565,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = (__pyx_v_bops != 0);
     if (__pyx_t_6) {
 
-      /* "cpp_levenshtein.pyx":314
+      /* "c_levenshtein.pyx":314
  *         bops = extract_opcodes(arg1)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -4589,7 +4575,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __pyx_t_6 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
       if (unlikely(__pyx_t_6)) {
 
-        /* "cpp_levenshtein.pyx":315
+        /* "c_levenshtein.pyx":315
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
@@ -4598,7 +4584,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
         free(__pyx_v_bops);
 
-        /* "cpp_levenshtein.pyx":316
+        /* "c_levenshtein.pyx":316
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("editops edit operation list is invalid")             # <<<<<<<<<<<<<<
@@ -4611,7 +4597,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __PYX_ERR(0, 316, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":314
+        /* "c_levenshtein.pyx":314
  *         bops = extract_opcodes(arg1)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -4620,7 +4606,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       }
 
-      /* "cpp_levenshtein.pyx":318
+      /* "c_levenshtein.pyx":318
  *                 raise ValueError("editops edit operation list is invalid")
  * 
  *             ops = lev_opcodes_to_editops(n, bops, &n, 0)             # <<<<<<<<<<<<<<
@@ -4629,7 +4615,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       __pyx_v_ops = lev_opcodes_to_editops(__pyx_v_n, __pyx_v_bops, (&__pyx_v_n), 0);
 
-      /* "cpp_levenshtein.pyx":319
+      /* "c_levenshtein.pyx":319
  * 
  *             ops = lev_opcodes_to_editops(n, bops, &n, 0)
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -4638,7 +4624,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":321
+      /* "c_levenshtein.pyx":321
  *             free(bops)
  * 
  *             if not ops and n:             # <<<<<<<<<<<<<<
@@ -4656,7 +4642,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __pyx_L12_bool_binop_done:;
       if (unlikely(__pyx_t_6)) {
 
-        /* "cpp_levenshtein.pyx":322
+        /* "c_levenshtein.pyx":322
  * 
  *             if not ops and n:
  *                 raise MemoryError             # <<<<<<<<<<<<<<
@@ -4665,7 +4651,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
         PyErr_NoMemory(); __PYX_ERR(0, 322, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":321
+        /* "c_levenshtein.pyx":321
  *             free(bops)
  * 
  *             if not ops and n:             # <<<<<<<<<<<<<<
@@ -4674,19 +4660,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       }
 
-      /* "cpp_levenshtein.pyx":324
+      /* "c_levenshtein.pyx":324
  *                 raise MemoryError
  * 
  *             oplist = editops_to_tuple_list(n, ops)             # <<<<<<<<<<<<<<
  *             free(ops)
  *             return oplist
  */
-      __pyx_t_5 = __pyx_f_15cpp_levenshtein_editops_to_tuple_list(__pyx_v_n, __pyx_v_ops); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 324, __pyx_L1_error)
+      __pyx_t_5 = __pyx_f_13c_levenshtein_editops_to_tuple_list(__pyx_v_n, __pyx_v_ops); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 324, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_v_oplist = __pyx_t_5;
       __pyx_t_5 = 0;
 
-      /* "cpp_levenshtein.pyx":325
+      /* "c_levenshtein.pyx":325
  * 
  *             oplist = editops_to_tuple_list(n, ops)
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -4695,7 +4681,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":326
+      /* "c_levenshtein.pyx":326
  *             oplist = editops_to_tuple_list(n, ops)
  *             free(ops)
  *             return oplist             # <<<<<<<<<<<<<<
@@ -4707,7 +4693,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __pyx_r = __pyx_v_oplist;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":313
+      /* "c_levenshtein.pyx":313
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -4716,7 +4702,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":328
+    /* "c_levenshtein.pyx":328
  *             return oplist
  * 
  *         ops = extract_editops(arg1)             # <<<<<<<<<<<<<<
@@ -4724,10 +4710,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  *             if lev_editops_check_errors(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 328, __pyx_L1_error)
-    __pyx_t_8 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 328, __pyx_L1_error)
+    __pyx_t_8 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 328, __pyx_L1_error)
     __pyx_v_ops = __pyx_t_8;
 
-    /* "cpp_levenshtein.pyx":329
+    /* "c_levenshtein.pyx":329
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -4737,7 +4723,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = (__pyx_v_ops != 0);
     if (__pyx_t_6) {
 
-      /* "cpp_levenshtein.pyx":330
+      /* "c_levenshtein.pyx":330
  *         ops = extract_editops(arg1)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -4747,7 +4733,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __pyx_t_6 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
       if (unlikely(__pyx_t_6)) {
 
-        /* "cpp_levenshtein.pyx":331
+        /* "c_levenshtein.pyx":331
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
@@ -4756,7 +4742,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
         free(__pyx_v_ops);
 
-        /* "cpp_levenshtein.pyx":332
+        /* "c_levenshtein.pyx":332
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("editops edit operation list is invalid")             # <<<<<<<<<<<<<<
@@ -4769,7 +4755,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __PYX_ERR(0, 332, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":330
+        /* "c_levenshtein.pyx":330
  *         ops = extract_editops(arg1)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -4778,7 +4764,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       }
 
-      /* "cpp_levenshtein.pyx":334
+      /* "c_levenshtein.pyx":334
  *                 raise ValueError("editops edit operation list is invalid")
  * 
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -4787,7 +4773,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":335
+      /* "c_levenshtein.pyx":335
  * 
  *             free(ops)
  *             return arg1             # <<<<<<<<<<<<<<
@@ -4799,7 +4785,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
       __pyx_r = __pyx_v_arg1;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":329
+      /* "c_levenshtein.pyx":329
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -4808,7 +4794,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":337
+    /* "c_levenshtein.pyx":337
  *             return arg1
  * 
  *         raise TypeError("editops first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -4821,7 +4807,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __PYX_ERR(0, 337, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":297
+    /* "c_levenshtein.pyx":297
  * 
  *     # convert: we were called (bops, s1, s2)
  *     if len(args) == 3:             # <<<<<<<<<<<<<<
@@ -4830,7 +4816,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "cpp_levenshtein.pyx":340
+  /* "c_levenshtein.pyx":340
  * 
  *     # find editops: we were called (s1, s2)
  *     arg1, arg2 = args             # <<<<<<<<<<<<<<
@@ -4862,7 +4848,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __pyx_v_arg2 = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "cpp_levenshtein.pyx":341
+  /* "c_levenshtein.pyx":341
  *     # find editops: we were called (s1, s2)
  *     arg1, arg2 = args
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):             # <<<<<<<<<<<<<<
@@ -4882,7 +4868,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __pyx_L17_bool_binop_done:;
   if (__pyx_t_6) {
 
-    /* "cpp_levenshtein.pyx":342
+    /* "c_levenshtein.pyx":342
  *     arg1, arg2 = args
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):
  *         len1 = len(<bytes>arg1)             # <<<<<<<<<<<<<<
@@ -4896,7 +4882,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = PyBytes_GET_SIZE(((PyObject*)__pyx_v_arg1)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 342, __pyx_L1_error)
     __pyx_v_len1 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":343
+    /* "c_levenshtein.pyx":343
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):
  *         len1 = len(<bytes>arg1)
  *         len2 = len(<bytes>arg2)             # <<<<<<<<<<<<<<
@@ -4910,7 +4896,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = PyBytes_GET_SIZE(((PyObject*)__pyx_v_arg2)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 343, __pyx_L1_error)
     __pyx_v_len2 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":345
+    /* "c_levenshtein.pyx":345
  *         len2 = len(<bytes>arg2)
  * 
  *         ops = lev_editops_find(             # <<<<<<<<<<<<<<
@@ -4919,7 +4905,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     __pyx_v_ops = lev_editops_find(__pyx_v_len1, ((lev_byte *)PyBytes_AS_STRING(__pyx_v_arg1)), __pyx_v_len2, ((lev_byte *)PyBytes_AS_STRING(__pyx_v_arg2)), (&__pyx_v_n));
 
-    /* "cpp_levenshtein.pyx":341
+    /* "c_levenshtein.pyx":341
  *     # find editops: we were called (s1, s2)
  *     arg1, arg2 = args
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):             # <<<<<<<<<<<<<<
@@ -4929,7 +4915,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     goto __pyx_L16;
   }
 
-  /* "cpp_levenshtein.pyx":350
+  /* "c_levenshtein.pyx":350
  *             &n)
  * 
  *     elif isinstance(arg1, str) and isinstance(arg2, str):             # <<<<<<<<<<<<<<
@@ -4949,7 +4935,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __pyx_L19_bool_binop_done:;
   if (likely(__pyx_t_6)) {
 
-    /* "cpp_levenshtein.pyx":351
+    /* "c_levenshtein.pyx":351
  * 
  *     elif isinstance(arg1, str) and isinstance(arg2, str):
  *         len1 = len(<str>arg1)             # <<<<<<<<<<<<<<
@@ -4963,7 +4949,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = __Pyx_PyUnicode_GET_LENGTH(((PyObject*)__pyx_v_arg1)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 351, __pyx_L1_error)
     __pyx_v_len1 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":352
+    /* "c_levenshtein.pyx":352
  *     elif isinstance(arg1, str) and isinstance(arg2, str):
  *         len1 = len(<str>arg1)
  *         len2 = len(<str>arg2)             # <<<<<<<<<<<<<<
@@ -4977,7 +4963,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = __Pyx_PyUnicode_GET_LENGTH(((PyObject*)__pyx_v_arg2)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 352, __pyx_L1_error)
     __pyx_v_len2 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":354
+    /* "c_levenshtein.pyx":354
  *         len2 = len(<str>arg2)
  * 
  *         ops = lev_u_editops_find(             # <<<<<<<<<<<<<<
@@ -4986,7 +4972,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     __pyx_v_ops = lev_u_editops_find(__pyx_v_len1, ((wchar_t *)PyUnicode_AS_UNICODE(__pyx_v_arg1)), __pyx_v_len2, ((wchar_t *)PyUnicode_AS_UNICODE(__pyx_v_arg2)), (&__pyx_v_n));
 
-    /* "cpp_levenshtein.pyx":350
+    /* "c_levenshtein.pyx":350
  *             &n)
  * 
  *     elif isinstance(arg1, str) and isinstance(arg2, str):             # <<<<<<<<<<<<<<
@@ -4996,7 +4982,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
     goto __pyx_L16;
   }
 
-  /* "cpp_levenshtein.pyx":360
+  /* "c_levenshtein.pyx":360
  * 
  *     else:
  *         raise TypeError("editops expected two Strings or two Unicodes")             # <<<<<<<<<<<<<<
@@ -5012,7 +4998,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   }
   __pyx_L16:;
 
-  /* "cpp_levenshtein.pyx":362
+  /* "c_levenshtein.pyx":362
  *         raise TypeError("editops expected two Strings or two Unicodes")
  * 
  *     if not ops and n:             # <<<<<<<<<<<<<<
@@ -5030,7 +5016,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __pyx_L22_bool_binop_done:;
   if (unlikely(__pyx_t_6)) {
 
-    /* "cpp_levenshtein.pyx":363
+    /* "c_levenshtein.pyx":363
  * 
  *     if not ops and n:
  *         raise MemoryError             # <<<<<<<<<<<<<<
@@ -5039,7 +5025,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
     PyErr_NoMemory(); __PYX_ERR(0, 363, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":362
+    /* "c_levenshtein.pyx":362
  *         raise TypeError("editops expected two Strings or two Unicodes")
  * 
  *     if not ops and n:             # <<<<<<<<<<<<<<
@@ -5048,19 +5034,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "cpp_levenshtein.pyx":365
+  /* "c_levenshtein.pyx":365
  *         raise MemoryError
  * 
  *     oplist = editops_to_tuple_list(n, ops)             # <<<<<<<<<<<<<<
  *     free(ops)
  *     return oplist
  */
-  __pyx_t_4 = __pyx_f_15cpp_levenshtein_editops_to_tuple_list(__pyx_v_n, __pyx_v_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 365, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_13c_levenshtein_editops_to_tuple_list(__pyx_v_n, __pyx_v_ops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 365, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_v_oplist = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "cpp_levenshtein.pyx":366
+  /* "c_levenshtein.pyx":366
  * 
  *     oplist = editops_to_tuple_list(n, ops)
  *     free(ops)             # <<<<<<<<<<<<<<
@@ -5069,7 +5055,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
   free(__pyx_v_ops);
 
-  /* "cpp_levenshtein.pyx":367
+  /* "c_levenshtein.pyx":367
  *     oplist = editops_to_tuple_list(n, ops)
  *     free(ops)
  *     return oplist             # <<<<<<<<<<<<<<
@@ -5081,7 +5067,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __pyx_r = __pyx_v_oplist;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":268
+  /* "c_levenshtein.pyx":268
  * 
  * 
  * def editops(*args):             # <<<<<<<<<<<<<<
@@ -5094,7 +5080,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("cpp_levenshtein.editops", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.editops", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_arg1);
@@ -5106,7 +5092,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":370
+/* "c_levenshtein.pyx":370
  * 
  * 
  * def opcodes(*args):             # <<<<<<<<<<<<<<
@@ -5115,10 +5101,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_2editops(CYTHON_UNUSED PyObject *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_15cpp_levenshtein_5opcodes(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-PyDoc_STRVAR(__pyx_doc_15cpp_levenshtein_4opcodes, "\n    Find sequence of edit operations transforming one string to another.\n    \n    opcodes(source_string, destination_string)\n    opcodes(edit_operations, source_length, destination_length)\n    \n    The result is a list of 5-tuples with the same meaning as in\n    SequenceMatcher's get_opcodes() output.  But since the algorithms\n    differ, the actual sequences from Levenshtein and SequenceMatcher\n    may differ too.\n    \n    Examples\n    --------\n    >>> for x in opcodes('spam', 'park'):\n    ...     print(x)\n    ...\n    ('delete', 0, 1, 0, 0)\n    ('equal', 1, 3, 0, 2)\n    ('insert', 3, 3, 2, 3)\n    ('replace', 3, 4, 3, 4)\n    \n    The alternate form opcodes(editops, source_string, destination_string)\n    can be used for conversion from editops (triples) to opcodes (you can\n    pass strings or their lengths, it doesn't matter).\n    ");
-static PyMethodDef __pyx_mdef_15cpp_levenshtein_5opcodes = {"opcodes", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_15cpp_levenshtein_5opcodes, METH_VARARGS|METH_KEYWORDS, __pyx_doc_15cpp_levenshtein_4opcodes};
-static PyObject *__pyx_pw_15cpp_levenshtein_5opcodes(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_13c_levenshtein_5opcodes(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+PyDoc_STRVAR(__pyx_doc_13c_levenshtein_4opcodes, "\n    Find sequence of edit operations transforming one string to another.\n    \n    opcodes(source_string, destination_string)\n    opcodes(edit_operations, source_length, destination_length)\n    \n    The result is a list of 5-tuples with the same meaning as in\n    SequenceMatcher's get_opcodes() output.  But since the algorithms\n    differ, the actual sequences from Levenshtein and SequenceMatcher\n    may differ too.\n    \n    Examples\n    --------\n    >>> for x in opcodes('spam', 'park'):\n    ...     print(x)\n    ...\n    ('delete', 0, 1, 0, 0)\n    ('equal', 1, 3, 0, 2)\n    ('insert', 3, 3, 2, 3)\n    ('replace', 3, 4, 3, 4)\n    \n    The alternate form opcodes(editops, source_string, destination_string)\n    can be used for conversion from editops (triples) to opcodes (you can\n    pass strings or their lengths, it doesn't matter).\n    ");
+static PyMethodDef __pyx_mdef_13c_levenshtein_5opcodes = {"opcodes", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13c_levenshtein_5opcodes, METH_VARARGS|METH_KEYWORDS, __pyx_doc_13c_levenshtein_4opcodes};
+static PyObject *__pyx_pw_13c_levenshtein_5opcodes(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_args = 0;
   CYTHON_UNUSED const Py_ssize_t __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
@@ -5128,7 +5114,7 @@ static PyObject *__pyx_pw_15cpp_levenshtein_5opcodes(PyObject *__pyx_self, PyObj
   if (unlikely(__pyx_kwds) && __Pyx_NumKwargs_VARARGS(__pyx_kwds) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "opcodes", 0))) return NULL;
   __Pyx_INCREF(__pyx_args);
   __pyx_v_args = __pyx_args;
-  __pyx_r = __pyx_pf_15cpp_levenshtein_4opcodes(__pyx_self, __pyx_v_args);
+  __pyx_r = __pyx_pf_13c_levenshtein_4opcodes(__pyx_self, __pyx_v_args);
 
   /* function exit code */
   __Pyx_DECREF(__pyx_v_args);
@@ -5136,7 +5122,7 @@ static PyObject *__pyx_pw_15cpp_levenshtein_5opcodes(PyObject *__pyx_self, PyObj
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args) {
+static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_args) {
   size_t __pyx_v_n;
   size_t __pyx_v_nb;
   size_t __pyx_v_len1;
@@ -5163,7 +5149,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("opcodes", 0);
 
-  /* "cpp_levenshtein.pyx":401
+  /* "c_levenshtein.pyx":401
  * 
  *     # convert: we were called (ops, s1, s2)
  *     if len(args) == 3:             # <<<<<<<<<<<<<<
@@ -5174,7 +5160,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_t_2 = ((__pyx_t_1 == 3) != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":402
+    /* "c_levenshtein.pyx":402
  *     # convert: we were called (ops, s1, s2)
  *     if len(args) == 3:
  *         arg1, arg2, arg3 = args             # <<<<<<<<<<<<<<
@@ -5212,7 +5198,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_v_arg3 = __pyx_t_5;
     __pyx_t_5 = 0;
 
-    /* "cpp_levenshtein.pyx":404
+    /* "c_levenshtein.pyx":404
  *         arg1, arg2, arg3 = args
  * 
  *         if not isinstance(arg1, list):             # <<<<<<<<<<<<<<
@@ -5223,7 +5209,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = ((!(__pyx_t_2 != 0)) != 0);
     if (unlikely(__pyx_t_6)) {
 
-      /* "cpp_levenshtein.pyx":405
+      /* "c_levenshtein.pyx":405
  * 
  *         if not isinstance(arg1, list):
  *             raise ValueError("opcodes first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -5236,7 +5222,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __PYX_ERR(0, 405, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":404
+      /* "c_levenshtein.pyx":404
  *         arg1, arg2, arg3 = args
  * 
  *         if not isinstance(arg1, list):             # <<<<<<<<<<<<<<
@@ -5245,7 +5231,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":407
+    /* "c_levenshtein.pyx":407
  *             raise ValueError("opcodes first argument must be a List of edit operations")
  * 
  *         n = <size_t>len(<list>arg1)             # <<<<<<<<<<<<<<
@@ -5259,25 +5245,25 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = PyList_GET_SIZE(((PyObject*)__pyx_v_arg1)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 407, __pyx_L1_error)
     __pyx_v_n = ((size_t)__pyx_t_1);
 
-    /* "cpp_levenshtein.pyx":408
+    /* "c_levenshtein.pyx":408
  * 
  *         n = <size_t>len(<list>arg1)
  *         len1 = get_length_of_anything(arg2)             # <<<<<<<<<<<<<<
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  */
-    __pyx_v_len1 = __pyx_f_15cpp_levenshtein_get_length_of_anything(__pyx_v_arg2);
+    __pyx_v_len1 = __pyx_f_13c_levenshtein_get_length_of_anything(__pyx_v_arg2);
 
-    /* "cpp_levenshtein.pyx":409
+    /* "c_levenshtein.pyx":409
  *         n = <size_t>len(<list>arg1)
  *         len1 = get_length_of_anything(arg2)
  *         len2 = get_length_of_anything(arg3)             # <<<<<<<<<<<<<<
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  *             raise ValueError("opcodes second and third argument must specify sizes")
  */
-    __pyx_v_len2 = __pyx_f_15cpp_levenshtein_get_length_of_anything(__pyx_v_arg3);
+    __pyx_v_len2 = __pyx_f_13c_levenshtein_get_length_of_anything(__pyx_v_arg3);
 
-    /* "cpp_levenshtein.pyx":410
+    /* "c_levenshtein.pyx":410
  *         len1 = get_length_of_anything(arg2)
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -5295,7 +5281,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_L6_bool_binop_done:;
     if (unlikely(__pyx_t_6)) {
 
-      /* "cpp_levenshtein.pyx":411
+      /* "c_levenshtein.pyx":411
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  *             raise ValueError("opcodes second and third argument must specify sizes")             # <<<<<<<<<<<<<<
@@ -5308,7 +5294,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __PYX_ERR(0, 411, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":410
+      /* "c_levenshtein.pyx":410
  *         len1 = get_length_of_anything(arg2)
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -5317,7 +5303,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":413
+    /* "c_levenshtein.pyx":413
  *             raise ValueError("opcodes second and third argument must specify sizes")
  * 
  *         ops = extract_editops(arg1)             # <<<<<<<<<<<<<<
@@ -5325,10 +5311,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  *             if lev_editops_check_errors(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 413, __pyx_L1_error)
-    __pyx_t_7 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 413, __pyx_L1_error)
+    __pyx_t_7 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 413, __pyx_L1_error)
     __pyx_v_ops = __pyx_t_7;
 
-    /* "cpp_levenshtein.pyx":414
+    /* "c_levenshtein.pyx":414
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -5338,7 +5324,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = (__pyx_v_ops != 0);
     if (__pyx_t_6) {
 
-      /* "cpp_levenshtein.pyx":415
+      /* "c_levenshtein.pyx":415
  *         ops = extract_editops(arg1)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -5348,7 +5334,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __pyx_t_6 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
       if (unlikely(__pyx_t_6)) {
 
-        /* "cpp_levenshtein.pyx":416
+        /* "c_levenshtein.pyx":416
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
@@ -5357,7 +5343,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
         free(__pyx_v_ops);
 
-        /* "cpp_levenshtein.pyx":417
+        /* "c_levenshtein.pyx":417
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("opcodes edit operation list is invalid")             # <<<<<<<<<<<<<<
@@ -5370,7 +5356,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __PYX_ERR(0, 417, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":415
+        /* "c_levenshtein.pyx":415
  *         ops = extract_editops(arg1)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -5379,7 +5365,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       }
 
-      /* "cpp_levenshtein.pyx":419
+      /* "c_levenshtein.pyx":419
  *                 raise ValueError("opcodes edit operation list is invalid")
  * 
  *             bops = lev_editops_to_opcodes(n, ops, &n, len1, len2)             # <<<<<<<<<<<<<<
@@ -5388,7 +5374,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       __pyx_v_bops = lev_editops_to_opcodes(__pyx_v_n, __pyx_v_ops, (&__pyx_v_n), __pyx_v_len1, __pyx_v_len2);
 
-      /* "cpp_levenshtein.pyx":420
+      /* "c_levenshtein.pyx":420
  * 
  *             bops = lev_editops_to_opcodes(n, ops, &n, len1, len2)
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -5397,7 +5383,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":422
+      /* "c_levenshtein.pyx":422
  *             free(ops)
  * 
  *             if not bops and n:             # <<<<<<<<<<<<<<
@@ -5415,7 +5401,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __pyx_L11_bool_binop_done:;
       if (unlikely(__pyx_t_6)) {
 
-        /* "cpp_levenshtein.pyx":423
+        /* "c_levenshtein.pyx":423
  * 
  *             if not bops and n:
  *                 raise MemoryError             # <<<<<<<<<<<<<<
@@ -5424,7 +5410,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
         PyErr_NoMemory(); __PYX_ERR(0, 423, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":422
+        /* "c_levenshtein.pyx":422
  *             free(ops)
  * 
  *             if not bops and n:             # <<<<<<<<<<<<<<
@@ -5433,19 +5419,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       }
 
-      /* "cpp_levenshtein.pyx":425
+      /* "c_levenshtein.pyx":425
  *                 raise MemoryError
  * 
  *             oplist = opcodes_to_tuple_list(n, bops)             # <<<<<<<<<<<<<<
  *             free(bops)
  *             return oplist
  */
-      __pyx_t_5 = __pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(__pyx_v_n, __pyx_v_bops); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 425, __pyx_L1_error)
+      __pyx_t_5 = __pyx_f_13c_levenshtein_opcodes_to_tuple_list(__pyx_v_n, __pyx_v_bops); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 425, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_v_oplist = __pyx_t_5;
       __pyx_t_5 = 0;
 
-      /* "cpp_levenshtein.pyx":426
+      /* "c_levenshtein.pyx":426
  * 
  *             oplist = opcodes_to_tuple_list(n, bops)
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -5454,7 +5440,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":427
+      /* "c_levenshtein.pyx":427
  *             oplist = opcodes_to_tuple_list(n, bops)
  *             free(bops)
  *             return oplist             # <<<<<<<<<<<<<<
@@ -5466,7 +5452,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __pyx_r = __pyx_v_oplist;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":414
+      /* "c_levenshtein.pyx":414
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -5475,7 +5461,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":429
+    /* "c_levenshtein.pyx":429
  *             return oplist
  * 
  *         bops = extract_opcodes(arg1)             # <<<<<<<<<<<<<<
@@ -5483,10 +5469,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 429, __pyx_L1_error)
-    __pyx_t_8 = __pyx_f_15cpp_levenshtein_extract_opcodes(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 429, __pyx_L1_error)
+    __pyx_t_8 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 429, __pyx_L1_error)
     __pyx_v_bops = __pyx_t_8;
 
-    /* "cpp_levenshtein.pyx":430
+    /* "c_levenshtein.pyx":430
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -5496,7 +5482,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_6 = (__pyx_v_bops != 0);
     if (__pyx_t_6) {
 
-      /* "cpp_levenshtein.pyx":431
+      /* "c_levenshtein.pyx":431
  *         bops = extract_opcodes(arg1)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -5506,7 +5492,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __pyx_t_6 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
       if (unlikely(__pyx_t_6)) {
 
-        /* "cpp_levenshtein.pyx":432
+        /* "c_levenshtein.pyx":432
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
@@ -5515,7 +5501,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
         free(__pyx_v_bops);
 
-        /* "cpp_levenshtein.pyx":433
+        /* "c_levenshtein.pyx":433
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("opcodes edit operation list is invalid")             # <<<<<<<<<<<<<<
@@ -5528,7 +5514,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __PYX_ERR(0, 433, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":431
+        /* "c_levenshtein.pyx":431
  *         bops = extract_opcodes(arg1)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -5537,7 +5523,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       }
 
-      /* "cpp_levenshtein.pyx":435
+      /* "c_levenshtein.pyx":435
  *                 raise ValueError("opcodes edit operation list is invalid")
  * 
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -5546,7 +5532,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":436
+      /* "c_levenshtein.pyx":436
  * 
  *             free(bops)
  *             return arg1             # <<<<<<<<<<<<<<
@@ -5558,7 +5544,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
       __pyx_r = __pyx_v_arg1;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":430
+      /* "c_levenshtein.pyx":430
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -5567,7 +5553,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     }
 
-    /* "cpp_levenshtein.pyx":438
+    /* "c_levenshtein.pyx":438
  *             return arg1
  * 
  *         raise TypeError("opcodes first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -5580,7 +5566,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __PYX_ERR(0, 438, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":401
+    /* "c_levenshtein.pyx":401
  * 
  *     # convert: we were called (ops, s1, s2)
  *     if len(args) == 3:             # <<<<<<<<<<<<<<
@@ -5589,7 +5575,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "cpp_levenshtein.pyx":441
+  /* "c_levenshtein.pyx":441
  * 
  *     # find editops: we were called (s1, s2)
  *     arg1, arg2 = args             # <<<<<<<<<<<<<<
@@ -5621,7 +5607,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_v_arg2 = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "cpp_levenshtein.pyx":442
+  /* "c_levenshtein.pyx":442
  *     # find editops: we were called (s1, s2)
  *     arg1, arg2 = args
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):             # <<<<<<<<<<<<<<
@@ -5641,7 +5627,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_L16_bool_binop_done:;
   if (__pyx_t_6) {
 
-    /* "cpp_levenshtein.pyx":443
+    /* "c_levenshtein.pyx":443
  *     arg1, arg2 = args
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):
  *         len1 = len(<bytes>arg1)             # <<<<<<<<<<<<<<
@@ -5655,7 +5641,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = PyBytes_GET_SIZE(((PyObject*)__pyx_v_arg1)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 443, __pyx_L1_error)
     __pyx_v_len1 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":444
+    /* "c_levenshtein.pyx":444
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):
  *         len1 = len(<bytes>arg1)
  *         len2 = len(<bytes>arg2)             # <<<<<<<<<<<<<<
@@ -5669,7 +5655,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = PyBytes_GET_SIZE(((PyObject*)__pyx_v_arg2)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 444, __pyx_L1_error)
     __pyx_v_len2 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":446
+    /* "c_levenshtein.pyx":446
  *         len2 = len(<bytes>arg2)
  * 
  *         ops = lev_editops_find(             # <<<<<<<<<<<<<<
@@ -5678,7 +5664,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     __pyx_v_ops = lev_editops_find(__pyx_v_len1, ((lev_byte *)PyBytes_AS_STRING(__pyx_v_arg1)), __pyx_v_len2, ((lev_byte *)PyBytes_AS_STRING(__pyx_v_arg2)), (&__pyx_v_n));
 
-    /* "cpp_levenshtein.pyx":442
+    /* "c_levenshtein.pyx":442
  *     # find editops: we were called (s1, s2)
  *     arg1, arg2 = args
  *     if isinstance(arg1, bytes) and isinstance(arg2, bytes):             # <<<<<<<<<<<<<<
@@ -5688,7 +5674,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     goto __pyx_L15;
   }
 
-  /* "cpp_levenshtein.pyx":451
+  /* "c_levenshtein.pyx":451
  *             &n)
  * 
  *     elif isinstance(arg1, str) and isinstance(arg2, str):             # <<<<<<<<<<<<<<
@@ -5708,7 +5694,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_L18_bool_binop_done:;
   if (likely(__pyx_t_6)) {
 
-    /* "cpp_levenshtein.pyx":452
+    /* "c_levenshtein.pyx":452
  * 
  *     elif isinstance(arg1, str) and isinstance(arg2, str):
  *         len1 = len(<str>arg1)             # <<<<<<<<<<<<<<
@@ -5722,7 +5708,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = __Pyx_PyUnicode_GET_LENGTH(((PyObject*)__pyx_v_arg1)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 452, __pyx_L1_error)
     __pyx_v_len1 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":453
+    /* "c_levenshtein.pyx":453
  *     elif isinstance(arg1, str) and isinstance(arg2, str):
  *         len1 = len(<str>arg1)
  *         len2 = len(<str>arg2)             # <<<<<<<<<<<<<<
@@ -5736,7 +5722,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     __pyx_t_1 = __Pyx_PyUnicode_GET_LENGTH(((PyObject*)__pyx_v_arg2)); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 453, __pyx_L1_error)
     __pyx_v_len2 = __pyx_t_1;
 
-    /* "cpp_levenshtein.pyx":455
+    /* "c_levenshtein.pyx":455
  *         len2 = len(<str>arg2)
  * 
  *         ops = lev_u_editops_find(             # <<<<<<<<<<<<<<
@@ -5745,7 +5731,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     __pyx_v_ops = lev_u_editops_find(__pyx_v_len1, ((wchar_t *)PyUnicode_AS_UNICODE(__pyx_v_arg1)), __pyx_v_len2, ((wchar_t *)PyUnicode_AS_UNICODE(__pyx_v_arg2)), (&__pyx_v_n));
 
-    /* "cpp_levenshtein.pyx":451
+    /* "c_levenshtein.pyx":451
  *             &n)
  * 
  *     elif isinstance(arg1, str) and isinstance(arg2, str):             # <<<<<<<<<<<<<<
@@ -5755,7 +5741,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
     goto __pyx_L15;
   }
 
-  /* "cpp_levenshtein.pyx":461
+  /* "c_levenshtein.pyx":461
  * 
  *     else:
  *         raise TypeError("opcodes expected two Strings or two Unicodes")             # <<<<<<<<<<<<<<
@@ -5771,7 +5757,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   }
   __pyx_L15:;
 
-  /* "cpp_levenshtein.pyx":463
+  /* "c_levenshtein.pyx":463
  *         raise TypeError("opcodes expected two Strings or two Unicodes")
  * 
  *     if not ops and n:             # <<<<<<<<<<<<<<
@@ -5789,7 +5775,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_L21_bool_binop_done:;
   if (unlikely(__pyx_t_6)) {
 
-    /* "cpp_levenshtein.pyx":464
+    /* "c_levenshtein.pyx":464
  * 
  *     if not ops and n:
  *         raise MemoryError             # <<<<<<<<<<<<<<
@@ -5798,7 +5784,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     PyErr_NoMemory(); __PYX_ERR(0, 464, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":463
+    /* "c_levenshtein.pyx":463
  *         raise TypeError("opcodes expected two Strings or two Unicodes")
  * 
  *     if not ops and n:             # <<<<<<<<<<<<<<
@@ -5807,7 +5793,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "cpp_levenshtein.pyx":466
+  /* "c_levenshtein.pyx":466
  *         raise MemoryError
  * 
  *     bops = lev_editops_to_opcodes(n, ops, &nb, len1, len2)             # <<<<<<<<<<<<<<
@@ -5816,7 +5802,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
   __pyx_v_bops = lev_editops_to_opcodes(__pyx_v_n, __pyx_v_ops, (&__pyx_v_nb), __pyx_v_len1, __pyx_v_len2);
 
-  /* "cpp_levenshtein.pyx":467
+  /* "c_levenshtein.pyx":467
  * 
  *     bops = lev_editops_to_opcodes(n, ops, &nb, len1, len2)
  *     free(ops)             # <<<<<<<<<<<<<<
@@ -5825,7 +5811,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
   free(__pyx_v_ops);
 
-  /* "cpp_levenshtein.pyx":468
+  /* "c_levenshtein.pyx":468
  *     bops = lev_editops_to_opcodes(n, ops, &nb, len1, len2)
  *     free(ops)
  *     if not bops and nb:             # <<<<<<<<<<<<<<
@@ -5843,7 +5829,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_L24_bool_binop_done:;
   if (unlikely(__pyx_t_6)) {
 
-    /* "cpp_levenshtein.pyx":469
+    /* "c_levenshtein.pyx":469
  *     free(ops)
  *     if not bops and nb:
  *         raise MemoryError             # <<<<<<<<<<<<<<
@@ -5852,7 +5838,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
     PyErr_NoMemory(); __PYX_ERR(0, 469, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":468
+    /* "c_levenshtein.pyx":468
  *     bops = lev_editops_to_opcodes(n, ops, &nb, len1, len2)
  *     free(ops)
  *     if not bops and nb:             # <<<<<<<<<<<<<<
@@ -5861,19 +5847,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
   }
 
-  /* "cpp_levenshtein.pyx":471
+  /* "c_levenshtein.pyx":471
  *         raise MemoryError
  * 
  *     oplist = opcodes_to_tuple_list(nb, bops)             # <<<<<<<<<<<<<<
  *     free(bops)
  *     return oplist
  */
-  __pyx_t_4 = __pyx_f_15cpp_levenshtein_opcodes_to_tuple_list(__pyx_v_nb, __pyx_v_bops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 471, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_13c_levenshtein_opcodes_to_tuple_list(__pyx_v_nb, __pyx_v_bops); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 471, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_v_oplist = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "cpp_levenshtein.pyx":472
+  /* "c_levenshtein.pyx":472
  * 
  *     oplist = opcodes_to_tuple_list(nb, bops)
  *     free(bops)             # <<<<<<<<<<<<<<
@@ -5882,7 +5868,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
   free(__pyx_v_bops);
 
-  /* "cpp_levenshtein.pyx":473
+  /* "c_levenshtein.pyx":473
  *     oplist = opcodes_to_tuple_list(nb, bops)
  *     free(bops)
  *     return oplist             # <<<<<<<<<<<<<<
@@ -5894,7 +5880,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __pyx_r = __pyx_v_oplist;
   goto __pyx_L0;
 
-  /* "cpp_levenshtein.pyx":370
+  /* "c_levenshtein.pyx":370
  * 
  * 
  * def opcodes(*args):             # <<<<<<<<<<<<<<
@@ -5907,7 +5893,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("cpp_levenshtein.opcodes", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.opcodes", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_arg1);
@@ -5919,7 +5905,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":476
+/* "c_levenshtein.pyx":476
  * 
  * 
  * def matching_blocks(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
@@ -5928,16 +5914,16 @@ static PyObject *__pyx_pf_15cpp_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__p
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_15cpp_levenshtein_7matching_blocks(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_13c_levenshtein_7matching_blocks(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_15cpp_levenshtein_6matching_blocks, "\n    Find identical blocks in two strings.\n\n    Parameters\n    ----------\n    edit_operations : list[]\n        editops or opcodes created for the source and destination string\n    source_string : str | int\n        source string or the length of the source string\n    destination_string : str | int\n        destination string or the length of the destination string\n\n    Returns\n    -------\n    matching_blocks : list[]\n        List of triples with the same meaning as in SequenceMatcher's\n        get_matching_blocks() output.\n\n    Examples\n    --------\n    >>> a, b = 'spam', 'park'\n    >>> matching_blocks(editops(a, b), a, b)\n    [(1, 0, 2), (4, 4, 0)]\n    >>> matching_blocks(editops(a, b), len(a), len(b))\n    [(1, 0, 2), (4, 4, 0)]\n    \n    The last zero-length block is not an error, but it's there for\n    compatibility with difflib which always emits it.\n    \n    One can join the matching blocks to get two identical strings:\n    >>> a, b = 'dog kennels', 'mattresses'\n    >>> mb = matching_blocks(editops(a,b), a, b)\n    >>> ''.join([a[x[0]:x[0]+x[2]] for x in mb])\n    'ees'\n    >>> ''.join([b[x[1]:x[1]+x[2]] for x in mb])\n    'ees'\n    ");
-static PyMethodDef __pyx_mdef_15cpp_levenshtein_7matching_blocks = {"matching_blocks", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_15cpp_levenshtein_7matching_blocks, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_15cpp_levenshtein_6matching_blocks};
-static PyObject *__pyx_pw_15cpp_levenshtein_7matching_blocks(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_13c_levenshtein_6matching_blocks, "\n    Find identical blocks in two strings.\n\n    Parameters\n    ----------\n    edit_operations : list[]\n        editops or opcodes created for the source and destination string\n    source_string : str | int\n        source string or the length of the source string\n    destination_string : str | int\n        destination string or the length of the destination string\n\n    Returns\n    -------\n    matching_blocks : list[]\n        List of triples with the same meaning as in SequenceMatcher's\n        get_matching_blocks() output.\n\n    Examples\n    --------\n    >>> a, b = 'spam', 'park'\n    >>> matching_blocks(editops(a, b), a, b)\n    [(1, 0, 2), (4, 4, 0)]\n    >>> matching_blocks(editops(a, b), len(a), len(b))\n    [(1, 0, 2), (4, 4, 0)]\n    \n    The last zero-length block is not an error, but it's there for\n    compatibility with difflib which always emits it.\n    \n    One can join the matching blocks to get two identical strings:\n    >>> a, b = 'dog kennels', 'mattresses'\n    >>> mb = matching_blocks(editops(a,b), a, b)\n    >>> ''.join([a[x[0]:x[0]+x[2]] for x in mb])\n    'ees'\n    >>> ''.join([b[x[1]:x[1]+x[2]] for x in mb])\n    'ees'\n    ");
+static PyMethodDef __pyx_mdef_13c_levenshtein_7matching_blocks = {"matching_blocks", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_13c_levenshtein_7matching_blocks, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_13c_levenshtein_6matching_blocks};
+static PyObject *__pyx_pw_13c_levenshtein_7matching_blocks(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -6016,18 +6002,18 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("matching_blocks", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 476, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("cpp_levenshtein.matching_blocks", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.matching_blocks", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_15cpp_levenshtein_6matching_blocks(__pyx_self, __pyx_v_edit_operations, __pyx_v_source_string, __pyx_v_destination_string);
+  __pyx_r = __pyx_pf_13c_levenshtein_6matching_blocks(__pyx_self, __pyx_v_edit_operations, __pyx_v_source_string, __pyx_v_destination_string);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string) {
+static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string) {
   size_t __pyx_v_n;
   size_t __pyx_v_nmb;
   size_t __pyx_v_len1;
@@ -6049,7 +6035,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("matching_blocks", 0);
 
-  /* "cpp_levenshtein.pyx":519
+  /* "c_levenshtein.pyx":519
  *     cdef LevMatchingBlock* mblocks
  * 
  *     if not isinstance(edit_operations, list):             # <<<<<<<<<<<<<<
@@ -6060,7 +6046,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   __pyx_t_2 = ((!(__pyx_t_1 != 0)) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "cpp_levenshtein.pyx":520
+    /* "c_levenshtein.pyx":520
  * 
  *     if not isinstance(edit_operations, list):
  *         raise TypeError("matching_blocks first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -6073,7 +6059,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(0, 520, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":519
+    /* "c_levenshtein.pyx":519
  *     cdef LevMatchingBlock* mblocks
  * 
  *     if not isinstance(edit_operations, list):             # <<<<<<<<<<<<<<
@@ -6082,7 +6068,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
   }
 
-  /* "cpp_levenshtein.pyx":522
+  /* "c_levenshtein.pyx":522
  *         raise TypeError("matching_blocks first argument must be a List of edit operations")
  * 
  *     n = <size_t>len(<list>edit_operations)             # <<<<<<<<<<<<<<
@@ -6096,25 +6082,25 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   __pyx_t_4 = PyList_GET_SIZE(((PyObject*)__pyx_v_edit_operations)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 522, __pyx_L1_error)
   __pyx_v_n = ((size_t)__pyx_t_4);
 
-  /* "cpp_levenshtein.pyx":523
+  /* "c_levenshtein.pyx":523
  * 
  *     n = <size_t>len(<list>edit_operations)
  *     len1 = get_length_of_anything(source_string)             # <<<<<<<<<<<<<<
  *     len2 = get_length_of_anything(destination_string)
  *     if len1 == <size_t>-1 or len2 == <size_t>-1:
  */
-  __pyx_v_len1 = __pyx_f_15cpp_levenshtein_get_length_of_anything(__pyx_v_source_string);
+  __pyx_v_len1 = __pyx_f_13c_levenshtein_get_length_of_anything(__pyx_v_source_string);
 
-  /* "cpp_levenshtein.pyx":524
+  /* "c_levenshtein.pyx":524
  *     n = <size_t>len(<list>edit_operations)
  *     len1 = get_length_of_anything(source_string)
  *     len2 = get_length_of_anything(destination_string)             # <<<<<<<<<<<<<<
  *     if len1 == <size_t>-1 or len2 == <size_t>-1:
  *         raise ValueError("matching_blocks second and third argument must specify sizes")
  */
-  __pyx_v_len2 = __pyx_f_15cpp_levenshtein_get_length_of_anything(__pyx_v_destination_string);
+  __pyx_v_len2 = __pyx_f_13c_levenshtein_get_length_of_anything(__pyx_v_destination_string);
 
-  /* "cpp_levenshtein.pyx":525
+  /* "c_levenshtein.pyx":525
  *     len1 = get_length_of_anything(source_string)
  *     len2 = get_length_of_anything(destination_string)
  *     if len1 == <size_t>-1 or len2 == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -6132,7 +6118,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   __pyx_L5_bool_binop_done:;
   if (unlikely(__pyx_t_2)) {
 
-    /* "cpp_levenshtein.pyx":526
+    /* "c_levenshtein.pyx":526
  *     len2 = get_length_of_anything(destination_string)
  *     if len1 == <size_t>-1 or len2 == <size_t>-1:
  *         raise ValueError("matching_blocks second and third argument must specify sizes")             # <<<<<<<<<<<<<<
@@ -6145,7 +6131,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(0, 526, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":525
+    /* "c_levenshtein.pyx":525
  *     len1 = get_length_of_anything(source_string)
  *     len2 = get_length_of_anything(destination_string)
  *     if len1 == <size_t>-1 or len2 == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -6154,7 +6140,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
   }
 
-  /* "cpp_levenshtein.pyx":529
+  /* "c_levenshtein.pyx":529
  * 
  * 
  *     ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
@@ -6162,10 +6148,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  *         if lev_editops_check_errors(len1, len2, n, ops):
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 529, __pyx_L1_error)
-  __pyx_t_5 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 529, __pyx_L1_error)
+  __pyx_t_5 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 529, __pyx_L1_error)
   __pyx_v_ops = __pyx_t_5;
 
-  /* "cpp_levenshtein.pyx":530
+  /* "c_levenshtein.pyx":530
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
@@ -6175,7 +6161,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   __pyx_t_2 = (__pyx_v_ops != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":531
+    /* "c_levenshtein.pyx":531
  *     ops = extract_editops(edit_operations)
  *     if ops:
  *         if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -6185,7 +6171,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __pyx_t_2 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
     if (unlikely(__pyx_t_2)) {
 
-      /* "cpp_levenshtein.pyx":532
+      /* "c_levenshtein.pyx":532
  *     if ops:
  *         if lev_editops_check_errors(len1, len2, n, ops):
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -6194,7 +6180,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":533
+      /* "c_levenshtein.pyx":533
  *         if lev_editops_check_errors(len1, len2, n, ops):
  *             free(ops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -6207,7 +6193,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __PYX_ERR(0, 533, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":531
+      /* "c_levenshtein.pyx":531
  *     ops = extract_editops(edit_operations)
  *     if ops:
  *         if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -6216,7 +6202,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     }
 
-    /* "cpp_levenshtein.pyx":535
+    /* "c_levenshtein.pyx":535
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  * 
  *         mblocks = lev_editops_matching_blocks(len1, len2, n, ops, &nmb)             # <<<<<<<<<<<<<<
@@ -6225,7 +6211,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     __pyx_v_mblocks = lev_editops_matching_blocks(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops, (&__pyx_v_nmb));
 
-    /* "cpp_levenshtein.pyx":536
+    /* "c_levenshtein.pyx":536
  * 
  *         mblocks = lev_editops_matching_blocks(len1, len2, n, ops, &nmb)
  *         free(ops)             # <<<<<<<<<<<<<<
@@ -6234,7 +6220,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     free(__pyx_v_ops);
 
-    /* "cpp_levenshtein.pyx":537
+    /* "c_levenshtein.pyx":537
  *         mblocks = lev_editops_matching_blocks(len1, len2, n, ops, &nmb)
  *         free(ops)
  *         if not mblocks and n:             # <<<<<<<<<<<<<<
@@ -6252,7 +6238,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __pyx_L10_bool_binop_done:;
     if (unlikely(__pyx_t_2)) {
 
-      /* "cpp_levenshtein.pyx":538
+      /* "c_levenshtein.pyx":538
  *         free(ops)
  *         if not mblocks and n:
  *             raise MemoryError             # <<<<<<<<<<<<<<
@@ -6261,7 +6247,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
       PyErr_NoMemory(); __PYX_ERR(0, 538, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":537
+      /* "c_levenshtein.pyx":537
  *         mblocks = lev_editops_matching_blocks(len1, len2, n, ops, &nmb)
  *         free(ops)
  *         if not mblocks and n:             # <<<<<<<<<<<<<<
@@ -6270,19 +6256,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     }
 
-    /* "cpp_levenshtein.pyx":540
+    /* "c_levenshtein.pyx":540
  *             raise MemoryError
  * 
  *         result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)             # <<<<<<<<<<<<<<
  *         free(mblocks)
  *         return result
  */
-    __pyx_t_3 = __pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(__pyx_v_len1, __pyx_v_len2, __pyx_v_nmb, __pyx_v_mblocks); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 540, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_13c_levenshtein_matching_blocks_to_tuple_list(__pyx_v_len1, __pyx_v_len2, __pyx_v_nmb, __pyx_v_mblocks); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 540, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_result = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "cpp_levenshtein.pyx":541
+    /* "c_levenshtein.pyx":541
  * 
  *         result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)
  *         free(mblocks)             # <<<<<<<<<<<<<<
@@ -6291,7 +6277,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     free(__pyx_v_mblocks);
 
-    /* "cpp_levenshtein.pyx":542
+    /* "c_levenshtein.pyx":542
  *         result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)
  *         free(mblocks)
  *         return result             # <<<<<<<<<<<<<<
@@ -6303,7 +6289,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __pyx_r = __pyx_v_result;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":530
+    /* "c_levenshtein.pyx":530
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
@@ -6312,7 +6298,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
   }
 
-  /* "cpp_levenshtein.pyx":544
+  /* "c_levenshtein.pyx":544
  *         return result
  * 
  *     bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
@@ -6320,10 +6306,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  *         if lev_opcodes_check_errors(len1, len2, n, bops):
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 544, __pyx_L1_error)
-  __pyx_t_6 = __pyx_f_15cpp_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 544, __pyx_L1_error)
+  __pyx_t_6 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 544, __pyx_L1_error)
   __pyx_v_bops = __pyx_t_6;
 
-  /* "cpp_levenshtein.pyx":545
+  /* "c_levenshtein.pyx":545
  * 
  *     bops = extract_opcodes(edit_operations)
  *     if bops:             # <<<<<<<<<<<<<<
@@ -6333,7 +6319,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   __pyx_t_2 = (__pyx_v_bops != 0);
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":546
+    /* "c_levenshtein.pyx":546
  *     bops = extract_opcodes(edit_operations)
  *     if bops:
  *         if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -6343,7 +6329,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __pyx_t_2 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
     if (unlikely(__pyx_t_2)) {
 
-      /* "cpp_levenshtein.pyx":547
+      /* "c_levenshtein.pyx":547
  *     if bops:
  *         if lev_opcodes_check_errors(len1, len2, n, bops):
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -6352,7 +6338,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":548
+      /* "c_levenshtein.pyx":548
  *         if lev_opcodes_check_errors(len1, len2, n, bops):
  *             free(bops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -6365,7 +6351,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __PYX_ERR(0, 548, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":546
+      /* "c_levenshtein.pyx":546
  *     bops = extract_opcodes(edit_operations)
  *     if bops:
  *         if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -6374,7 +6360,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     }
 
-    /* "cpp_levenshtein.pyx":550
+    /* "c_levenshtein.pyx":550
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  * 
  *         mblocks = lev_opcodes_matching_blocks(len1, len2, n, bops, &nmb)             # <<<<<<<<<<<<<<
@@ -6383,7 +6369,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     __pyx_v_mblocks = lev_opcodes_matching_blocks(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops, (&__pyx_v_nmb));
 
-    /* "cpp_levenshtein.pyx":551
+    /* "c_levenshtein.pyx":551
  * 
  *         mblocks = lev_opcodes_matching_blocks(len1, len2, n, bops, &nmb)
  *         free(bops)             # <<<<<<<<<<<<<<
@@ -6392,7 +6378,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     free(__pyx_v_bops);
 
-    /* "cpp_levenshtein.pyx":552
+    /* "c_levenshtein.pyx":552
  *         mblocks = lev_opcodes_matching_blocks(len1, len2, n, bops, &nmb)
  *         free(bops)
  *         if not mblocks and n:             # <<<<<<<<<<<<<<
@@ -6410,7 +6396,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __pyx_L15_bool_binop_done:;
     if (unlikely(__pyx_t_2)) {
 
-      /* "cpp_levenshtein.pyx":553
+      /* "c_levenshtein.pyx":553
  *         free(bops)
  *         if not mblocks and n:
  *             raise MemoryError             # <<<<<<<<<<<<<<
@@ -6419,7 +6405,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
       PyErr_NoMemory(); __PYX_ERR(0, 553, __pyx_L1_error)
 
-      /* "cpp_levenshtein.pyx":552
+      /* "c_levenshtein.pyx":552
  *         mblocks = lev_opcodes_matching_blocks(len1, len2, n, bops, &nmb)
  *         free(bops)
  *         if not mblocks and n:             # <<<<<<<<<<<<<<
@@ -6428,19 +6414,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     }
 
-    /* "cpp_levenshtein.pyx":555
+    /* "c_levenshtein.pyx":555
  *             raise MemoryError
  * 
  *         result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)             # <<<<<<<<<<<<<<
  *         free(mblocks)
  *         return result
  */
-    __pyx_t_3 = __pyx_f_15cpp_levenshtein_matching_blocks_to_tuple_list(__pyx_v_len1, __pyx_v_len2, __pyx_v_nmb, __pyx_v_mblocks); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 555, __pyx_L1_error)
+    __pyx_t_3 = __pyx_f_13c_levenshtein_matching_blocks_to_tuple_list(__pyx_v_len1, __pyx_v_len2, __pyx_v_nmb, __pyx_v_mblocks); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 555, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_result = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "cpp_levenshtein.pyx":556
+    /* "c_levenshtein.pyx":556
  * 
  *         result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)
  *         free(mblocks)             # <<<<<<<<<<<<<<
@@ -6449,7 +6435,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
     free(__pyx_v_mblocks);
 
-    /* "cpp_levenshtein.pyx":557
+    /* "c_levenshtein.pyx":557
  *         result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)
  *         free(mblocks)
  *         return result             # <<<<<<<<<<<<<<
@@ -6461,7 +6447,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
     __pyx_r = __pyx_v_result;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":545
+    /* "c_levenshtein.pyx":545
  * 
  *     bops = extract_opcodes(edit_operations)
  *     if bops:             # <<<<<<<<<<<<<<
@@ -6470,7 +6456,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
   }
 
-  /* "cpp_levenshtein.pyx":559
+  /* "c_levenshtein.pyx":559
  *         return result
  * 
  *     raise TypeError("matching_blocks expected a list of edit operations")             # <<<<<<<<<<<<<<
@@ -6483,7 +6469,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __PYX_ERR(0, 559, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":476
+  /* "c_levenshtein.pyx":476
  * 
  * 
  * def matching_blocks(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
@@ -6494,7 +6480,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("cpp_levenshtein.matching_blocks", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.matching_blocks", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
@@ -6503,7 +6489,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":562
+/* "c_levenshtein.pyx":562
  * 
  * 
  * def subtract_edit(edit_operations, subsequence):             # <<<<<<<<<<<<<<
@@ -6512,16 +6498,16 @@ static PyObject *__pyx_pf_15cpp_levenshtein_6matching_blocks(CYTHON_UNUSED PyObj
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_15cpp_levenshtein_9subtract_edit(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_13c_levenshtein_9subtract_edit(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_15cpp_levenshtein_8subtract_edit, "\n    Subtract an edit subsequence from a sequence.\n    \n    subtract_edit(edit_operations, subsequence)\n    \n    The result is equivalent to\n    editops(apply_edit(subsequence, s1, s2), s2), except that is\n    constructed directly from the edit operations.  That is, if you apply\n    it to the result of subsequence application, you get the same final\n    string as from application complete edit_operations.  It may be not\n    identical, though (in amibuous cases, like insertion of a character\n    next to the same character).\n    \n    The subtracted subsequence must be an ordered subset of\n    edit_operations.\n    \n    Note this function does not accept difflib-style opcodes as no one in\n    his right mind wants to create subsequences from them.\n\n    Examples\n    --------\n    >>> e = editops('man', 'scotsman')\n    >>> e1 = e[:3]\n    >>> bastard = apply_edit(e1, 'man', 'scotsman')\n    >>> bastard\n    'scoman'\n    >>> apply_edit(subtract_edit(e, e1), bastard, 'scotsman')\n    'scotsman'\n    ");
-static PyMethodDef __pyx_mdef_15cpp_levenshtein_9subtract_edit = {"subtract_edit", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_15cpp_levenshtein_9subtract_edit, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_15cpp_levenshtein_8subtract_edit};
-static PyObject *__pyx_pw_15cpp_levenshtein_9subtract_edit(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_13c_levenshtein_8subtract_edit, "\n    Subtract an edit subsequence from a sequence.\n    \n    subtract_edit(edit_operations, subsequence)\n    \n    The result is equivalent to\n    editops(apply_edit(subsequence, s1, s2), s2), except that is\n    constructed directly from the edit operations.  That is, if you apply\n    it to the result of subsequence application, you get the same final\n    string as from application complete edit_operations.  It may be not\n    identical, though (in amibuous cases, like insertion of a character\n    next to the same character).\n    \n    The subtracted subsequence must be an ordered subset of\n    edit_operations.\n    \n    Note this function does not accept difflib-style opcodes as no one in\n    his right mind wants to create subsequences from them.\n\n    Examples\n    --------\n    >>> e = editops('man', 'scotsman')\n    >>> e1 = e[:3]\n    >>> bastard = apply_edit(e1, 'man', 'scotsman')\n    >>> bastard\n    'scoman'\n    >>> apply_edit(subtract_edit(e, e1), bastard, 'scotsman')\n    'scotsman'\n    ");
+static PyMethodDef __pyx_mdef_13c_levenshtein_9subtract_edit = {"subtract_edit", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_13c_levenshtein_9subtract_edit, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_13c_levenshtein_8subtract_edit};
+static PyObject *__pyx_pw_13c_levenshtein_9subtract_edit(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -6588,18 +6574,18 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("subtract_edit", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 562, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("cpp_levenshtein.subtract_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.subtract_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_15cpp_levenshtein_8subtract_edit(__pyx_self, __pyx_v_edit_operations, __pyx_v_subsequence);
+  __pyx_r = __pyx_pf_13c_levenshtein_8subtract_edit(__pyx_self, __pyx_v_edit_operations, __pyx_v_subsequence);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_subsequence) {
+static PyObject *__pyx_pf_13c_levenshtein_8subtract_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_subsequence) {
   size_t __pyx_v_n;
   size_t __pyx_v_ns;
   size_t __pyx_v_nr;
@@ -6620,7 +6606,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("subtract_edit", 0);
 
-  /* "cpp_levenshtein.pyx":597
+  /* "c_levenshtein.pyx":597
  *     cdef LevEditOp* orem
  * 
  *     if not isinstance(edit_operations, list) or not isinstance(subsequence, list):             # <<<<<<<<<<<<<<
@@ -6640,7 +6626,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __pyx_L4_bool_binop_done:;
   if (unlikely(__pyx_t_1)) {
 
-    /* "cpp_levenshtein.pyx":598
+    /* "c_levenshtein.pyx":598
  * 
  *     if not isinstance(edit_operations, list) or not isinstance(subsequence, list):
  *         raise TypeError("subtract_edit expected two lists of edit operations")             # <<<<<<<<<<<<<<
@@ -6653,7 +6639,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __PYX_ERR(0, 598, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":597
+    /* "c_levenshtein.pyx":597
  *     cdef LevEditOp* orem
  * 
  *     if not isinstance(edit_operations, list) or not isinstance(subsequence, list):             # <<<<<<<<<<<<<<
@@ -6662,7 +6648,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
   }
 
-  /* "cpp_levenshtein.pyx":600
+  /* "c_levenshtein.pyx":600
  *         raise TypeError("subtract_edit expected two lists of edit operations")
  * 
  *     ns = <size_t>len(<list>subsequence)             # <<<<<<<<<<<<<<
@@ -6676,7 +6662,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __pyx_t_5 = PyList_GET_SIZE(((PyObject*)__pyx_v_subsequence)); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 600, __pyx_L1_error)
   __pyx_v_ns = ((size_t)__pyx_t_5);
 
-  /* "cpp_levenshtein.pyx":601
+  /* "c_levenshtein.pyx":601
  * 
  *     ns = <size_t>len(<list>subsequence)
  *     if not ns:             # <<<<<<<<<<<<<<
@@ -6686,7 +6672,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __pyx_t_1 = ((!(__pyx_v_ns != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "cpp_levenshtein.pyx":602
+    /* "c_levenshtein.pyx":602
  *     ns = <size_t>len(<list>subsequence)
  *     if not ns:
  *         return edit_operations             # <<<<<<<<<<<<<<
@@ -6698,7 +6684,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
     __pyx_r = __pyx_v_edit_operations;
     goto __pyx_L0;
 
-    /* "cpp_levenshtein.pyx":601
+    /* "c_levenshtein.pyx":601
  * 
  *     ns = <size_t>len(<list>subsequence)
  *     if not ns:             # <<<<<<<<<<<<<<
@@ -6707,7 +6693,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
   }
 
-  /* "cpp_levenshtein.pyx":604
+  /* "c_levenshtein.pyx":604
  *         return edit_operations
  * 
  *     n = <size_t>len(<list>edit_operations)             # <<<<<<<<<<<<<<
@@ -6721,7 +6707,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __pyx_t_5 = PyList_GET_SIZE(((PyObject*)__pyx_v_edit_operations)); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 604, __pyx_L1_error)
   __pyx_v_n = ((size_t)__pyx_t_5);
 
-  /* "cpp_levenshtein.pyx":605
+  /* "c_levenshtein.pyx":605
  * 
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:             # <<<<<<<<<<<<<<
@@ -6731,7 +6717,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __pyx_t_1 = ((!(__pyx_v_n != 0)) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "cpp_levenshtein.pyx":606
+    /* "c_levenshtein.pyx":606
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:
  *         raise ValueError("subtract_edit subsequence is not a subsequence or is invalid")             # <<<<<<<<<<<<<<
@@ -6744,7 +6730,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __PYX_ERR(0, 606, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":605
+    /* "c_levenshtein.pyx":605
  * 
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:             # <<<<<<<<<<<<<<
@@ -6753,7 +6739,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
   }
 
-  /* "cpp_levenshtein.pyx":608
+  /* "c_levenshtein.pyx":608
  *         raise ValueError("subtract_edit subsequence is not a subsequence or is invalid")
  * 
  *     ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
@@ -6761,10 +6747,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  *         osub = extract_editops(subsequence)
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 608, __pyx_L1_error)
-  __pyx_t_6 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 608, __pyx_L1_error)
+  __pyx_t_6 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 608, __pyx_L1_error)
   __pyx_v_ops = __pyx_t_6;
 
-  /* "cpp_levenshtein.pyx":609
+  /* "c_levenshtein.pyx":609
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
@@ -6774,7 +6760,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __pyx_t_1 = (__pyx_v_ops != 0);
   if (__pyx_t_1) {
 
-    /* "cpp_levenshtein.pyx":610
+    /* "c_levenshtein.pyx":610
  *     ops = extract_editops(edit_operations)
  *     if ops:
  *         osub = extract_editops(subsequence)             # <<<<<<<<<<<<<<
@@ -6782,10 +6768,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  *             orem = lev_editops_subtract(n, ops, ns, osub, &nr)
  */
     if (!(likely(PyList_CheckExact(__pyx_v_subsequence))||((__pyx_v_subsequence) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_subsequence))) __PYX_ERR(0, 610, __pyx_L1_error)
-    __pyx_t_6 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_subsequence)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 610, __pyx_L1_error)
+    __pyx_t_6 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_subsequence)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 610, __pyx_L1_error)
     __pyx_v_osub = __pyx_t_6;
 
-    /* "cpp_levenshtein.pyx":611
+    /* "c_levenshtein.pyx":611
  *     if ops:
  *         osub = extract_editops(subsequence)
  *         if osub:             # <<<<<<<<<<<<<<
@@ -6795,7 +6781,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
     __pyx_t_1 = (__pyx_v_osub != 0);
     if (__pyx_t_1) {
 
-      /* "cpp_levenshtein.pyx":612
+      /* "c_levenshtein.pyx":612
  *         osub = extract_editops(subsequence)
  *         if osub:
  *             orem = lev_editops_subtract(n, ops, ns, osub, &nr)             # <<<<<<<<<<<<<<
@@ -6804,7 +6790,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
       __pyx_v_orem = lev_editops_subtract(__pyx_v_n, __pyx_v_ops, __pyx_v_ns, __pyx_v_osub, (&__pyx_v_nr));
 
-      /* "cpp_levenshtein.pyx":613
+      /* "c_levenshtein.pyx":613
  *         if osub:
  *             orem = lev_editops_subtract(n, ops, ns, osub, &nr)
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -6813,7 +6799,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":614
+      /* "c_levenshtein.pyx":614
  *             orem = lev_editops_subtract(n, ops, ns, osub, &nr)
  *             free(ops)
  *             free(osub)             # <<<<<<<<<<<<<<
@@ -6822,7 +6808,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
       free(__pyx_v_osub);
 
-      /* "cpp_levenshtein.pyx":616
+      /* "c_levenshtein.pyx":616
  *             free(osub)
  * 
  *             if not orem and nr == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -6840,7 +6826,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
       __pyx_L11_bool_binop_done:;
       if (unlikely(__pyx_t_1)) {
 
-        /* "cpp_levenshtein.pyx":617
+        /* "c_levenshtein.pyx":617
  * 
  *             if not orem and nr == <size_t>-1:
  *                 raise ValueError("subtract_edit subsequence is not a subsequence or is invalid")             # <<<<<<<<<<<<<<
@@ -6853,7 +6839,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
         __PYX_ERR(0, 617, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":616
+        /* "c_levenshtein.pyx":616
  *             free(osub)
  * 
  *             if not orem and nr == <size_t>-1:             # <<<<<<<<<<<<<<
@@ -6862,19 +6848,19 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
       }
 
-      /* "cpp_levenshtein.pyx":619
+      /* "c_levenshtein.pyx":619
  *                 raise ValueError("subtract_edit subsequence is not a subsequence or is invalid")
  * 
  *             result = editops_to_tuple_list(nr, orem)             # <<<<<<<<<<<<<<
  *             free(orem)
  *             return result
  */
-      __pyx_t_4 = __pyx_f_15cpp_levenshtein_editops_to_tuple_list(__pyx_v_nr, __pyx_v_orem); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 619, __pyx_L1_error)
+      __pyx_t_4 = __pyx_f_13c_levenshtein_editops_to_tuple_list(__pyx_v_nr, __pyx_v_orem); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 619, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __pyx_v_result = __pyx_t_4;
       __pyx_t_4 = 0;
 
-      /* "cpp_levenshtein.pyx":620
+      /* "c_levenshtein.pyx":620
  * 
  *             result = editops_to_tuple_list(nr, orem)
  *             free(orem)             # <<<<<<<<<<<<<<
@@ -6883,7 +6869,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
       free(__pyx_v_orem);
 
-      /* "cpp_levenshtein.pyx":621
+      /* "c_levenshtein.pyx":621
  *             result = editops_to_tuple_list(nr, orem)
  *             free(orem)
  *             return result             # <<<<<<<<<<<<<<
@@ -6895,7 +6881,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
       __pyx_r = __pyx_v_result;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":611
+      /* "c_levenshtein.pyx":611
  *     if ops:
  *         osub = extract_editops(subsequence)
  *         if osub:             # <<<<<<<<<<<<<<
@@ -6904,7 +6890,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
     }
 
-    /* "cpp_levenshtein.pyx":623
+    /* "c_levenshtein.pyx":623
  *             return result
  * 
  *         free(ops)             # <<<<<<<<<<<<<<
@@ -6913,7 +6899,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
     free(__pyx_v_ops);
 
-    /* "cpp_levenshtein.pyx":609
+    /* "c_levenshtein.pyx":609
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
@@ -6922,7 +6908,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
   }
 
-  /* "cpp_levenshtein.pyx":625
+  /* "c_levenshtein.pyx":625
  *         free(ops)
  * 
  *     raise TypeError("subtract_edit expected two lists of edit operations")             # <<<<<<<<<<<<<<
@@ -6935,7 +6921,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __PYX_ERR(0, 625, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":562
+  /* "c_levenshtein.pyx":562
  * 
  * 
  * def subtract_edit(edit_operations, subsequence):             # <<<<<<<<<<<<<<
@@ -6946,7 +6932,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("cpp_levenshtein.subtract_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.subtract_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
@@ -6955,7 +6941,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
   return __pyx_r;
 }
 
-/* "cpp_levenshtein.pyx":629
+/* "c_levenshtein.pyx":629
  * 
  * 
  * def apply_edit(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
@@ -6964,16 +6950,16 @@ static PyObject *__pyx_pf_15cpp_levenshtein_8subtract_edit(CYTHON_UNUSED PyObjec
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_15cpp_levenshtein_11apply_edit(PyObject *__pyx_self, 
+static PyObject *__pyx_pw_13c_levenshtein_11apply_edit(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_15cpp_levenshtein_10apply_edit, "\n    Apply a sequence of edit operations to a string.\n    \n    apply_edit(edit_operations, source_string, destination_string)\n    \n    In the case of editops, the sequence can be arbitrary ordered subset\n    of the edit sequence transforming source_string to destination_string.\n    \n    Examples\n    --------\n    >>> e = editops('man', 'scotsman')\n    >>> apply_edit(e, 'man', 'scotsman')\n    'scotsman'\n    >>> apply_edit(e[:3], 'man', 'scotsman')\n    'scoman'\n    \n    The other form of edit operations, opcodes, is not very suitable for\n    such a tricks, because it has to always span over complete strings,\n    subsets can be created by carefully replacing blocks with 'equal'\n    blocks, or by enlarging 'equal' block at the expense of other blocks\n    and adjusting the other blocks accordingly.\n    \n    Examples:\n    >>> a, b = 'spam and eggs', 'foo and bar'\n    >>> e = opcodes(a, b)\n    >>> apply_edit(inverse(e), b, a)\n    'spam and eggs'\n    >>> e[4] = ('equal', 10, 13, 8, 11)\n    >>> e\n    [('delete', 0, 1, 0, 0), ('replace', 1, 4, 0, 3), ('equal', 4, 9, 3, 8), ('delete', 9, 10, 8, 8), ('equal', 10, 13, 8, 11)]\n    >>> apply_edit(e, a, b)\n    'foo and ggs'\n    ");
-static PyMethodDef __pyx_mdef_15cpp_levenshtein_11apply_edit = {"apply_edit", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_15cpp_levenshtein_11apply_edit, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_15cpp_levenshtein_10apply_edit};
-static PyObject *__pyx_pw_15cpp_levenshtein_11apply_edit(PyObject *__pyx_self, 
+PyDoc_STRVAR(__pyx_doc_13c_levenshtein_10apply_edit, "\n    Apply a sequence of edit operations to a string.\n    \n    apply_edit(edit_operations, source_string, destination_string)\n    \n    In the case of editops, the sequence can be arbitrary ordered subset\n    of the edit sequence transforming source_string to destination_string.\n    \n    Examples\n    --------\n    >>> e = editops('man', 'scotsman')\n    >>> apply_edit(e, 'man', 'scotsman')\n    'scotsman'\n    >>> apply_edit(e[:3], 'man', 'scotsman')\n    'scoman'\n    \n    The other form of edit operations, opcodes, is not very suitable for\n    such a tricks, because it has to always span over complete strings,\n    subsets can be created by carefully replacing blocks with 'equal'\n    blocks, or by enlarging 'equal' block at the expense of other blocks\n    and adjusting the other blocks accordingly.\n    \n    Examples:\n    >>> a, b = 'spam and eggs', 'foo and bar'\n    >>> e = opcodes(a, b)\n    >>> apply_edit(inverse(e), b, a)\n    'spam and eggs'\n    >>> e[4] = ('equal', 10, 13, 8, 11)\n    >>> e\n    [('delete', 0, 1, 0, 0), ('replace', 1, 4, 0, 3), ('equal', 4, 9, 3, 8), ('delete', 9, 10, 8, 8), ('equal', 10, 13, 8, 11)]\n    >>> apply_edit(e, a, b)\n    'foo and ggs'\n    ");
+static PyMethodDef __pyx_mdef_13c_levenshtein_11apply_edit = {"apply_edit", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_13c_levenshtein_11apply_edit, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_13c_levenshtein_10apply_edit};
+static PyObject *__pyx_pw_13c_levenshtein_11apply_edit(PyObject *__pyx_self, 
 #if CYTHON_METH_FASTCALL
 PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 #else
@@ -7052,18 +7038,18 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("apply_edit", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 629, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("cpp_levenshtein.apply_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.apply_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_15cpp_levenshtein_10apply_edit(__pyx_self, __pyx_v_edit_operations, __pyx_v_source_string, __pyx_v_destination_string);
+  __pyx_r = __pyx_pf_13c_levenshtein_10apply_edit(__pyx_self, __pyx_v_edit_operations, __pyx_v_source_string, __pyx_v_destination_string);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string) {
+static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_edit_operations, PyObject *__pyx_v_source_string, PyObject *__pyx_v_destination_string) {
   size_t __pyx_v_n;
   size_t __pyx_v_len1;
   size_t __pyx_v_len2;
@@ -7088,7 +7074,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("apply_edit", 0);
 
-  /* "cpp_levenshtein.pyx":667
+  /* "c_levenshtein.pyx":667
  *     cdef LevOpCode *bops
  * 
  *     if not isinstance(edit_operations, list):             # <<<<<<<<<<<<<<
@@ -7099,7 +7085,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   __pyx_t_2 = ((!(__pyx_t_1 != 0)) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "cpp_levenshtein.pyx":668
+    /* "c_levenshtein.pyx":668
  * 
  *     if not isinstance(edit_operations, list):
  *         raise TypeError("apply_edit first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -7112,7 +7098,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(0, 668, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":667
+    /* "c_levenshtein.pyx":667
  *     cdef LevOpCode *bops
  * 
  *     if not isinstance(edit_operations, list):             # <<<<<<<<<<<<<<
@@ -7121,7 +7107,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "cpp_levenshtein.pyx":670
+  /* "c_levenshtein.pyx":670
  *         raise TypeError("apply_edit first argument must be a List of edit operations")
  * 
  *     n = <size_t>len(<list>edit_operations)             # <<<<<<<<<<<<<<
@@ -7135,7 +7121,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   __pyx_t_4 = PyList_GET_SIZE(((PyObject*)__pyx_v_edit_operations)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 670, __pyx_L1_error)
   __pyx_v_n = ((size_t)__pyx_t_4);
 
-  /* "cpp_levenshtein.pyx":672
+  /* "c_levenshtein.pyx":672
  *     n = <size_t>len(<list>edit_operations)
  * 
  *     if isinstance(source_string, bytes) and isinstance(destination_string, bytes):             # <<<<<<<<<<<<<<
@@ -7155,7 +7141,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   __pyx_L5_bool_binop_done:;
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":673
+    /* "c_levenshtein.pyx":673
  * 
  *     if isinstance(source_string, bytes) and isinstance(destination_string, bytes):
  *         if not n:             # <<<<<<<<<<<<<<
@@ -7165,7 +7151,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_2 = ((!(__pyx_v_n != 0)) != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":674
+      /* "c_levenshtein.pyx":674
  *     if isinstance(source_string, bytes) and isinstance(destination_string, bytes):
  *         if not n:
  *             return source_string             # <<<<<<<<<<<<<<
@@ -7177,7 +7163,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_r = __pyx_v_source_string;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":673
+      /* "c_levenshtein.pyx":673
  * 
  *     if isinstance(source_string, bytes) and isinstance(destination_string, bytes):
  *         if not n:             # <<<<<<<<<<<<<<
@@ -7186,7 +7172,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     }
 
-    /* "cpp_levenshtein.pyx":676
+    /* "c_levenshtein.pyx":676
  *             return source_string
  * 
  *         len1 = <size_t>len(<bytes>source_string)             # <<<<<<<<<<<<<<
@@ -7200,7 +7186,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_4 = PyBytes_GET_SIZE(((PyObject*)__pyx_v_source_string)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 676, __pyx_L1_error)
     __pyx_v_len1 = ((size_t)__pyx_t_4);
 
-    /* "cpp_levenshtein.pyx":677
+    /* "c_levenshtein.pyx":677
  * 
  *         len1 = <size_t>len(<bytes>source_string)
  *         len2 = <size_t>len(<bytes>destination_string)             # <<<<<<<<<<<<<<
@@ -7214,7 +7200,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_4 = PyBytes_GET_SIZE(((PyObject*)__pyx_v_destination_string)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 677, __pyx_L1_error)
     __pyx_v_len2 = ((size_t)__pyx_t_4);
 
-    /* "cpp_levenshtein.pyx":679
+    /* "c_levenshtein.pyx":679
  *         len2 = <size_t>len(<bytes>destination_string)
  * 
  *         string1 = PyBytes_AS_STRING(source_string)             # <<<<<<<<<<<<<<
@@ -7223,7 +7209,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     __pyx_v_string1 = PyBytes_AS_STRING(__pyx_v_source_string);
 
-    /* "cpp_levenshtein.pyx":680
+    /* "c_levenshtein.pyx":680
  * 
  *         string1 = PyBytes_AS_STRING(source_string)
  *         string2 = PyBytes_AS_STRING(destination_string)             # <<<<<<<<<<<<<<
@@ -7232,7 +7218,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     __pyx_v_string2 = PyBytes_AS_STRING(__pyx_v_destination_string);
 
-    /* "cpp_levenshtein.pyx":682
+    /* "c_levenshtein.pyx":682
  *         string2 = PyBytes_AS_STRING(destination_string)
  * 
  *         ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
@@ -7240,10 +7226,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  *             if lev_editops_check_errors(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 682, __pyx_L1_error)
-    __pyx_t_6 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 682, __pyx_L1_error)
+    __pyx_t_6 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 682, __pyx_L1_error)
     __pyx_v_ops = __pyx_t_6;
 
-    /* "cpp_levenshtein.pyx":683
+    /* "c_levenshtein.pyx":683
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -7253,7 +7239,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_2 = (__pyx_v_ops != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":684
+      /* "c_levenshtein.pyx":684
  *         ops = extract_editops(edit_operations)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -7263,7 +7249,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_t_2 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":685
+        /* "c_levenshtein.pyx":685
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
@@ -7272,7 +7258,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         free(__pyx_v_ops);
 
-        /* "cpp_levenshtein.pyx":686
+        /* "c_levenshtein.pyx":686
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -7285,7 +7271,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __PYX_ERR(0, 686, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":684
+        /* "c_levenshtein.pyx":684
  *         ops = extract_editops(edit_operations)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -7294,7 +7280,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":688
+      /* "c_levenshtein.pyx":688
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
  *             s = lev_editops_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,             # <<<<<<<<<<<<<<
@@ -7303,7 +7289,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       __pyx_v_s = lev_editops_apply(__pyx_v_len1, ((lev_byte const *)__pyx_v_string1), __pyx_v_len2, ((lev_byte const *)__pyx_v_string2), __pyx_v_n, __pyx_v_ops, (&__pyx_v_len3));
 
-      /* "cpp_levenshtein.pyx":690
+      /* "c_levenshtein.pyx":690
  *             s = lev_editops_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
  *                             n, ops, &len3)
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -7312,7 +7298,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":691
+      /* "c_levenshtein.pyx":691
  *                             n, ops, &len3)
  *             free(ops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7330,7 +7316,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_L11_bool_binop_done:;
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":692
+        /* "c_levenshtein.pyx":692
  *             free(ops)
  *             if not s and len3:
  *                 raise MemoryError             # <<<<<<<<<<<<<<
@@ -7339,7 +7325,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         PyErr_NoMemory(); __PYX_ERR(0, 692, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":691
+        /* "c_levenshtein.pyx":691
  *                             n, ops, &len3)
  *             free(ops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7348,7 +7334,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":694
+      /* "c_levenshtein.pyx":694
  *                 raise MemoryError
  * 
  *             result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)             # <<<<<<<<<<<<<<
@@ -7360,7 +7346,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_v_result = __pyx_t_3;
       __pyx_t_3 = 0;
 
-      /* "cpp_levenshtein.pyx":695
+      /* "c_levenshtein.pyx":695
  * 
  *             result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)
  *             free(s)             # <<<<<<<<<<<<<<
@@ -7369,7 +7355,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_s);
 
-      /* "cpp_levenshtein.pyx":696
+      /* "c_levenshtein.pyx":696
  *             result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)
  *             free(s)
  *             return result             # <<<<<<<<<<<<<<
@@ -7381,7 +7367,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_r = __pyx_v_result;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":683
+      /* "c_levenshtein.pyx":683
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -7390,7 +7376,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     }
 
-    /* "cpp_levenshtein.pyx":698
+    /* "c_levenshtein.pyx":698
  *             return result
  * 
  *         bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
@@ -7398,10 +7384,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 698, __pyx_L1_error)
-    __pyx_t_7 = __pyx_f_15cpp_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 698, __pyx_L1_error)
+    __pyx_t_7 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 698, __pyx_L1_error)
     __pyx_v_bops = __pyx_t_7;
 
-    /* "cpp_levenshtein.pyx":699
+    /* "c_levenshtein.pyx":699
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -7411,7 +7397,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_2 = (__pyx_v_bops != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":700
+      /* "c_levenshtein.pyx":700
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -7421,7 +7407,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_t_2 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":701
+        /* "c_levenshtein.pyx":701
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
@@ -7430,7 +7416,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         free(__pyx_v_bops);
 
-        /* "cpp_levenshtein.pyx":702
+        /* "c_levenshtein.pyx":702
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -7443,7 +7429,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __PYX_ERR(0, 702, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":700
+        /* "c_levenshtein.pyx":700
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -7452,7 +7438,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":704
+      /* "c_levenshtein.pyx":704
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
  *             s = lev_opcodes_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,             # <<<<<<<<<<<<<<
@@ -7461,7 +7447,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       __pyx_v_s = lev_opcodes_apply(__pyx_v_len1, ((lev_byte const *)__pyx_v_string1), __pyx_v_len2, ((lev_byte const *)__pyx_v_string2), __pyx_v_n, __pyx_v_bops, (&__pyx_v_len3));
 
-      /* "cpp_levenshtein.pyx":706
+      /* "c_levenshtein.pyx":706
  *             s = lev_opcodes_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
  *                             n, bops, &len3)
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -7470,7 +7456,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":707
+      /* "c_levenshtein.pyx":707
  *                             n, bops, &len3)
  *             free(bops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7488,7 +7474,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_L16_bool_binop_done:;
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":708
+        /* "c_levenshtein.pyx":708
  *             free(bops)
  *             if not s and len3:
  *                 raise MemoryError             # <<<<<<<<<<<<<<
@@ -7497,7 +7483,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         PyErr_NoMemory(); __PYX_ERR(0, 708, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":707
+        /* "c_levenshtein.pyx":707
  *                             n, bops, &len3)
  *             free(bops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7506,7 +7492,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":710
+      /* "c_levenshtein.pyx":710
  *                 raise MemoryError
  * 
  *             result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)             # <<<<<<<<<<<<<<
@@ -7518,7 +7504,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_v_result = __pyx_t_3;
       __pyx_t_3 = 0;
 
-      /* "cpp_levenshtein.pyx":711
+      /* "c_levenshtein.pyx":711
  * 
  *             result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)
  *             free(s)             # <<<<<<<<<<<<<<
@@ -7527,7 +7513,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_s);
 
-      /* "cpp_levenshtein.pyx":712
+      /* "c_levenshtein.pyx":712
  *             result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)
  *             free(s)
  *             return result             # <<<<<<<<<<<<<<
@@ -7539,7 +7525,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_r = __pyx_v_result;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":699
+      /* "c_levenshtein.pyx":699
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -7548,7 +7534,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     }
 
-    /* "cpp_levenshtein.pyx":714
+    /* "c_levenshtein.pyx":714
  *             return result
  * 
  *         raise TypeError("apply_edit first argument must be a list of edit operations")             # <<<<<<<<<<<<<<
@@ -7561,7 +7547,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(0, 714, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":672
+    /* "c_levenshtein.pyx":672
  *     n = <size_t>len(<list>edit_operations)
  * 
  *     if isinstance(source_string, bytes) and isinstance(destination_string, bytes):             # <<<<<<<<<<<<<<
@@ -7570,7 +7556,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "cpp_levenshtein.pyx":716
+  /* "c_levenshtein.pyx":716
  *         raise TypeError("apply_edit first argument must be a list of edit operations")
  * 
  *     if isinstance(source_string, str) and isinstance(destination_string, str):             # <<<<<<<<<<<<<<
@@ -7590,7 +7576,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   __pyx_L19_bool_binop_done:;
   if (__pyx_t_2) {
 
-    /* "cpp_levenshtein.pyx":717
+    /* "c_levenshtein.pyx":717
  * 
  *     if isinstance(source_string, str) and isinstance(destination_string, str):
  *         if not n:             # <<<<<<<<<<<<<<
@@ -7600,7 +7586,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_2 = ((!(__pyx_v_n != 0)) != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":718
+      /* "c_levenshtein.pyx":718
  *     if isinstance(source_string, str) and isinstance(destination_string, str):
  *         if not n:
  *             return source_string             # <<<<<<<<<<<<<<
@@ -7612,7 +7598,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_r = __pyx_v_source_string;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":717
+      /* "c_levenshtein.pyx":717
  * 
  *     if isinstance(source_string, str) and isinstance(destination_string, str):
  *         if not n:             # <<<<<<<<<<<<<<
@@ -7621,7 +7607,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     }
 
-    /* "cpp_levenshtein.pyx":720
+    /* "c_levenshtein.pyx":720
  *             return source_string
  * 
  *         len1 = <size_t>len(<str>source_string)             # <<<<<<<<<<<<<<
@@ -7635,7 +7621,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_4 = __Pyx_PyUnicode_GET_LENGTH(((PyObject*)__pyx_v_source_string)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 720, __pyx_L1_error)
     __pyx_v_len1 = ((size_t)__pyx_t_4);
 
-    /* "cpp_levenshtein.pyx":721
+    /* "c_levenshtein.pyx":721
  * 
  *         len1 = <size_t>len(<str>source_string)
  *         len2 = <size_t>len(<str>destination_string)             # <<<<<<<<<<<<<<
@@ -7649,7 +7635,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_4 = __Pyx_PyUnicode_GET_LENGTH(((PyObject*)__pyx_v_destination_string)); if (unlikely(__pyx_t_4 == ((Py_ssize_t)-1))) __PYX_ERR(0, 721, __pyx_L1_error)
     __pyx_v_len2 = ((size_t)__pyx_t_4);
 
-    /* "cpp_levenshtein.pyx":723
+    /* "c_levenshtein.pyx":723
  *         len2 = <size_t>len(<str>destination_string)
  * 
  *         string1 = PyUnicode_AS_UNICODE(source_string)             # <<<<<<<<<<<<<<
@@ -7658,7 +7644,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     __pyx_v_string1 = PyUnicode_AS_UNICODE(__pyx_v_source_string);
 
-    /* "cpp_levenshtein.pyx":724
+    /* "c_levenshtein.pyx":724
  * 
  *         string1 = PyUnicode_AS_UNICODE(source_string)
  *         string2 = PyUnicode_AS_UNICODE(destination_string)             # <<<<<<<<<<<<<<
@@ -7667,7 +7653,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     __pyx_v_string2 = PyUnicode_AS_UNICODE(__pyx_v_destination_string);
 
-    /* "cpp_levenshtein.pyx":726
+    /* "c_levenshtein.pyx":726
  *         string2 = PyUnicode_AS_UNICODE(destination_string)
  * 
  *         ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
@@ -7675,10 +7661,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  *             if lev_editops_check_errors(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 726, __pyx_L1_error)
-    __pyx_t_6 = __pyx_f_15cpp_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 726, __pyx_L1_error)
+    __pyx_t_6 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 726, __pyx_L1_error)
     __pyx_v_ops = __pyx_t_6;
 
-    /* "cpp_levenshtein.pyx":727
+    /* "c_levenshtein.pyx":727
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -7688,7 +7674,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_2 = (__pyx_v_ops != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":728
+      /* "c_levenshtein.pyx":728
  *         ops = extract_editops(edit_operations)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -7698,7 +7684,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_t_2 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":729
+        /* "c_levenshtein.pyx":729
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
@@ -7707,7 +7693,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         free(__pyx_v_ops);
 
-        /* "cpp_levenshtein.pyx":730
+        /* "c_levenshtein.pyx":730
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -7720,7 +7706,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __PYX_ERR(0, 730, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":728
+        /* "c_levenshtein.pyx":728
  *         ops = extract_editops(edit_operations)
  *         if ops:
  *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
@@ -7729,7 +7715,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":732
+      /* "c_levenshtein.pyx":732
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
  *             s = lev_u_editops_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,             # <<<<<<<<<<<<<<
@@ -7738,7 +7724,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       __pyx_v_s = lev_u_editops_apply(__pyx_v_len1, ((wchar_t const *)__pyx_v_string1), __pyx_v_len2, ((wchar_t const *)__pyx_v_string2), __pyx_v_n, __pyx_v_ops, (&__pyx_v_len3));
 
-      /* "cpp_levenshtein.pyx":734
+      /* "c_levenshtein.pyx":734
  *             s = lev_u_editops_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
  *                             n, ops, &len3)
  *             free(ops)             # <<<<<<<<<<<<<<
@@ -7747,7 +7733,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_ops);
 
-      /* "cpp_levenshtein.pyx":735
+      /* "c_levenshtein.pyx":735
  *                             n, ops, &len3)
  *             free(ops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7765,7 +7751,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_L25_bool_binop_done:;
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":736
+        /* "c_levenshtein.pyx":736
  *             free(ops)
  *             if not s and len3:
  *                 raise MemoryError             # <<<<<<<<<<<<<<
@@ -7774,7 +7760,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         PyErr_NoMemory(); __PYX_ERR(0, 736, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":735
+        /* "c_levenshtein.pyx":735
  *                             n, ops, &len3)
  *             free(ops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7783,7 +7769,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":738
+      /* "c_levenshtein.pyx":738
  *                 raise MemoryError
  * 
  *             result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)             # <<<<<<<<<<<<<<
@@ -7795,7 +7781,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_v_result = __pyx_t_3;
       __pyx_t_3 = 0;
 
-      /* "cpp_levenshtein.pyx":739
+      /* "c_levenshtein.pyx":739
  * 
  *             result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
  *             free(s)             # <<<<<<<<<<<<<<
@@ -7804,7 +7790,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_s);
 
-      /* "cpp_levenshtein.pyx":740
+      /* "c_levenshtein.pyx":740
  *             result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
  *             free(s)
  *             return result             # <<<<<<<<<<<<<<
@@ -7816,7 +7802,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_r = __pyx_v_result;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":727
+      /* "c_levenshtein.pyx":727
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
@@ -7825,7 +7811,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     }
 
-    /* "cpp_levenshtein.pyx":742
+    /* "c_levenshtein.pyx":742
  *             return result
  * 
  *         bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
@@ -7833,10 +7819,10 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 742, __pyx_L1_error)
-    __pyx_t_7 = __pyx_f_15cpp_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 742, __pyx_L1_error)
+    __pyx_t_7 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 742, __pyx_L1_error)
     __pyx_v_bops = __pyx_t_7;
 
-    /* "cpp_levenshtein.pyx":743
+    /* "c_levenshtein.pyx":743
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -7846,7 +7832,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __pyx_t_2 = (__pyx_v_bops != 0);
     if (__pyx_t_2) {
 
-      /* "cpp_levenshtein.pyx":744
+      /* "c_levenshtein.pyx":744
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -7856,7 +7842,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_t_2 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":745
+        /* "c_levenshtein.pyx":745
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
@@ -7865,7 +7851,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         free(__pyx_v_bops);
 
-        /* "cpp_levenshtein.pyx":746
+        /* "c_levenshtein.pyx":746
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -7878,7 +7864,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __PYX_ERR(0, 746, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":744
+        /* "c_levenshtein.pyx":744
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
  *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
@@ -7887,7 +7873,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":748
+      /* "c_levenshtein.pyx":748
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
  *             s = lev_u_opcodes_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,             # <<<<<<<<<<<<<<
@@ -7896,7 +7882,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       __pyx_v_s = lev_u_opcodes_apply(__pyx_v_len1, ((wchar_t const *)__pyx_v_string1), __pyx_v_len2, ((wchar_t const *)__pyx_v_string2), __pyx_v_n, __pyx_v_bops, (&__pyx_v_len3));
 
-      /* "cpp_levenshtein.pyx":750
+      /* "c_levenshtein.pyx":750
  *             s = lev_u_opcodes_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
  *                             n, bops, &len3)
  *             free(bops)             # <<<<<<<<<<<<<<
@@ -7905,7 +7891,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_bops);
 
-      /* "cpp_levenshtein.pyx":751
+      /* "c_levenshtein.pyx":751
  *                             n, bops, &len3)
  *             free(bops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7923,7 +7909,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_L30_bool_binop_done:;
       if (unlikely(__pyx_t_2)) {
 
-        /* "cpp_levenshtein.pyx":752
+        /* "c_levenshtein.pyx":752
  *             free(bops)
  *             if not s and len3:
  *                 raise MemoryError             # <<<<<<<<<<<<<<
@@ -7932,7 +7918,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
         PyErr_NoMemory(); __PYX_ERR(0, 752, __pyx_L1_error)
 
-        /* "cpp_levenshtein.pyx":751
+        /* "c_levenshtein.pyx":751
  *                             n, bops, &len3)
  *             free(bops)
  *             if not s and len3:             # <<<<<<<<<<<<<<
@@ -7941,7 +7927,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       }
 
-      /* "cpp_levenshtein.pyx":754
+      /* "c_levenshtein.pyx":754
  *                 raise MemoryError
  * 
  *             result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)             # <<<<<<<<<<<<<<
@@ -7953,7 +7939,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_v_result = __pyx_t_3;
       __pyx_t_3 = 0;
 
-      /* "cpp_levenshtein.pyx":755
+      /* "c_levenshtein.pyx":755
  * 
  *             result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
  *             free(s)             # <<<<<<<<<<<<<<
@@ -7962,7 +7948,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
       free(__pyx_v_s);
 
-      /* "cpp_levenshtein.pyx":756
+      /* "c_levenshtein.pyx":756
  *             result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
  *             free(s)
  *             return result             # <<<<<<<<<<<<<<
@@ -7974,7 +7960,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
       __pyx_r = __pyx_v_result;
       goto __pyx_L0;
 
-      /* "cpp_levenshtein.pyx":743
+      /* "c_levenshtein.pyx":743
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
@@ -7983,7 +7969,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
     }
 
-    /* "cpp_levenshtein.pyx":758
+    /* "c_levenshtein.pyx":758
  *             return result
  * 
  *         raise TypeError("apply_edit first argument must be a list of edit operations")             # <<<<<<<<<<<<<<
@@ -7996,7 +7982,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __PYX_ERR(0, 758, __pyx_L1_error)
 
-    /* "cpp_levenshtein.pyx":716
+    /* "c_levenshtein.pyx":716
  *         raise TypeError("apply_edit first argument must be a list of edit operations")
  * 
  *     if isinstance(source_string, str) and isinstance(destination_string, str):             # <<<<<<<<<<<<<<
@@ -8005,7 +7991,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
  */
   }
 
-  /* "cpp_levenshtein.pyx":760
+  /* "c_levenshtein.pyx":760
  *         raise TypeError("apply_edit first argument must be a list of edit operations")
  * 
  *     raise TypeError("apply_edit expected two Strings or two Unicodes")             # <<<<<<<<<<<<<<
@@ -8016,7 +8002,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __PYX_ERR(0, 760, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":629
+  /* "c_levenshtein.pyx":629
  * 
  * 
  * def apply_edit(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
@@ -8027,7 +8013,7 @@ static PyObject *__pyx_pf_15cpp_levenshtein_10apply_edit(CYTHON_UNUSED PyObject 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("cpp_levenshtein.apply_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("c_levenshtein.apply_edit", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
@@ -8074,9 +8060,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, __pyx_k_args, sizeof(__pyx_k_args), 0, 0, 1, 1},
   {0, __pyx_k_asyncio_coroutines, sizeof(__pyx_k_asyncio_coroutines), 0, 0, 1, 1},
   {0, __pyx_k_bops, sizeof(__pyx_k_bops), 0, 0, 1, 1},
+  {0, __pyx_k_c_levenshtein, sizeof(__pyx_k_c_levenshtein), 0, 0, 1, 1},
+  {0, __pyx_k_c_levenshtein_pyx, sizeof(__pyx_k_c_levenshtein_pyx), 0, 0, 1, 0},
   {0, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
-  {0, __pyx_k_cpp_levenshtein, sizeof(__pyx_k_cpp_levenshtein), 0, 0, 1, 1},
-  {0, __pyx_k_cpp_levenshtein_pyx, sizeof(__pyx_k_cpp_levenshtein_pyx), 0, 0, 1, 0},
   {0, __pyx_k_cstring, sizeof(__pyx_k_cstring), 0, 0, 1, 1},
   {0, __pyx_k_delete, sizeof(__pyx_k_delete), 0, 1, 0, 1},
   {0, __pyx_k_destination_string, sizeof(__pyx_k_destination_string), 0, 0, 1, 1},
@@ -8158,9 +8144,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_args, __pyx_k_args, sizeof(__pyx_k_args), 0, 0, 1, 1},
   {&__pyx_n_s_asyncio_coroutines, __pyx_k_asyncio_coroutines, sizeof(__pyx_k_asyncio_coroutines), 0, 0, 1, 1},
   {&__pyx_n_s_bops, __pyx_k_bops, sizeof(__pyx_k_bops), 0, 0, 1, 1},
+  {&__pyx_n_s_c_levenshtein, __pyx_k_c_levenshtein, sizeof(__pyx_k_c_levenshtein), 0, 0, 1, 1},
+  {&__pyx_kp_s_c_levenshtein_pyx, __pyx_k_c_levenshtein_pyx, sizeof(__pyx_k_c_levenshtein_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
-  {&__pyx_n_s_cpp_levenshtein, __pyx_k_cpp_levenshtein, sizeof(__pyx_k_cpp_levenshtein), 0, 0, 1, 1},
-  {&__pyx_kp_s_cpp_levenshtein_pyx, __pyx_k_cpp_levenshtein_pyx, sizeof(__pyx_k_cpp_levenshtein_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_cstring, __pyx_k_cstring, sizeof(__pyx_k_cstring), 0, 0, 1, 1},
   {&__pyx_n_u_delete, __pyx_k_delete, sizeof(__pyx_k_delete), 0, 1, 0, 1},
   {&__pyx_n_s_destination_string, __pyx_k_destination_string, sizeof(__pyx_k_destination_string), 0, 0, 1, 1},
@@ -8238,7 +8224,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "cpp_levenshtein.pyx":244
+  /* "c_levenshtein.pyx":244
  * 
  *     if not isinstance(edit_operations, list):
  *         raise TypeError("inverse expected a list of edit operations")             # <<<<<<<<<<<<<<
@@ -8249,7 +8235,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "cpp_levenshtein.pyx":301
+  /* "c_levenshtein.pyx":301
  * 
  *         if not isinstance(arg1, list):
  *             raise ValueError("editops first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -8260,7 +8246,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "cpp_levenshtein.pyx":310
+  /* "c_levenshtein.pyx":310
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  *             raise ValueError("editops second and third argument must specify sizes")             # <<<<<<<<<<<<<<
@@ -8271,7 +8257,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "cpp_levenshtein.pyx":316
+  /* "c_levenshtein.pyx":316
  *             if lev_opcodes_check_errors(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("editops edit operation list is invalid")             # <<<<<<<<<<<<<<
@@ -8282,7 +8268,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
 
-  /* "cpp_levenshtein.pyx":360
+  /* "c_levenshtein.pyx":360
  * 
  *     else:
  *         raise TypeError("editops expected two Strings or two Unicodes")             # <<<<<<<<<<<<<<
@@ -8293,7 +8279,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__5);
   __Pyx_GIVEREF(__pyx_tuple__5);
 
-  /* "cpp_levenshtein.pyx":405
+  /* "c_levenshtein.pyx":405
  * 
  *         if not isinstance(arg1, list):
  *             raise ValueError("opcodes first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -8304,7 +8290,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
 
-  /* "cpp_levenshtein.pyx":411
+  /* "c_levenshtein.pyx":411
  *         len2 = get_length_of_anything(arg3)
  *         if len1 == <size_t>-1 or len2 == <size_t>-1:
  *             raise ValueError("opcodes second and third argument must specify sizes")             # <<<<<<<<<<<<<<
@@ -8315,7 +8301,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
 
-  /* "cpp_levenshtein.pyx":417
+  /* "c_levenshtein.pyx":417
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("opcodes edit operation list is invalid")             # <<<<<<<<<<<<<<
@@ -8326,7 +8312,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "cpp_levenshtein.pyx":461
+  /* "c_levenshtein.pyx":461
  * 
  *     else:
  *         raise TypeError("opcodes expected two Strings or two Unicodes")             # <<<<<<<<<<<<<<
@@ -8337,7 +8323,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "cpp_levenshtein.pyx":520
+  /* "c_levenshtein.pyx":520
  * 
  *     if not isinstance(edit_operations, list):
  *         raise TypeError("matching_blocks first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -8348,7 +8334,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
 
-  /* "cpp_levenshtein.pyx":526
+  /* "c_levenshtein.pyx":526
  *     len2 = get_length_of_anything(destination_string)
  *     if len1 == <size_t>-1 or len2 == <size_t>-1:
  *         raise ValueError("matching_blocks second and third argument must specify sizes")             # <<<<<<<<<<<<<<
@@ -8359,7 +8345,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
 
-  /* "cpp_levenshtein.pyx":533
+  /* "c_levenshtein.pyx":533
  *         if lev_editops_check_errors(len1, len2, n, ops):
  *             free(ops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -8370,7 +8356,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
 
-  /* "cpp_levenshtein.pyx":559
+  /* "c_levenshtein.pyx":559
  *         return result
  * 
  *     raise TypeError("matching_blocks expected a list of edit operations")             # <<<<<<<<<<<<<<
@@ -8381,7 +8367,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
 
-  /* "cpp_levenshtein.pyx":598
+  /* "c_levenshtein.pyx":598
  * 
  *     if not isinstance(edit_operations, list) or not isinstance(subsequence, list):
  *         raise TypeError("subtract_edit expected two lists of edit operations")             # <<<<<<<<<<<<<<
@@ -8392,7 +8378,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "cpp_levenshtein.pyx":606
+  /* "c_levenshtein.pyx":606
  *     n = <size_t>len(<list>edit_operations)
  *     if not n:
  *         raise ValueError("subtract_edit subsequence is not a subsequence or is invalid")             # <<<<<<<<<<<<<<
@@ -8403,7 +8389,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
 
-  /* "cpp_levenshtein.pyx":668
+  /* "c_levenshtein.pyx":668
  * 
  *     if not isinstance(edit_operations, list):
  *         raise TypeError("apply_edit first argument must be a List of edit operations")             # <<<<<<<<<<<<<<
@@ -8414,7 +8400,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "cpp_levenshtein.pyx":686
+  /* "c_levenshtein.pyx":686
  *             if lev_editops_check_errors(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
@@ -8425,7 +8411,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
-  /* "cpp_levenshtein.pyx":714
+  /* "c_levenshtein.pyx":714
  *             return result
  * 
  *         raise TypeError("apply_edit first argument must be a list of edit operations")             # <<<<<<<<<<<<<<
@@ -8436,7 +8422,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
 
-  /* "cpp_levenshtein.pyx":760
+  /* "c_levenshtein.pyx":760
  *         raise TypeError("apply_edit first argument must be a list of edit operations")
  * 
  *     raise TypeError("apply_edit expected two Strings or two Unicodes")             # <<<<<<<<<<<<<<
@@ -8445,7 +8431,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
 
-  /* "cpp_levenshtein.pyx":214
+  /* "c_levenshtein.pyx":214
  *     return tuple_list
  * 
  * def inverse(edit_operations):             # <<<<<<<<<<<<<<
@@ -8455,9 +8441,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__20 = PyTuple_Pack(5, __pyx_n_s_edit_operations, __pyx_n_s_n, __pyx_n_s_ops, __pyx_n_s_bops, __pyx_n_s_result); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 214, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__20);
   __Pyx_GIVEREF(__pyx_tuple__20);
-  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_inverse, 214, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 214, __pyx_L1_error)
+  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_c_levenshtein_pyx, __pyx_n_s_inverse, 214, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 214, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":268
+  /* "c_levenshtein.pyx":268
  * 
  * 
  * def editops(*args):             # <<<<<<<<<<<<<<
@@ -8467,9 +8453,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__22 = PyTuple_Pack(10, __pyx_n_s_args, __pyx_n_s_n, __pyx_n_s_len1, __pyx_n_s_len2, __pyx_n_s_ops, __pyx_n_s_bops, __pyx_n_s_arg1, __pyx_n_s_arg2, __pyx_n_s_arg3, __pyx_n_s_oplist); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 268, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
-  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS|CO_VARARGS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_editops, 268, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 268, __pyx_L1_error)
+  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS|CO_VARARGS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_c_levenshtein_pyx, __pyx_n_s_editops, 268, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 268, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":370
+  /* "c_levenshtein.pyx":370
  * 
  * 
  * def opcodes(*args):             # <<<<<<<<<<<<<<
@@ -8479,9 +8465,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__24 = PyTuple_Pack(11, __pyx_n_s_args, __pyx_n_s_n, __pyx_n_s_nb, __pyx_n_s_len1, __pyx_n_s_len2, __pyx_n_s_ops, __pyx_n_s_bops, __pyx_n_s_arg1, __pyx_n_s_arg2, __pyx_n_s_arg3, __pyx_n_s_oplist); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__24);
   __Pyx_GIVEREF(__pyx_tuple__24);
-  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS|CO_VARARGS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_opcodes, 370, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS|CO_VARARGS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_c_levenshtein_pyx, __pyx_n_s_opcodes, 370, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 370, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":476
+  /* "c_levenshtein.pyx":476
  * 
  * 
  * def matching_blocks(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
@@ -8491,9 +8477,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__26 = PyTuple_Pack(11, __pyx_n_s_edit_operations, __pyx_n_s_source_string, __pyx_n_s_destination_string, __pyx_n_s_n, __pyx_n_s_nmb, __pyx_n_s_len1, __pyx_n_s_len2, __pyx_n_s_ops, __pyx_n_s_bops, __pyx_n_s_mblocks, __pyx_n_s_result); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 476, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
-  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_matching_blocks, 476, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 476, __pyx_L1_error)
+  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_c_levenshtein_pyx, __pyx_n_s_matching_blocks, 476, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 476, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":562
+  /* "c_levenshtein.pyx":562
  * 
  * 
  * def subtract_edit(edit_operations, subsequence):             # <<<<<<<<<<<<<<
@@ -8503,9 +8489,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__28 = PyTuple_Pack(9, __pyx_n_s_edit_operations, __pyx_n_s_subsequence, __pyx_n_s_n, __pyx_n_s_ns, __pyx_n_s_nr, __pyx_n_s_ops, __pyx_n_s_osub, __pyx_n_s_orem, __pyx_n_s_result); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 562, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
-  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 9, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_subtract_edit, 562, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 562, __pyx_L1_error)
+  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 9, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_c_levenshtein_pyx, __pyx_n_s_subtract_edit, 562, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 562, __pyx_L1_error)
 
-  /* "cpp_levenshtein.pyx":629
+  /* "c_levenshtein.pyx":629
  * 
  * 
  * def apply_edit(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
@@ -8515,7 +8501,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__30 = PyTuple_Pack(13, __pyx_n_s_edit_operations, __pyx_n_s_source_string, __pyx_n_s_destination_string, __pyx_n_s_n, __pyx_n_s_len1, __pyx_n_s_len2, __pyx_n_s_len3, __pyx_n_s_ops, __pyx_n_s_bops, __pyx_n_s_string1, __pyx_n_s_string2, __pyx_n_s_s, __pyx_n_s_result); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 629, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__30);
   __Pyx_GIVEREF(__pyx_tuple__30);
-  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_cpp_levenshtein_pyx, __pyx_n_s_apply_edit, 629, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 629, __pyx_L1_error)
+  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 13, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_c_levenshtein_pyx, __pyx_n_s_apply_edit, 629, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 629, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -8548,9 +8534,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   if (__Pyx_InitString(__pyx_string_tab[19], &__pyx_n_s_args) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   if (__Pyx_InitString(__pyx_string_tab[20], &__pyx_n_s_asyncio_coroutines) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   if (__Pyx_InitString(__pyx_string_tab[21], &__pyx_n_s_bops) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
-  if (__Pyx_InitString(__pyx_string_tab[22], &__pyx_n_s_cline_in_traceback) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
-  if (__Pyx_InitString(__pyx_string_tab[23], &__pyx_n_s_cpp_levenshtein) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
-  if (__Pyx_InitString(__pyx_string_tab[24], &__pyx_kp_s_cpp_levenshtein_pyx) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
+  if (__Pyx_InitString(__pyx_string_tab[22], &__pyx_n_s_c_levenshtein) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
+  if (__Pyx_InitString(__pyx_string_tab[23], &__pyx_kp_s_c_levenshtein_pyx) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
+  if (__Pyx_InitString(__pyx_string_tab[24], &__pyx_n_s_cline_in_traceback) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   if (__Pyx_InitString(__pyx_string_tab[25], &__pyx_n_s_cstring) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   if (__Pyx_InitString(__pyx_string_tab[26], &__pyx_n_u_delete) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
   if (__Pyx_InitString(__pyx_string_tab[27], &__pyx_n_s_destination_string) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
@@ -8709,10 +8695,10 @@ static int __Pyx_modinit_function_import_code(void) {
 #if PY_MAJOR_VERSION >= 3
 #if CYTHON_PEP489_MULTI_PHASE_INIT
 static PyObject* __pyx_pymod_create(PyObject *spec, PyModuleDef *def); /*proto*/
-static int __pyx_pymod_exec_cpp_levenshtein(PyObject* module); /*proto*/
+static int __pyx_pymod_exec_c_levenshtein(PyObject* module); /*proto*/
 static PyModuleDef_Slot __pyx_moduledef_slots[] = {
   {Py_mod_create, (void*)__pyx_pymod_create},
-  {Py_mod_exec, (void*)__pyx_pymod_exec_cpp_levenshtein},
+  {Py_mod_exec, (void*)__pyx_pymod_exec_c_levenshtein},
   {0, NULL}
 };
 #endif
@@ -8725,7 +8711,7 @@ namespace {
   #endif
   {
       PyModuleDef_HEAD_INIT,
-      "cpp_levenshtein",
+      "c_levenshtein",
       0, /* m_doc */
     #if CYTHON_PEP489_MULTI_PHASE_INIT
       0, /* m_size */
@@ -8773,11 +8759,11 @@ namespace {
 
 
 #if PY_MAJOR_VERSION < 3
-__Pyx_PyMODINIT_FUNC initcpp_levenshtein(void) CYTHON_SMALL_CODE; /*proto*/
-__Pyx_PyMODINIT_FUNC initcpp_levenshtein(void)
+__Pyx_PyMODINIT_FUNC initc_levenshtein(void) CYTHON_SMALL_CODE; /*proto*/
+__Pyx_PyMODINIT_FUNC initc_levenshtein(void)
 #else
-__Pyx_PyMODINIT_FUNC PyInit_cpp_levenshtein(void) CYTHON_SMALL_CODE; /*proto*/
-__Pyx_PyMODINIT_FUNC PyInit_cpp_levenshtein(void)
+__Pyx_PyMODINIT_FUNC PyInit_c_levenshtein(void) CYTHON_SMALL_CODE; /*proto*/
+__Pyx_PyMODINIT_FUNC PyInit_c_levenshtein(void)
 #if CYTHON_PEP489_MULTI_PHASE_INIT
 {
   return PyModuleDef_Init(&__pyx_moduledef);
@@ -8858,12 +8844,12 @@ bad:
 }
 
 
-static CYTHON_SMALL_CODE int __pyx_pymod_exec_cpp_levenshtein(PyObject *__pyx_pyinit_module)
+static CYTHON_SMALL_CODE int __pyx_pymod_exec_c_levenshtein(PyObject *__pyx_pyinit_module)
 #endif
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
-  __pyx_t_15cpp_levenshtein_OpcodeName __pyx_t_2;
+  __pyx_t_13c_levenshtein_OpcodeName __pyx_t_2;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -8871,7 +8857,7 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_cpp_levenshtein(PyObject *__pyx_py
   #if CYTHON_PEP489_MULTI_PHASE_INIT
   if (__pyx_m) {
     if (__pyx_m == __pyx_pyinit_module) return 0;
-    PyErr_SetString(PyExc_RuntimeError, "Module 'cpp_levenshtein' has already been imported. Re-initialisation is not supported.");
+    PyErr_SetString(PyExc_RuntimeError, "Module 'c_levenshtein' has already been imported. Re-initialisation is not supported.");
     return -1;
   }
   #elif PY_MAJOR_VERSION >= 3
@@ -8883,7 +8869,7 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_cpp_levenshtein(PyObject *__pyx_py
   Py_INCREF(__pyx_m);
   #else
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("cpp_levenshtein", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("c_levenshtein", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   if (unlikely(!__pyx_m)) __PYX_ERR(0, 1, __pyx_L1_error)
   #elif CYTHON_COMPILING_IN_LIMITED_API
   __pyx_t_1 = PyModule_Create(&__pyx_moduledef); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -8911,7 +8897,7 @@ if (!__Pyx_RefNanny) {
       Py_FatalError("failed to import 'refnanny' module");
 }
 #endif
-  __Pyx_RefNannySetupContext("__Pyx_PyMODINIT_FUNC PyInit_cpp_levenshtein(void)", 0);
+  __Pyx_RefNannySetupContext("__Pyx_PyMODINIT_FUNC PyInit_c_levenshtein(void)", 0);
   if (__Pyx_check_binary_version() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #ifdef __Pxy_PyFrame_Initialize_Offsets
   __Pxy_PyFrame_Initialize_Offsets();
@@ -8947,14 +8933,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_cpp_levenshtein) {
+  if (__pyx_module_is_main_c_levenshtein) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "cpp_levenshtein")) {
-      if (unlikely((PyDict_SetItemString(modules, "cpp_levenshtein", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "c_levenshtein")) {
+      if (unlikely((PyDict_SetItemString(modules, "c_levenshtein", __pyx_m) < 0))) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -8975,7 +8961,7 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "cpp_levenshtein.pyx":78
+  /* "c_levenshtein.pyx":78
  * 
  * cdef OpcodeName opcode_names[4]
  * opcode_names[0] = OpcodeName(<PyObject*>"equal",   "equal",   strlen("equal"))             # <<<<<<<<<<<<<<
@@ -8985,9 +8971,9 @@ if (!__Pyx_RefNanny) {
   __pyx_t_2.pystring = ((PyObject *)__pyx_n_u_equal);
   __pyx_t_2.cstring = ((char const *)"equal");
   __pyx_t_2.len = strlen(((char const *)"equal"));
-  (__pyx_v_15cpp_levenshtein_opcode_names[0]) = __pyx_t_2;
+  (__pyx_v_13c_levenshtein_opcode_names[0]) = __pyx_t_2;
 
-  /* "cpp_levenshtein.pyx":79
+  /* "c_levenshtein.pyx":79
  * cdef OpcodeName opcode_names[4]
  * opcode_names[0] = OpcodeName(<PyObject*>"equal",   "equal",   strlen("equal"))
  * opcode_names[1] = OpcodeName(<PyObject*>"replace", "replace", strlen("replace"))             # <<<<<<<<<<<<<<
@@ -8997,9 +8983,9 @@ if (!__Pyx_RefNanny) {
   __pyx_t_2.pystring = ((PyObject *)__pyx_n_u_replace);
   __pyx_t_2.cstring = ((char const *)"replace");
   __pyx_t_2.len = strlen(((char const *)"replace"));
-  (__pyx_v_15cpp_levenshtein_opcode_names[1]) = __pyx_t_2;
+  (__pyx_v_13c_levenshtein_opcode_names[1]) = __pyx_t_2;
 
-  /* "cpp_levenshtein.pyx":80
+  /* "c_levenshtein.pyx":80
  * opcode_names[0] = OpcodeName(<PyObject*>"equal",   "equal",   strlen("equal"))
  * opcode_names[1] = OpcodeName(<PyObject*>"replace", "replace", strlen("replace"))
  * opcode_names[2] = OpcodeName(<PyObject*>"insert",  "insert",  strlen("insert"))             # <<<<<<<<<<<<<<
@@ -9009,9 +8995,9 @@ if (!__Pyx_RefNanny) {
   __pyx_t_2.pystring = ((PyObject *)__pyx_n_u_insert);
   __pyx_t_2.cstring = ((char const *)"insert");
   __pyx_t_2.len = strlen(((char const *)"insert"));
-  (__pyx_v_15cpp_levenshtein_opcode_names[2]) = __pyx_t_2;
+  (__pyx_v_13c_levenshtein_opcode_names[2]) = __pyx_t_2;
 
-  /* "cpp_levenshtein.pyx":81
+  /* "c_levenshtein.pyx":81
  * opcode_names[1] = OpcodeName(<PyObject*>"replace", "replace", strlen("replace"))
  * opcode_names[2] = OpcodeName(<PyObject*>"insert",  "insert",  strlen("insert"))
  * opcode_names[3] = OpcodeName(<PyObject*>"delete",  "delete",  strlen("delete"))             # <<<<<<<<<<<<<<
@@ -9021,90 +9007,90 @@ if (!__Pyx_RefNanny) {
   __pyx_t_2.pystring = ((PyObject *)__pyx_n_u_delete);
   __pyx_t_2.cstring = ((char const *)"delete");
   __pyx_t_2.len = strlen(((char const *)"delete"));
-  (__pyx_v_15cpp_levenshtein_opcode_names[3]) = __pyx_t_2;
+  (__pyx_v_13c_levenshtein_opcode_names[3]) = __pyx_t_2;
 
-  /* "cpp_levenshtein.pyx":82
+  /* "c_levenshtein.pyx":82
  * opcode_names[2] = OpcodeName(<PyObject*>"insert",  "insert",  strlen("insert"))
  * opcode_names[3] = OpcodeName(<PyObject*>"delete",  "delete",  strlen("delete"))
  * cdef size_t N_OPCODE_NAMES = 4             # <<<<<<<<<<<<<<
  * 
  * cdef size_t get_length_of_anything(o):
  */
-  __pyx_v_15cpp_levenshtein_N_OPCODE_NAMES = 4;
+  __pyx_v_13c_levenshtein_N_OPCODE_NAMES = 4;
 
-  /* "cpp_levenshtein.pyx":214
+  /* "c_levenshtein.pyx":214
  *     return tuple_list
  * 
  * def inverse(edit_operations):             # <<<<<<<<<<<<<<
  *     """
  *     Invert the sense of an edit operation sequence.
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_15cpp_levenshtein_1inverse, 0, __pyx_n_s_inverse, NULL, __pyx_n_s_cpp_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__21)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 214, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_13c_levenshtein_1inverse, 0, __pyx_n_s_inverse, NULL, __pyx_n_s_c_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__21)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 214, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_inverse, __pyx_t_1) < 0) __PYX_ERR(0, 214, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":268
+  /* "c_levenshtein.pyx":268
  * 
  * 
  * def editops(*args):             # <<<<<<<<<<<<<<
  *     """
  *     Find sequence of edit operations transforming one string to another.
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_15cpp_levenshtein_3editops, 0, __pyx_n_s_editops, NULL, __pyx_n_s_cpp_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__23)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 268, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_13c_levenshtein_3editops, 0, __pyx_n_s_editops, NULL, __pyx_n_s_c_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__23)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 268, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_editops, __pyx_t_1) < 0) __PYX_ERR(0, 268, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":370
+  /* "c_levenshtein.pyx":370
  * 
  * 
  * def opcodes(*args):             # <<<<<<<<<<<<<<
  *     """
  *     Find sequence of edit operations transforming one string to another.
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_15cpp_levenshtein_5opcodes, 0, __pyx_n_s_opcodes, NULL, __pyx_n_s_cpp_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__25)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_13c_levenshtein_5opcodes, 0, __pyx_n_s_opcodes, NULL, __pyx_n_s_c_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__25)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_opcodes, __pyx_t_1) < 0) __PYX_ERR(0, 370, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":476
+  /* "c_levenshtein.pyx":476
  * 
  * 
  * def matching_blocks(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
  *     """
  *     Find identical blocks in two strings.
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_15cpp_levenshtein_7matching_blocks, 0, __pyx_n_s_matching_blocks, NULL, __pyx_n_s_cpp_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__27)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 476, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_13c_levenshtein_7matching_blocks, 0, __pyx_n_s_matching_blocks, NULL, __pyx_n_s_c_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__27)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 476, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_matching_blocks, __pyx_t_1) < 0) __PYX_ERR(0, 476, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":562
+  /* "c_levenshtein.pyx":562
  * 
  * 
  * def subtract_edit(edit_operations, subsequence):             # <<<<<<<<<<<<<<
  *     """
  *     Subtract an edit subsequence from a sequence.
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_15cpp_levenshtein_9subtract_edit, 0, __pyx_n_s_subtract_edit, NULL, __pyx_n_s_cpp_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__29)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 562, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_13c_levenshtein_9subtract_edit, 0, __pyx_n_s_subtract_edit, NULL, __pyx_n_s_c_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__29)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 562, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_subtract_edit, __pyx_t_1) < 0) __PYX_ERR(0, 562, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":629
+  /* "c_levenshtein.pyx":629
  * 
  * 
  * def apply_edit(edit_operations, source_string, destination_string):             # <<<<<<<<<<<<<<
  *     """
  *     Apply a sequence of edit operations to a string.
  */
-  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_15cpp_levenshtein_11apply_edit, 0, __pyx_n_s_apply_edit, NULL, __pyx_n_s_cpp_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__31)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 629, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_New(&__pyx_mdef_13c_levenshtein_11apply_edit, 0, __pyx_n_s_apply_edit, NULL, __pyx_n_s_c_levenshtein, __pyx_d, ((PyObject *)__pyx_codeobj__31)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 629, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_apply_edit, __pyx_t_1) < 0) __PYX_ERR(0, 629, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "cpp_levenshtein.pyx":1
+  /* "c_levenshtein.pyx":1
  * # distutils: language=c++             # <<<<<<<<<<<<<<
  * # cython: language_level=3
  * # cython: binding=True
@@ -9133,13 +9119,13 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init cpp_levenshtein", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init c_levenshtein", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     #if !CYTHON_COMPILING_IN_LIMITED_API
     Py_CLEAR(__pyx_m);
     #endif
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init cpp_levenshtein");
+    PyErr_SetString(PyExc_ImportError, "init c_levenshtein");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
