@@ -39,8 +39,6 @@ static PyObject* quickmedian_py(PyObject *self, PyObject *args);
 static PyObject* setmedian_py(PyObject *self, PyObject *args);
 static PyObject* seqratio_py(PyObject *self, PyObject *args);
 static PyObject* setratio_py(PyObject *self, PyObject *args);
-static PyObject* apply_edit_py(PyObject *self, PyObject *args);
-static PyObject* subtract_edit_py(PyObject *self, PyObject *args);
 
 #define Levenshtein_DESC \
   "A C extension module for fast computation of:\n" \

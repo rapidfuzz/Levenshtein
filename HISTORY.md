@@ -1,5 +1,8 @@
 ## Changelog
 
+### v0.15.0
+* Update SequenceMatcher interface to support the autojunk parameter
+
 ### v0.14.0
 * Drop Python 2 support
 * Fixed free of non heap object due caused by zero offset on a heap object

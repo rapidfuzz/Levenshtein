@@ -281,14 +281,6 @@ lev_editops_to_opcodes(size_t n,
                        size_t len1,
                        size_t len2);
 
-size_t
-lev_editops_total_cost(size_t n,
-                       const LevEditOp *ops);
-
-size_t
-lev_opcodes_total_cost(size_t nb,
-                       const LevOpCode *bops);
-
 LevEditOp*
 lev_editops_normalize(size_t n,
                       const LevEditOp *ops,

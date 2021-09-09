@@ -4172,29 +4172,6 @@ lev_opcodes_matching_blocks(size_t len1,
 }
 
 /**
- * lev_editops_total_cost:
- * @n: Tne size of @ops.
- * @ops: An array of elementary edit operations.
- *
- * Computes the total cost of operations in @ops.
- *
- * The costs of elementary operations are all 1.
- *
- * Returns: The total cost.
- **/
-size_t
-lev_editops_total_cost(size_t n,
-                       const LevEditOp *ops)
-{
-  size_t i, sum = 0;
-
-  for (i = n; i; i--, ops++)
-    sum += !!ops->type;
-
-  return sum;
-}
-
-/**
  * lev_editops_normalize:
  * @n: The size of @ops.
  * @ops: An array of elementary edit operations.
@@ -4242,42 +4219,6 @@ lev_editops_normalize(size_t n,
 }
 
 /**
- * lev_opcodes_total_cost:
- * @nb: Tne size of @bops.
- * @bops: An array of difflib block operation codes.
- *
- * Computes the total cost of operations in @bops.
- *
- * The costs of elementary operations are all 1.
- *
- * Returns: The total cost.
- **/
-size_t
-lev_opcodes_total_cost(size_t nb,
-                       const LevOpCode *bops)
-{
-  size_t i, sum = 0;
-
-  for (i = nb; i; i--, bops++) {
-    switch (bops->type) {
-      case LEV_EDIT_REPLACE:
-      case LEV_EDIT_DELETE:
-      sum += (bops->send - bops->sbeg);
-      break;
-
-      case LEV_EDIT_INSERT:
-      sum += (bops->dend - bops->dbeg);
-      break;
-
-      default:
-      break;
-    }
-  }
-
-  return sum;
-}
-
-/**
  * lev_editops_subtract:
  * @n: The size of @ops.
  * @ops: An array of elementary edit operations.
@@ -4320,7 +4261,6 @@ lev_editops_subtract(size_t n,
     if (nn > nr)
         return NULL;
     nr -= nn;
-
 
     /* subtract */
     /* we could simply return NULL when nr == 0, but then it would be possible
