@@ -504,6 +504,7 @@ def matching_blocks(edit_operations, source_string, destination_string):
     compatibility with difflib which always emits it.
     
     One can join the matching blocks to get two identical strings:
+
     >>> a, b = 'dog kennels', 'mattresses'
     >>> mb = matching_blocks(editops(a,b), a, b)
     >>> ''.join([a[x[0]:x[0]+x[2]] for x in mb])
@@ -648,8 +649,7 @@ def apply_edit(edit_operations, source_string, destination_string):
     subsets can be created by carefully replacing blocks with 'equal'
     blocks, or by enlarging 'equal' block at the expense of other blocks
     and adjusting the other blocks accordingly.
-    
-    Examples:
+
     >>> a, b = 'spam and eggs', 'foo and bar'
     >>> e = opcodes(a, b)
     >>> apply_edit(inverse(e), b, a)
