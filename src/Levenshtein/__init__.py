@@ -29,7 +29,7 @@ from Levenshtein._levenshtein import (
     setratio
 )
 
-from Levenshtein.cpp_levenshtein import (
+from Levenshtein.c_levenshtein import (
     inverse,
     editops,
     opcodes,
