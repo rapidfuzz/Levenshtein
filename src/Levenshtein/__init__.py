@@ -26,13 +26,16 @@ from Levenshtein._levenshtein import (
     quickmedian,
     setmedian,
     seqratio,
-    setratio,
+    setratio
+)
+
+from Levenshtein.c_levenshtein import (
+    inverse,
     editops,
     opcodes,
-    inverse,
-    apply_edit,
     matching_blocks,
-    subtract_edit
+    subtract_edit,
+    apply_edit
 )
 
 def distance(string1, string2):

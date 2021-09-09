@@ -102,24 +102,6 @@ munkers_blackman(size_t n1,
                  size_t n2,
                  double *dists);
 
-static void *
-safe_malloc(size_t nmemb, size_t size) {
-  /* extra-conservative overflow check */
-  if (SIZE_MAX / size <= nmemb) {
-    return NULL;
-  }
-  return malloc(nmemb * size);
-}
-
-static void *
-safe_malloc_3(size_t nmemb1, size_t nmemb2, size_t size) {
-  /* extra-conservative overflow check */
-  if (SIZE_MAX / size <= nmemb2) {
-    return NULL;
-  }
-  return safe_malloc(nmemb1, nmemb2 * size);
-}
-
 /****************************************************************************
  *
  * Basic stuff, Levenshtein distance
@@ -140,7 +122,7 @@ safe_malloc_3(size_t nmemb1, size_t nmemb2, size_t size) {
  *
  * Returns: The edit distance.
  **/
-size_t
+static size_t
 lev_edit_distance(size_t len1, const lev_byte *string1,
                   size_t len2, const lev_byte *string2,
                   int xcost)
@@ -298,7 +280,7 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
  *
  * Returns: The edit distance.
  **/
-size_t
+static size_t
 lev_u_edit_distance(size_t len1, const lev_wchar *string1,
                     size_t len2, const lev_wchar *string2,
                     int xcost)

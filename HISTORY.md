@@ -2,10 +2,14 @@
 
 ### v0.14.0
 * Drop Python 2 support
-* Implement distance, ratio, hamming, jaro and jaro_winkler using
-  rapidfuzz instead of providing a own implementation
 * Fixed free of non heap object due caused by zero offset on a heap object
 * Fixed warnings about missing type conversions
+* Fix segmentation fault in subtract_edit when incorrect input types are used
+* Fixed unchecked memory allocations
+* Implement distance/ratio/hamming/jaro/jaro_winkler
+  using rapidfuzz instead of providing a own implementation
+* Implement Wrapper for inverse/editops/opcodes/matching_blocks/subtract_edit/apply_edit
+  using Cython to simplify support for new Python versions
 
 ### v0.13.0
 * Maintainership passed to Max Bachmann
