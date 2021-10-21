@@ -91,6 +91,8 @@
 #include <assert.h>
 #include "_levenshtein.hpp"
 
+#include "rapidfuzz/string_metric.hpp"
+
 #define LEV_UNUSED(x) ((void)x)
 
 #define LEV_EPSILON 1e-14
@@ -101,322 +103,6 @@ static size_t*
 munkers_blackman(size_t n1,
                  size_t n2,
                  double *dists);
-
-/****************************************************************************
- *
- * Basic stuff, Levenshtein distance
- *
- ****************************************************************************/
-/* {{{ */
-
-/**
- * lev_edit_distance:
- * @len1: The length of @string1.
- * @string1: A sequence of bytes of length @len1, may contain NUL characters.
- * @len2: The length of @string2.
- * @string2: A sequence of bytes of length @len2, may contain NUL characters.
- * @xcost: If nonzero, the replace operation has weight 2, otherwise all
- *         edit operations have equal weights of 1.
- *
- * Computes Levenshtein edit distance of two strings.
- *
- * Returns: The edit distance.
- **/
-static size_t
-lev_edit_distance(size_t len1, const lev_byte *string1,
-                  size_t len2, const lev_byte *string2,
-                  int xcost)
-{
-  size_t i;
-  size_t *row;  /* we only need to keep one row of costs */
-  size_t *end;
-  size_t half;
-
-  /* make the inner cycle (i.e. string2) the longer one */
-  if (len1 > len2) {
-    return lev_edit_distance(len2, string2, len1, string1, xcost);
-  }
-
-  /* strip common prefix */
-  while (len1 > 0 && len2 > 0 && *string1 == *string2) {
-    len1--;
-    len2--;
-    string1++;
-    string2++;
-  }
-
-  /* strip common suffix */
-  while (len1 > 0 && len2 > 0 && string1[len1-1] == string2[len2-1]) {
-    len1--;
-    len2--;
-  }
-
-  /* catch trivial cases */
-  if (len1 == 0)
-    return len2;
-  if (len2 == 0)
-    return len1;
-
-  /* check len1 == 1 separately */
-  if (len1 == 1) {
-    if (xcost)
-      return len2 + 1 - 2 * (size_t)(memchr(string2, *string1, len2) != NULL);
-    else
-      return len2 - (memchr(string2, *string1, len2) != NULL);
-  }
-  len1++;
-  len2++;
-  half = len1 >> 1;
-
-  /* initalize first row */
-  row = (size_t*)safe_malloc(len2, sizeof(size_t));
-  if (!row)
-    return (size_t)(-1);
-  end = row + len2 - 1;
-  for (i = 0; i < len2 - (xcost ? 0 : half); i++)
-    row[i] = i;
-
-  /* go through the matrix and compute the costs.  yes, this is an extremely
-   * obfuscated version, but also extremely memory-conservative and relatively
-   * fast.  */
-  if (xcost) {
-    for (i = 1; i < len1; i++) {
-      size_t *p = row + 1;
-      const lev_byte char1 = string1[i - 1];
-      const lev_byte *char2p = string2;
-      size_t D = i;
-      size_t x = i;
-      while (p <= end) {
-        if (char1 == *(char2p++))
-          x = --D;
-        else
-          x++;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-    }
-  }
-  else {
-    /* in this case we don't have to scan two corner triangles (of size len1/2)
-     * in the matrix because no best path can go throught them. note this
-     * breaks when len1 == len2 == 2 so the memchr() special case above is
-     * necessary */
-    row[0] = len1 - half - 1;
-    for (i = 1; i < len1; i++) {
-      size_t *p;
-      const lev_byte char1 = string1[i - 1];
-      const lev_byte *char2p;
-      size_t D, x;
-      /* skip the upper triangle */
-      if (i >= len1 - half) {
-        size_t offset = i - (len1 - half);
-        size_t c3;
-
-        char2p = string2 + offset;
-        p = row + offset;
-        c3 = *(p++) + (char1 != *(char2p++));
-        x = *p;
-        x++;
-        D = x;
-        if (x > c3)
-          x = c3;
-        *(p++) = x;
-      }
-      else {
-        p = row + 1;
-        char2p = string2;
-        D = x = i;
-      }
-      /* skip the lower triangle */
-      if (i <= half + 1)
-        end = row + len2 + i - half - 2;
-      /* main */
-      while (p <= end) {
-        size_t c3 = --D + (char1 != *(char2p++));
-        x++;
-        if (x > c3)
-          x = c3;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-      /* lower triangle sentinel */
-      if (i <= half) {
-        size_t c3 = --D + (char1 != *char2p);
-        x++;
-        if (x > c3)
-          x = c3;
-        *p = x;
-      }
-    }
-  }
-
-  i = *end;
-  free(row);
-  return i;
-}
-
-/**
- * lev_u_edit_distance:
- * @len1: The length of @string1.
- * @string1: A sequence of Unicode characters of length @len1, may contain NUL
- *           characters.
- * @len2: The length of @string2.
- * @string2: A sequence of Unicode characters of length @len2, may contain NUL
- *           characters.
- * @xcost: If nonzero, the replace operation has weight 2, otherwise all
- *         edit operations have equal weights of 1.
- *
- * Computes Levenshtein edit distance of two Unicode strings.
- *
- * Returns: The edit distance.
- **/
-static size_t
-lev_u_edit_distance(size_t len1, const lev_wchar *string1,
-                    size_t len2, const lev_wchar *string2,
-                    int xcost)
-{
-  size_t i;
-  size_t *row;  /* we only need to keep one row of costs */
-  size_t *end;
-  size_t half;
-
-  /* strip common prefix */
-  while (len1 > 0 && len2 > 0 && *string1 == *string2) {
-    len1--;
-    len2--;
-    string1++;
-    string2++;
-  }
-
-  /* strip common suffix */
-  while (len1 > 0 && len2 > 0 && string1[len1-1] == string2[len2-1]) {
-    len1--;
-    len2--;
-  }
-
-  /* catch trivial cases */
-  if (len1 == 0)
-    return len2;
-  if (len2 == 0)
-    return len1;
-
-  /* make the inner cycle (i.e. string2) the longer one */
-  if (len1 > len2) {
-    return lev_u_edit_distance(len2, string2, len1, string1, xcost);
-  }
-  /* check len1 == 1 separately */
-  if (len1 == 1) {
-    lev_wchar z = *string1;
-    const lev_wchar *p = string2;
-    for (i = len2; i; i--) {
-      if (*(p++) == z)
-        return len2 - 1;
-    }
-    return len2 + (xcost != 0);
-  }
-  len1++;
-  len2++;
-  half = len1 >> 1;
-
-  /* initalize first row */
-  row = (size_t*)safe_malloc(len2, sizeof(size_t));
-  if (!row)
-    return (size_t)(-1);
-  end = row + len2 - 1;
-  for (i = 0; i < len2 - (xcost ? 0 : half); i++)
-    row[i] = i;
-
-  /* go through the matrix and compute the costs.  yes, this is an extremely
-   * obfuscated version, but also extremely memory-conservative and relatively
-   * fast.  */
-  if (xcost) {
-    for (i = 1; i < len1; i++) {
-      size_t *p = row + 1;
-      const lev_wchar char1 = string1[i - 1];
-      const lev_wchar *char2p = string2;
-      size_t D = i - 1;
-      size_t x = i;
-      while (p <= end) {
-        if (char1 == *(char2p++))
-          x = D;
-        else
-          x++;
-        D = *p;
-        if (x > D + 1)
-          x = D + 1;
-        *(p++) = x;
-      }
-    }
-  }
-  else {
-    /* in this case we don't have to scan two corner triangles (of size len1/2)
-     * in the matrix because no best path can go throught them. note this
-     * breaks when len1 == len2 == 2 so the memchr() special case above is
-     * necessary */
-    row[0] = len1 - half - 1;
-    for (i = 1; i < len1; i++) {
-      size_t *p;
-      const lev_wchar char1 = string1[i - 1];
-      const lev_wchar *char2p;
-      size_t D, x;
-      /* skip the upper triangle */
-      if (i >= len1 - half) {
-        size_t offset = i - (len1 - half);
-        size_t c3;
-
-        char2p = string2 + offset;
-        p = row + offset;
-        c3 = *(p++) + (char1 != *(char2p++));
-        x = *p;
-        x++;
-        D = x;
-        if (x > c3)
-          x = c3;
-        *(p++) = x;
-      }
-      else {
-        p = row + 1;
-        char2p = string2;
-        D = x = i;
-      }
-      /* skip the lower triangle */
-      if (i <= half + 1)
-        end = row + len2 + i - half - 2;
-      /* main */
-      while (p <= end) {
-        size_t c3 = --D + (char1 != *(char2p++));
-        x++;
-        if (x > c3)
-          x = c3;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-      /* lower triangle sentinel */
-      if (i <= half) {
-        size_t c3 = --D + (char1 != *char2p);
-        x++;
-        if (x > c3)
-          x = c3;
-        *p = x;
-      }
-    }
-  }
-
-  i = *end;
-  free(row);
-  return i;
-}
-
-/* }}} */
 
 /****************************************************************************
  *
@@ -2058,7 +1744,10 @@ lev_set_median_index(size_t n, const size_t *lengths,
       if (distances[dindex] >= 0)
         d = distances[dindex];
       else {
-        d = (long int)lev_edit_distance(lengths[j], strings[j], leni, stri, 0);
+        d = (long int)rapidfuzz::string_metric::levenshtein(
+          rapidfuzz::basic_string_view<lev_byte>(strings[j], lengths[j]),
+          rapidfuzz::basic_string_view<lev_byte>(stri, leni)
+        );
         if (d < 0) {
           free(distances);
           return (size_t)-1;
@@ -2071,8 +1760,10 @@ lev_set_median_index(size_t n, const size_t *lengths,
     /* above diagonal */
     while (j < n && dist < mindist) {
       size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = (long int)lev_edit_distance(lengths[j], strings[j],
-                                            leni, stri, 0);
+      distances[dindex] = (long int)rapidfuzz::string_metric::levenshtein(
+        rapidfuzz::basic_string_view<lev_byte>(strings[j], lengths[j]),
+        rapidfuzz::basic_string_view<lev_byte>(stri, leni)
+      );
       if (distances[dindex] < 0) {
         free(distances);
         return (size_t)-1;
@@ -2131,7 +1822,10 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
       if (distances[dindex] >= 0)
         d = distances[dindex];
       else {
-        d = (long int)lev_u_edit_distance(lengths[j], strings[j], leni, stri, 0);
+        d =  (long int)rapidfuzz::string_metric::levenshtein(
+          rapidfuzz::basic_string_view<lev_wchar>(strings[j], lengths[j]),
+          rapidfuzz::basic_string_view<lev_wchar>(stri, leni)
+        );
         if (d < 0) {
           free(distances);
           return (size_t)-1;
@@ -2144,8 +1838,10 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
     /* above diagonal */
     while (j < n && dist < mindist) {
       size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = (long int)lev_u_edit_distance(lengths[j], strings[j],
-                                              leni, stri, 0);
+      distances[dindex] = (long int)rapidfuzz::string_metric::levenshtein(
+        rapidfuzz::basic_string_view<lev_wchar>(strings[j], lengths[j]),
+        rapidfuzz::basic_string_view<lev_wchar>(stri, leni)
+      );
       if (distances[dindex] < 0) {
         free(distances);
         return (size_t)-1;
@@ -2333,7 +2029,13 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
       if (l == 0)
         q = D;
       else {
-        size_t d = lev_edit_distance(len1, str1, *(len2p++), *(str2p++), 1);
+        size_t d = rapidfuzz::string_metric::levenshtein(
+          rapidfuzz::basic_string_view<lev_byte>(str1, len1),
+          rapidfuzz::basic_string_view<lev_byte>(*str2p, *len2p),
+          {1, 1, 2}
+        );
+        str2p++;
+        len2p++;
         if (d == (size_t)(-1)) {
           free(row);
           return -1.0;
@@ -2446,7 +2148,13 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
       if (l == 0)
         q = D;
       else {
-        size_t d = lev_u_edit_distance(len1, str1, *(len2p++), *(str2p++), 1);
+        size_t d = rapidfuzz::string_metric::levenshtein(
+          rapidfuzz::basic_string_view<lev_wchar>(str1, len1),
+          rapidfuzz::basic_string_view<lev_wchar>(*str2p, *len2p),
+          {1, 1, 2}
+        );
+        str2p++;
+        len2p++;
         if (d == (size_t)(-1)) {
           free(row);
           return -1.0;
@@ -2526,7 +2234,13 @@ lev_set_distance(size_t n1, const size_t *lengths1,
       if (l == 0)
         *(r++) = 0.0;
       else {
-        size_t d = lev_edit_distance(len2, str2, *(len1p++), *(str1p)++, 1);
+        size_t d = rapidfuzz::string_metric::levenshtein(
+          rapidfuzz::basic_string_view<lev_byte>(str2, len2),
+          rapidfuzz::basic_string_view<lev_byte>(*str1p, *len1p),
+          {1, 1, 2}
+        );
+        str1p++;
+        len1p++;
         if (d == (size_t)(-1)) {
           free(r);
           return -1.0;
@@ -2548,8 +2262,11 @@ lev_set_distance(size_t n1, const size_t *lengths1,
     i = map[j];
     l = lengths1[j] + lengths2[i];
     if (l > 0) {
-      size_t d = lev_edit_distance(lengths1[j], strings1[j],
-                                   lengths2[i], strings2[i], 1);
+      size_t d = rapidfuzz::string_metric::levenshtein(
+        rapidfuzz::basic_string_view<lev_byte>(strings1[j], lengths1[j]),
+        rapidfuzz::basic_string_view<lev_byte>(strings2[i], lengths2[i]),
+        {1, 1, 2}
+      );
       if (d == (size_t)(-1)) {
         free(map);
         return -1.0;
@@ -2618,7 +2335,13 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
       if (l == 0)
         *(r++) = 0.0;
       else {
-        size_t d = lev_u_edit_distance(len2, str2, *(len1p++), *(str1p)++, 1);
+        size_t d = rapidfuzz::string_metric::levenshtein(
+          rapidfuzz::basic_string_view<lev_wchar>(str2, len2),
+          rapidfuzz::basic_string_view<lev_wchar>(*str1p, *len1p),
+          {1, 1, 2}
+        );
+        str1p++;
+        len1p++;
         if (d == (size_t)(-1)) {
           free(r);
           return -1.0;
@@ -2640,8 +2363,11 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
     i = map[j];
     l = lengths1[j] + lengths2[i];
     if (l > 0) {
-      size_t d = lev_u_edit_distance(lengths1[j], strings1[j],
-                                     lengths2[i], strings2[i], 1);
+      size_t d = rapidfuzz::string_metric::levenshtein(
+        rapidfuzz::basic_string_view<lev_wchar>(strings1[j], lengths1[j]),
+        rapidfuzz::basic_string_view<lev_wchar>(strings1[i], lengths1[i]),
+        {1, 1, 2}
+      );
       if (d == (size_t)(-1)) {
         free(map);
         return -1.0;

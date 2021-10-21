@@ -40,6 +40,7 @@ ext_modules = [
         ],
         include_dirs=[
             "src/Levenshtein-c/",
+            "3rd-party/rapidfuzz-cpp/"
         ],
         language='c++'
     ),
@@ -51,6 +52,7 @@ ext_modules = [
         ],
         include_dirs=[
             "src/Levenshtein-c/",
+            "3rd-party/rapidfuzz-cpp/"
         ],
         language='c++'
     ),
