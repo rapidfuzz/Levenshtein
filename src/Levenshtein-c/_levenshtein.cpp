@@ -118,20 +118,17 @@ static lev_byte*
 make_symlist(size_t n, const size_t *lengths,
              const lev_byte *strings[], size_t *symlistlen)
 {
-  short int *symset;  /* indexed by ALL symbols, contains 1 for symbols
-                         present in the strings, zero for others */
-  size_t i, j;
-  lev_byte *symlist;
-
-  symset = (short int*)calloc(0x100, sizeof(short int));
+  /* indexed by ALL symbols, contains 1 for symbols
+     present in the strings, zero for others */
+  short int *symset = (short int*)calloc(0x100, sizeof(short int));
   if (!symset) {
     *symlistlen = (size_t)(-1);
     return NULL;
   }
   *symlistlen = 0;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     const lev_byte *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
+    for (size_t j = 0; j < lengths[i]; j++) {
       int c = stri[j];
       if (!symset[c]) {
         (*symlistlen)++;
@@ -146,6 +143,7 @@ make_symlist(size_t n, const size_t *lengths,
 
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
+  lev_byte *symlist;
   {
     size_t pos = 0;
     symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
@@ -154,7 +152,7 @@ make_symlist(size_t n, const size_t *lengths,
       free(symset);
       return NULL;
     }
-    for (j = 0; j < 0x100; j++) {
+    for (size_t j = 0; j < 0x100; j++) {
       if (symset[j])
         symlist[pos++] = (lev_byte)j;
     }
@@ -389,20 +387,17 @@ finish_distance_computations(size_t len1, lev_byte *string1,
                              const double *weights, size_t **rows,
                              size_t *row)
 {
-  size_t *end;
-  size_t i, j;
-  size_t offset;  /* row[0]; offset + len1 give together real len of string1 */
   double distsum = 0.0;  /* sum of distances */
 
   /* catch trivia case */
   if (len1 == 0) {
-    for (j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
       distsum += (double)rows[j][lengths[j]]*weights[j];
     return distsum;
   }
 
   /* iterate through the strings and sum the distances */
-  for (j = 0; j < n; j++) {
+  for (size_t j = 0; j < n; j++) {
     size_t *rowi = rows[j];  /* current row */
     size_t leni = lengths[j];  /* current length */
     size_t len = len1;  /* temporary len1 for suffix stripping */
@@ -419,7 +414,7 @@ finish_distance_computations(size_t len1, lev_byte *string1,
       distsum += (double)rowi[leni]*weights[j];
       continue;
     }
-    offset = rowi[0];
+    size_t offset = rowi[0];  /* row[0]; offset + len1 give together real len of string1 */
     if (leni == 0) {
       distsum += (double)(offset + len)*weights[j];
       continue;
@@ -427,9 +422,9 @@ finish_distance_computations(size_t len1, lev_byte *string1,
 
     /* complete the matrix */
     memcpy(row, rowi, (leni + 1)*sizeof(size_t));
-    end = row + leni;
+    size_t *end = row + leni;
 
-    for (i = 1; i <= len; i++) {
+    for (size_t i = 1; i <= len; i++) {
       size_t *p = row + 1;
       const lev_byte char1 = string1[i - 1];
       const lev_byte *char2p = stringi;
@@ -697,9 +692,7 @@ struct _HItem {
 static void
 free_usymlist_hash(HItem *symmap)
 {
-  size_t j;
-
-  for (j = 0; j < 0x100; j++) {
+  for (size_t j = 0; j < 0x100; j++) {
     HItem *p = symmap + j;
     if (p->n == symmap || p->n == NULL)
       continue;
@@ -720,12 +713,8 @@ static lev_wchar*
 make_usymlist(size_t n, const size_t *lengths,
               const lev_wchar *strings[], size_t *symlistlen)
 {
-  lev_wchar *symlist;
-  size_t i, j;
-  HItem *symmap;
-
-  j = 0;
-  for (i = 0; i < n; i++)
+  size_t j = 0;
+  for (size_t i = 0; i < n; i++)
     j += lengths[i];
 
   *symlistlen = 0;
@@ -733,7 +722,7 @@ make_usymlist(size_t n, const size_t *lengths,
     return NULL;
 
   /* find all symbols, use a kind of hash for storage */
-  symmap = (HItem*)safe_malloc(0x100, sizeof(HItem));
+  HItem *symmap = (HItem*)safe_malloc(0x100, sizeof(HItem));
   if (!symmap) {
     *symlistlen = (size_t)(-1);
     return NULL;
@@ -743,11 +732,11 @@ make_usymlist(size_t n, const size_t *lengths,
    * to symmap, it means there're no symbols yet, afters insterting the
    * first one, p->n becomes normally NULL and then it behaves like an
    * usual singly linked list */
-  for (i = 0; i < 0x100; i++)
+  for (size_t i = 0; i < 0x100; i++)
     symmap[i].n = symmap;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     const lev_wchar *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
+    for (size_t j = 0; j < lengths[i]; j++) {
       lev_wchar c = stri[j];
       int key = ((int)c + ((int)c >> 7)) & 0xff;
       HItem *p = symmap + key;
@@ -775,20 +764,18 @@ make_usymlist(size_t n, const size_t *lengths,
   }
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
-  {
-    size_t pos = 0;
-    symlist = (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
-    if (!symlist) {
-      free_usymlist_hash(symmap);
-      *symlistlen = (size_t)(-1);
-      return NULL;
-    }
-    for (j = 0; j < 0x100; j++) {
-      HItem *p = symmap + j;
-      while (p != NULL && p->n != symmap) {
-        symlist[pos++] = p->c;
-        p = p->n;
-      }
+  lev_wchar *symlist= (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
+  if (!symlist) {
+    free_usymlist_hash(symmap);
+    *symlistlen = (size_t)(-1);
+    return NULL;
+  }
+  size_t pos = 0;
+  for (size_t j = 0; j < 0x100; j++) {
+    HItem *p = symmap + j;
+    while (p != NULL && p->n != symmap) {
+      symlist[pos++] = p->c;
+      p = p->n;
     }
   }
 
@@ -1024,19 +1011,18 @@ finish_udistance_computations(size_t len1, lev_wchar *string1,
                              size_t *row)
 {
   size_t *end;
-  size_t i, j;
   size_t offset;  /* row[0]; offset + len1 give together real len of string1 */
   double distsum = 0.0;  /* sum of distances */
 
   /* catch trivia case */
   if (len1 == 0) {
-    for (j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
       distsum += (double)rows[j][lengths[j]] * weights[j];
     return distsum;
   }
 
   /* iterate through the strings and sum the distances */
-  for (j = 0; j < n; j++) {
+  for (size_t j = 0; j < n; j++) {
     size_t *rowi = rows[j];  /* current row */
     size_t leni = lengths[j];  /* current length */
     size_t len = len1;  /* temporary len1 for suffix stripping */
@@ -1063,7 +1049,7 @@ finish_udistance_computations(size_t len1, lev_wchar *string1,
     memcpy(row, rowi, (leni + 1) * sizeof(size_t));
     end = row + leni;
 
-    for (i = 1; i <= len; i++) {
+    for (size_t i = 1; i <= len; i++) {
       size_t *p = row + 1;
       const lev_wchar char1 = string1[i - 1];
       const lev_wchar *char2p = stringi;
@@ -1251,24 +1237,24 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     }
     /* actually perform the operation */
     switch (operation) {
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_REPLACE:
       median[pos] = symbol;
       break;
 
-      case LEV_EDIT_INSERT:
+    case LEV_EDIT_INSERT:
       memmove(median+pos+1, median+pos,
               (medlen - pos)*sizeof(lev_wchar));
       median[pos] = symbol;
       medlen++;
       break;
 
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       memmove(median+pos, median + pos+1,
               (medlen - pos-1)*sizeof(lev_wchar));
       medlen--;
       break;
 
-      default:
+    default:
       break;
     }
     assert(medlen <= stoplen);
@@ -1337,18 +1323,15 @@ make_symlistset(size_t n, const size_t *lengths,
                 const lev_byte *strings[], size_t *symlistlen,
                 double *symset)
 {
-  size_t i, j;
-  lev_byte *symlist;
-
   if (!symset) {
     *symlistlen = (size_t)(-1);
     return NULL;
   }
   memset(symset, 0, 0x100*sizeof(double));  /* XXX: needs IEEE doubles?! */
   *symlistlen = 0;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     const lev_byte *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
+    for (size_t j = 0; j < lengths[i]; j++) {
       int c = stri[j];
       if (!symset[c]) {
         (*symlistlen)++;
@@ -1361,17 +1344,15 @@ make_symlistset(size_t n, const size_t *lengths,
 
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
-  {
-    size_t pos = 0;
-    symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
-    if (!symlist) {
-      *symlistlen = (size_t)(-1);
-      return NULL;
-    }
-    for (j = 0; j < 0x100; j++) {
-      if (symset[j])
-        symlist[pos++] = (lev_byte)j;
-    }
+  lev_byte *symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
+  if (!symlist) {
+    *symlistlen = (size_t)(-1);
+    return NULL;
+  }
+  size_t pos = 0;
+  for (size_t j = 0; j < 0x100; j++) {
+    if (symset[j])
+      symlist[pos++] = (lev_byte)j;
   }
 
   return symlist;
@@ -1384,54 +1365,53 @@ lev_quick_median(size_t n,
                  const double *weights,
                  size_t *medlength)
 {
-  size_t symlistlen, len, i, j, k;
-  lev_byte *symlist;
-  lev_byte *median;  /* the resulting string */
-  double *symset;
-  double ml, wl;
-
   /* first check whether the result would be an empty string 
    * and compute resulting string length */
-  ml = wl = 0.0;
-  for (i = 0; i < n; i++) {
+  double ml = 0.0;
+  double wl = 0.0;
+  for (size_t i = 0; i < n; i++) {
     ml += (double)lengths[i] * weights[i];
     wl += weights[i];
   }
   if (wl == 0.0)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
   ml = floor(ml/wl + 0.499999);
-  *medlength = len = (size_t)ml;
+  size_t len = (size_t)ml;
+  *medlength = len;
   if (!len)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
-  median = (lev_byte*)safe_malloc(len, sizeof(lev_byte));
+
+  lev_byte *median = (lev_byte*)safe_malloc(len, sizeof(lev_byte));
   if (!median)
     return NULL;
 
   /* find the symbol set;
    * now an empty symbol set is really a failure */
-  symset = (double*)calloc(0x100, sizeof(double));
+  double *symset = (double*)calloc(0x100, sizeof(double));
   if (!symset) {
     free(median);
     return NULL;
   }
-  symlist = make_symlistset(n, lengths, strings, &symlistlen, symset);
+
+  size_t symlistlen;
+  lev_byte *symlist = make_symlistset(n, lengths, strings, &symlistlen, symset);
   if (!symlist) {
     free(median);
     free(symset);
     return NULL;
   }
 
-  for (j = 0; j < len; j++) {
+  for (size_t j = 0; j < len; j++) {
     /* clear the symbol probabilities */
     if (symlistlen < 32) {
-      for (i = 0; i < symlistlen; i++)
+      for (size_t i = 0; i < symlistlen; i++)
         symset[symlist[i]] = 0.0;
     }
     else
       memset(symset, 0, 0x100*sizeof(double));
 
     /* let all strings vote */
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
       const lev_byte *stri = strings[i];
       double weighti = weights[i];
       size_t lengthi = lengths[i];
@@ -1444,15 +1424,15 @@ lev_quick_median(size_t n,
       if (iend > lengthi)
         iend = lengthi;
 
-      for (k = istart+1; k < iend; k++)
+      for (size_t k = istart+1; k < iend; k++)
         symset[stri[k]] += weighti;
       symset[stri[istart]] += weighti * ((double)(1 + istart) - start);
       symset[stri[iend-1]] -= weighti * ((double)iend - end);
     }
 
     /* find the elected symbol */
-    k = symlist[0];
-    for (i = 1; i < symlistlen; i++) {
+    size_t k = symlist[0];
+    for (size_t i = 1; i < symlistlen; i++) {
       if (symset[symlist[i]] > symset[k])
         k = symlist[i];
     }
@@ -1478,9 +1458,7 @@ struct _HQItem {
 static void
 free_usymlistset_hash(HQItem *symmap)
 {
-  size_t j;
-
-  for (j = 0; j < 0x100; j++) {
+  for (size_t j = 0; j < 0x100; j++) {
     HQItem *p = symmap + j;
     if (p->n == symmap || p->n == NULL)
       continue;
@@ -1504,15 +1482,12 @@ make_usymlistset(size_t n, const size_t *lengths,
                  const lev_wchar *strings[], size_t *symlistlen,
                  HQItem *symmap)
 {
-  lev_wchar *symlist;
-  size_t i, j;
-
-  j = 0;
-  for (i = 0; i < n; i++)
-    j += lengths[i];
+  size_t len_sum = 0;
+  for (size_t i = 0; i < n; i++)
+    len_sum += lengths[i];
 
   *symlistlen = 0;
-  if (j == 0)
+  if (len_sum == 0)
     return NULL;
 
   /* this is an ugly memory allocation avoiding hack: most hash elements
@@ -1520,11 +1495,11 @@ make_usymlistset(size_t n, const size_t *lengths,
    * to symmap, it means there're no symbols yet, afters insterting the
    * first one, p->n becomes normally NULL and then it behaves like an
    * usual singly linked list */
-  for (i = 0; i < 0x100; i++)
+  for (size_t i = 0; i < 0x100; i++)
     symmap[i].n = symmap;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     const lev_wchar *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
+    for (size_t j = 0; j < lengths[i]; j++) {
       lev_wchar c = stri[j];
       int key = ((int)c + ((int)c >> 7)) & 0xff;
       HQItem *p = symmap + key;
@@ -1551,19 +1526,18 @@ make_usymlistset(size_t n, const size_t *lengths,
   }
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
-  {
-    size_t pos = 0;
-    symlist = (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
-    if (!symlist) {
-      *symlistlen = (size_t)(-1);
-      return NULL;
-    }
-    for (j = 0; j < 0x100; j++) {
-      HQItem *p = symmap + j;
-      while (p != NULL && p->n != symmap) {
-        symlist[pos++] = p->c;
-        p = p->n;
-      }
+  lev_wchar *symlist = (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
+  if (!symlist) {
+    *symlistlen = (size_t)(-1);
+    return NULL;
+  }
+
+  size_t pos = 0;
+  for (size_t j = 0; j < 0x100; j++) {
+    HQItem *p = symmap + j;
+    while (p != NULL && p->n != symmap) {
+      symlist[pos++] = p->c;
+      p = p->n;
     }
   }
 
@@ -1577,46 +1551,44 @@ lev_u_quick_median(size_t n,
                    const double *weights,
                    size_t *medlength)
 {
-  size_t symlistlen, len, i, j, k;
-  lev_wchar *symlist;
-  lev_wchar *median;  /* the resulting string */
-  HQItem *symmap;
-  double ml, wl;
-
   /* first check whether the result would be an empty string 
    * and compute resulting string length */
-  ml = wl = 0.0;
-  for (i = 0; i < n; i++) {
+  double ml = 0.0;
+  double wl = 0.0;
+  for (size_t i = 0; i < n; i++) {
     ml += (double)lengths[i] * weights[i];
     wl += weights[i];
   }
   if (wl == 0.0)
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   ml = floor(ml/wl + 0.499999);
-  *medlength = len = (size_t)ml;
+  size_t len = (size_t)ml;
+  *medlength = len;
   if (!len)
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
-  median = (lev_wchar*)safe_malloc(len, sizeof(lev_wchar));
+
+  lev_wchar *median = (lev_wchar*)safe_malloc(len, sizeof(lev_wchar));
   if (!median)
     return NULL;
 
   /* find the symbol set;
    * now an empty symbol set is really a failure */
-  symmap = (HQItem*)safe_malloc(0x100, sizeof(HQItem));
+  HQItem *symmap = (HQItem*)safe_malloc(0x100, sizeof(HQItem));
   if (!symmap) {
     free(median);
     return NULL;
   }
-  symlist = make_usymlistset(n, lengths, strings, &symlistlen, symmap);
+  size_t symlistlen;
+  lev_wchar *symlist = make_usymlistset(n, lengths, strings, &symlistlen, symmap);
   if (!symlist) {
     free(median);
     free_usymlistset_hash(symmap);
     return NULL;
   }
 
-  for (j = 0; j < len; j++) {
+  for (size_t j = 0; j < len; j++) {
     /* clear the symbol probabilities */
-    for (i = 0; i < 0x100; i++) {
+    for (size_t i = 0; i < 0x100; i++) {
       HQItem *p = symmap + i;
       if (p->n == symmap)
         continue;
@@ -1627,7 +1599,7 @@ lev_u_quick_median(size_t n,
     }
 
     /* let all strings vote */
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
       const lev_wchar *stri = strings[i];
       double weighti = weights[i];
       size_t lengthi = lengths[i];
@@ -1641,7 +1613,7 @@ lev_u_quick_median(size_t n,
         iend = lengthi;
 
       /* the inner part, including the complete last character */
-      for (k = istart+1; k < iend; k++) {
+      for (size_t k = istart+1; k < iend; k++) {
         int c = stri[k];
         int key = (c + (c >> 7)) & 0xff;
         HQItem *p = symmap + key;
@@ -1676,7 +1648,7 @@ lev_u_quick_median(size_t n,
     {
       HQItem *max = NULL;
 
-      for (i = 0; i < 0x100; i++) {
+      for (size_t i = 0; i < 0x100; i++) {
         HQItem *p = symmap + i;
         if (p->n == symmap)
           continue;
@@ -1724,15 +1696,13 @@ lev_set_median_index(size_t n, const size_t *lengths,
 {
   size_t minidx = 0;
   double mindist = LEV_INFINITY;
-  size_t i;
-  long int *distances;
 
-  distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
+  long int *distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
   if (!distances)
     return (size_t)-1;
 
   memset(distances, 0xff, (n*(n - 1)/2)*sizeof(long int)); /* XXX */
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     size_t j = 0;
     double dist = 0.0;
     const lev_byte *stri = strings[i];
@@ -1802,15 +1772,13 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
 {
   size_t minidx = 0;
   double mindist = LEV_INFINITY;
-  size_t i;
-  long int *distances;
 
-  distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
+  long int *distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
   if (!distances)
     return (size_t)-1;
 
   memset(distances, 0xff, (n*(n - 1)/2)*sizeof(long int)); /* XXX */
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     size_t j = 0;
     double dist = 0.0;
     const lev_wchar *stri = strings[i];
@@ -1881,7 +1849,6 @@ lev_set_median(size_t n, const size_t *lengths,
                size_t *medlength)
 {
   size_t minidx = lev_set_median_index(n, lengths, strings, weights);
-  lev_byte *result;
 
   if (minidx == (size_t)-1)
     return NULL;
@@ -1890,7 +1857,7 @@ lev_set_median(size_t n, const size_t *lengths,
   if (!lengths[minidx])
     return (lev_byte*)calloc(1, sizeof(lev_byte));
 
-  result = (lev_byte*)safe_malloc(lengths[minidx], sizeof(lev_byte));
+  lev_byte *result = (lev_byte*)safe_malloc(lengths[minidx], sizeof(lev_byte));
   if (!result)
     return NULL;
   return (lev_byte*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
@@ -1917,7 +1884,6 @@ lev_u_set_median(size_t n, const size_t *lengths,
                  size_t *medlength)
 {
   size_t minidx = lev_u_set_median_index(n, lengths, strings, weights);
-  lev_wchar *result;
 
   if (minidx == (size_t)-1)
     return NULL;
@@ -1926,7 +1892,7 @@ lev_u_set_median(size_t n, const size_t *lengths,
   if (!lengths[minidx])
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
 
-  result = (lev_wchar*)safe_malloc(lengths[minidx], sizeof(lev_wchar));
+  lev_wchar *result = (lev_wchar*)safe_malloc(lengths[minidx], sizeof(lev_wchar));
   if (!result)
     return NULL;
   return (lev_wchar*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
@@ -1964,10 +1930,6 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
                       size_t n2, const size_t *lengths2,
                       const lev_byte *strings2[])
 {
-  size_t i;
-  double *row;  /* we only need to keep one row of costs */
-  double *end;
-
   /* make the inner cycle (i.e. strings2) the longer one */
   if (n1 > n2) {
     return lev_edit_seq_distance(n2, lengths2, strings2, n1, lengths1, strings1);
@@ -2005,17 +1967,17 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   n2++;
 
   /* initalize first row */
-  row = (double*)safe_malloc(n2, sizeof(double));
+  double *row = (double*)safe_malloc(n2, sizeof(double));
   if (!row)
     return -1.0;
-  end = row + n2 - 1;
-  for (i = 0; i < n2; i++)
+  double *end = row + n2 - 1;
+  for (size_t i = 0; i < n2; i++)
     row[i] = (double)i;
 
   /* go through the matrix and compute the costs.  yes, this is an extremely
    * obfuscated version, but also extremely memory-conservative and relatively
    * fast.  */
-  for (i = 1; i < n1; i++) {
+  for (size_t i = 1; i < n1; i++) {
     double *p = row + 1;
     const lev_byte *str1 = strings1[i - 1];
     const size_t len1 = lengths1[i - 1];
@@ -2052,11 +2014,9 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
     }
   }
 
-  {
-    double q = *end;
-    free(row);
-    return q;
-  }
+  double q = *end;
+  free(row);
+  return q;
 }
 
 /**
@@ -2083,10 +2043,6 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
                         size_t n2, const size_t *lengths2,
                         const lev_wchar *strings2[])
 {
-  size_t i;
-  double *row;  /* we only need to keep one row of costs */
-  double *end;
-
   /* make the inner cycle (i.e. strings2) the longer one */
   if (n1 > n2) {
     return lev_u_edit_seq_distance(n2, lengths2, strings2, n1, lengths1, strings1);
@@ -2124,17 +2080,17 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   n2++;
 
   /* initalize first row */
-  row = (double*)safe_malloc(n2, sizeof(double));
+  double *row = (double*)safe_malloc(n2, sizeof(double));
   if (!row)
     return -1.0;
-  end = row + n2 - 1;
-  for (i = 0; i < n2; i++)
+  double *end = row + n2 - 1;
+  for (size_t i = 0; i < n2; i++)
     row[i] = (double)i;
 
   /* go through the matrix and compute the costs.  yes, this is an extremely
    * obfuscated version, but also extremely memory-conservative and relatively
    * fast.  */
-  for (i = 1; i < n1; i++) {
+  for (size_t i = 1; i < n1; i++) {
     double *p = row + 1;
     const lev_wchar *str1 = strings1[i - 1];
     const size_t len1 = lengths1[i - 1];
@@ -2171,11 +2127,9 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
     }
   }
 
-  {
-    double q = *end;
-    free(row);
-    return q;
-  }
+  double q = *end;
+  free(row);
+  return q;
 }
 
 /**
@@ -2203,12 +2157,6 @@ lev_set_distance(size_t n1, const size_t *lengths1,
                  size_t n2, const size_t *lengths2,
                  const lev_byte *strings2[])
 {
-  double *dists;  /* the (modified) distance matrix, indexed [row*n1 + col] */
-  double *r;
-  size_t i, j;
-  size_t *map;
-  double sum;
-
   /* make the number of columns (n1) smaller than the number of rows */
   if (n1 > n2) {
     return lev_set_distance(n2, lengths2, strings2, n1, lengths1, strings1);
@@ -2221,15 +2169,16 @@ lev_set_distance(size_t n1, const size_t *lengths1,
     return (double)n1;
 
   /* compute distances from each to each */
-  r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
+  double *dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
+  double* r = dists;
   if (!r)
     return -1.0;
-  for (i = 0; i < n2; i++) {
+  for (size_t i = 0; i < n2; i++) {
     size_t len2 = lengths2[i];
     const lev_byte *str2 = strings2[i];
     const size_t *len1p = lengths1;
     const lev_byte **str1p = strings1;
-    for (j = 0; j < n1; j++) {
+    for (size_t j = 0; j < n1; j++) {
       size_t l = len2 + *len1p;
       if (l == 0)
         *(r++) = 0.0;
@@ -2251,15 +2200,15 @@ lev_set_distance(size_t n1, const size_t *lengths1,
   }
 
   /* find the optimal mapping between the two sets */
-  map = munkers_blackman(n1, n2, dists);
+  size_t *map = munkers_blackman(n1, n2, dists);
   if (!map)
     return -1.0;
 
   /* sum the set distance */
-  sum = (double)(n2 - n1);
-  for (j = 0; j < n1; j++) {
+  double sum = (double)(n2 - n1);
+  for (size_t j = 0; j < n1; j++) {
     size_t l;
-    i = map[j];
+    size_t i = map[j];
     l = lengths1[j] + lengths2[i];
     if (l > 0) {
       size_t d = rapidfuzz::string_metric::levenshtein(
@@ -2304,12 +2253,6 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
                    size_t n2, const size_t *lengths2,
                    const lev_wchar *strings2[])
 {
-  double *dists;  /* the (modified) distance matrix, indexed [row*n1 + col] */
-  double *r;
-  size_t i, j;
-  size_t *map;
-  double sum;
-
   /* make the number of columns (n1) smaller than the number of rows */
   if (n1 > n2) {
     return lev_u_set_distance(n2, lengths2, strings2, n1, lengths1, strings1);
@@ -2322,15 +2265,16 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
     return (double)n1;
 
   /* compute distances from each to each */
-  r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
+  double* dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
+  double* r = dists;
   if (!r)
     return -1.0;
-  for (i = 0; i < n2; i++) {
+  for (size_t i = 0; i < n2; i++) {
     size_t len2 = lengths2[i];
     const lev_wchar *str2 = strings2[i];
     const size_t *len1p = lengths1;
     const lev_wchar **str1p = strings1;
-    for (j = 0; j < n1; j++) {
+    for (size_t j = 0; j < n1; j++) {
       size_t l = len2 + *len1p;
       if (l == 0)
         *(r++) = 0.0;
@@ -2352,15 +2296,15 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
   }
 
   /* find the optimal mapping between the two sets */
-  map = munkers_blackman(n1, n2, dists);
+  size_t *map = munkers_blackman(n1, n2, dists);
   if (!map)
     return -1.0;
 
   /* sum the set distance */
-  sum = (double)(n2 - n1);
-  for (j = 0; j < n1; j++) {
+  double sum = (double)(n2 - n1);
+  for (size_t j = 0; j < n1; j++) {
     size_t l;
-    i = map[j];
+    size_t i = map[j];
     l = lengths1[j] + lengths2[i];
     if (l > 0) {
       size_t d = rapidfuzz::string_metric::levenshtein(
@@ -2587,7 +2531,7 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
 /* {{{ */
 
 /**
- * lev_editops_check_errors:
+ * lev_editops_valid:
  * @len1: The length of an eventual @ops source string.
  * @len2: The length of an eventual @ops destination string.
  * @n: The length of @ops.
@@ -2596,43 +2540,39 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
  * Checks whether @ops is consistent and applicable as a partial edit from a
  * string of length @len1 to a string of length @len2.
  *
- * Returns: Zero if @ops seems OK, a nonzero error code otherwise.
+ * Returns: true if ops are valid
  **/
-int
-lev_editops_check_errors(size_t len1, size_t len2,
+bool lev_editops_valid(size_t len1, size_t len2,
                          size_t n, const LevEditOp *ops)
 {
-  const LevEditOp *o;
-  size_t i;
-
   if (!n)
-    return LEV_EDIT_ERR_OK;
+    return true;
 
   /* check bounds */
-  o = ops;
-  for (i = n; i; i--, o++) {
+  const LevEditOp *o = ops;
+  for (size_t i = n; i; i--, o++) {
     if (o->type >= LEV_EDIT_LAST)
-      return LEV_EDIT_ERR_TYPE;
+      return false;
     if (o->spos > len1 || o->dpos > len2)
-      return LEV_EDIT_ERR_OUT;
+      return false;
     if (o->spos == len1 && o->type != LEV_EDIT_INSERT)
-      return LEV_EDIT_ERR_OUT;
+      return false;
     if (o->dpos == len2 && o->type != LEV_EDIT_DELETE)
-      return LEV_EDIT_ERR_OUT;
+      return false;
   }
 
   /* check ordering */
   o = ops + 1;
-  for (i = n - 1; i; i--, o++, ops++) {
+  for (size_t i = n - 1; i; i--, o++, ops++) {
     if (o->spos < ops->spos || o->dpos < ops->dpos)
-      return LEV_EDIT_ERR_ORDER;
+      return false;
   }
 
-  return LEV_EDIT_ERR_OK;
+  return true;
 }
 
 /**
- * lev_opcodes_check_errors:
+ * lev_opcodes_valid:
  * @len1: The length of an eventual @ops source string.
  * @len2: The length of an eventual @ops destination string.
  * @nb: The length of @bops.
@@ -2641,59 +2581,55 @@ lev_editops_check_errors(size_t len1, size_t len2,
  * Checks whether @bops is consistent and applicable as an edit from a
  * string of length @len1 to a string of length @len2.
  *
- * Returns: Zero if @bops seems OK, a nonzero error code otherwise.
+ * Returns: true if bops are valid
  **/
-int
-lev_opcodes_check_errors(size_t len1, size_t len2,
+bool lev_opcodes_valid(size_t len1, size_t len2,
                          size_t nb, const LevOpCode *bops)
 {
-  const LevOpCode *b;
-  size_t i;
-
   if (!nb)
-    return 1;
+    return true;
 
   /* check completenes */
   if (bops->sbeg || bops->dbeg
       || bops[nb - 1].send != len1 || bops[nb - 1].dend != len2)
-    return LEV_EDIT_ERR_SPAN;
+    return false;
 
   /* check bounds and block consistency */
-  b = bops;
-  for (i = nb; i; i--, b++) {
+  const LevOpCode *b = bops;
+  for (size_t i = nb; i; i--, b++) {
     if (b->send > len1 || b->dend > len2)
-      return LEV_EDIT_ERR_OUT;
+      return false;
     switch (b->type) {
-      case LEV_EDIT_KEEP:
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_KEEP:
+    case LEV_EDIT_REPLACE:
       if (b->dend - b->dbeg != b->send - b->sbeg || b->dend == b->dbeg)
-        return LEV_EDIT_ERR_BLOCK;
+        return false;
       break;
 
-      case LEV_EDIT_INSERT:
+    case LEV_EDIT_INSERT:
       if (b->dend - b->dbeg == 0 || b->send - b->sbeg != 0)
-        return LEV_EDIT_ERR_BLOCK;
+        return false;
       break;
 
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       if (b->send - b->sbeg == 0 || b->dend - b->dbeg != 0)
-        return LEV_EDIT_ERR_BLOCK;
+        return false;
       break;
 
-      default:
-      return LEV_EDIT_ERR_TYPE;
+    default:
+      return false;
       break;
     }
   }
 
   /* check ordering */
   b = bops + 1;
-  for (i = nb - 1; i; i--, b++, bops++) {
+  for (size_t i = nb - 1; i; i--, b++, bops++) {
     if (b->sbeg != bops->send || b->dbeg != bops->dend)
-      return LEV_EDIT_ERR_ORDER;
+      return false;
   }
 
-  return LEV_EDIT_ERR_OK;
+  return true;
 }
 
 /**
@@ -2709,12 +2645,8 @@ lev_opcodes_check_errors(size_t len1, size_t len2,
 void
 lev_editops_invert(size_t n, LevEditOp *ops)
 {
-  size_t i;
-
-  for (i = n; i; i--, ops++) {
-    size_t z;
-
-    z = ops->dpos;
+  for (size_t i = n; i; i--, ops++) {
+    size_t z = ops->dpos;
     ops->dpos = ops->spos;
     ops->spos = z;
     if (ops->type & 2)
@@ -2745,23 +2677,21 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
                   size_t n, const LevEditOp *ops,
                   size_t *len)
 {
-  lev_byte *dst, *dpos;  /* destination string */
-  const lev_byte *spos;  /* source string position */
-  size_t i, j;
   LEV_UNUSED(len2);
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_byte*)safe_malloc((n + len1), sizeof(lev_byte));
+  lev_byte *dst = (lev_byte*)safe_malloc((n + len1), sizeof(lev_byte));
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
   }
-  spos = string1;
-  for (i = n; i; i--, ops++) {
+  lev_byte *dpos = dst;
+  const lev_byte *spos = string1;
+  for (size_t i = n; i; i--, ops++) {
     /* XXX: this fine with gcc internal memcpy, but when memcpy is
      * actually a function, it may be pretty slow */
-    j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
+    size_t j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
     if (j) {
       memcpy(dpos, spos, j*sizeof(lev_byte));
       spos += j;
@@ -2784,7 +2714,7 @@ lev_editops_apply(size_t len1, const lev_byte *string1,
       break;
     }
   }
-  j = len1 - (size_t)(spos - string1);
+  size_t j = len1 - (size_t)(spos - string1);
   if (j) {
     memcpy(dpos, spos, j*sizeof(lev_byte));
     spos += j;
@@ -2819,23 +2749,21 @@ lev_u_editops_apply(size_t len1, const lev_wchar *string1,
                     size_t n, const LevEditOp *ops,
                     size_t *len)
 {
-  lev_wchar *dst, *dpos;  /* destination string */
-  const lev_wchar *spos;  /* source string position */
-  size_t i, j;
   LEV_UNUSED(len2);
 
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_wchar*)safe_malloc((n + len1), sizeof(lev_wchar));
+  lev_wchar *dst = (lev_wchar*)safe_malloc((n + len1), sizeof(lev_wchar));
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
   }
-  spos = string1;
-  for (i = n; i; i--, ops++) {
+  lev_wchar *dpos = dst;
+  const lev_wchar *spos = string1;
+  for (size_t i = n; i; i--, ops++) {
     /* XXX: this is fine with gcc internal memcpy, but when memcpy is
      * actually a function, it may be pretty slow */
-    j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
+    size_t j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
     if (j) {
       memcpy(dpos, spos, j*sizeof(lev_wchar));
       spos += j;
@@ -2858,7 +2786,7 @@ lev_u_editops_apply(size_t len1, const lev_wchar *string1,
       break;
     }
   }
-  j = len1 - (size_t)(spos - string1);
+  size_t j = len1 - (size_t)(spos - string1);
   if (j) {
     memcpy(dpos, spos, j*sizeof(lev_wchar));
     spos += j;
@@ -2893,25 +2821,22 @@ editops_from_cost_matrix(size_t len1, const lev_byte *string1, size_t off1,
                          size_t len2, const lev_byte *string2, size_t off2,
                          size_t *matrix, size_t *n)
 {
-  size_t *p;
-  size_t i, j, pos;
-  LevEditOp *ops;
   int dir = 0;
-
-  pos = *n = matrix[len1*len2 - 1];
+  *n = matrix[len1*len2 - 1];
+  size_t pos = *n;
   if (!*n) {
     free(matrix);
     return NULL;
   }
-  ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
+  LevEditOp *ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
   if (!ops) {
     free(matrix);
     *n = (size_t)(-1);
     return NULL;
   }
-  i = len1 - 1;
-  j = len2 - 1;
-  p = matrix + len1*len2 - 1;
+  size_t i = len1 - 1;
+  size_t j = len2 - 1;
+  size_t *p = matrix + len1*len2 - 1;
   while (i || j) {
     /* prefer contiuning in the same direction */
     if (dir < 0 && j && *p == *(p - 1) + 1) {
@@ -2998,12 +2923,8 @@ lev_editops_find(size_t len1, const lev_byte *string1,
                  size_t len2, const lev_byte *string2,
                  size_t *n)
 {
-  size_t len1o, len2o;
-  size_t i;
-  size_t *matrix; /* cost matrix */
-
   /* strip common prefix */
-  len1o = 0;
+  size_t len1o = 0;
   while (len1 > 0 && len2 > 0 && *string1 == *string2) {
     len1--;
     len2--;
@@ -3011,7 +2932,7 @@ lev_editops_find(size_t len1, const lev_byte *string1,
     string2++;
     len1o++;
   }
-  len2o = len1o;
+  size_t len2o = len1o;
 
   /* strip common suffix */
   while (len1 > 0 && len2 > 0 && string1[len1-1] == string2[len2-1]) {
@@ -3022,18 +2943,18 @@ lev_editops_find(size_t len1, const lev_byte *string1,
   len2++;
 
   /* initialize first row and column */
-  matrix = (size_t*)safe_malloc_3(len1, len2, sizeof(size_t));
+  size_t *matrix = (size_t*)safe_malloc_3(len1, len2, sizeof(size_t));
   if (!matrix) {
     *n = (size_t)(-1);
     return NULL;
   }
-  for (i = 0; i < len2; i++)
+  for (size_t i = 0; i < len2; i++)
     matrix[i] = i;
-  for (i = 1; i < len1; i++)
+  for (size_t i = 1; i < len1; i++)
     matrix[len2*i] = i;
 
   /* find the costs and fill the matrix */
-  for (i = 1; i < len1; i++) {
+  for (size_t i = 1; i < len1; i++) {
     size_t *prev = matrix + (i - 1)*len2;
     size_t *p = matrix + i*len2;
     size_t *end = p + len2 - 1;
@@ -3082,25 +3003,23 @@ ueditops_from_cost_matrix(size_t len1, const lev_wchar *string1, size_t o1,
                           size_t len2, const lev_wchar *string2, size_t o2,
                           size_t *matrix, size_t *n)
 {
-  size_t *p;
-  size_t i, j, pos;
-  LevEditOp *ops;
   int dir = 0;
 
-  pos = *n = matrix[len1*len2 - 1];
+  *n = matrix[len1*len2 - 1];
+  size_t pos = *n;
   if (!*n) {
     free(matrix);
     return NULL;
   }
-  ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
+  LevEditOp *ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
   if (!ops) {
     free(matrix);
     *n = (size_t)(-1);
     return NULL;
   }
-  i = len1 - 1;
-  j = len2 - 1;
-  p = matrix + len1*len2 - 1;
+  size_t i = len1 - 1;
+  size_t j = len2 - 1;
+  size_t *p = matrix + len1*len2 - 1;
   while (i || j) {
     /* prefer contiuning in the same direction */
     if (dir < 0 && j && *p == *(p - 1) + 1) {
@@ -3187,12 +3106,8 @@ lev_u_editops_find(size_t len1, const lev_wchar *string1,
                    size_t len2, const lev_wchar *string2,
                    size_t *n)
 {
-  size_t len1o, len2o;
-  size_t i;
-  size_t *matrix; /* cost matrix */
-
   /* strip common prefix */
-  len1o = 0;
+  size_t len1o = 0;
   while (len1 > 0 && len2 > 0 && *string1 == *string2) {
     len1--;
     len2--;
@@ -3200,7 +3115,7 @@ lev_u_editops_find(size_t len1, const lev_wchar *string1,
     string2++;
     len1o++;
   }
-  len2o = len1o;
+  size_t len2o = len1o;
 
   /* strip common suffix */
   while (len1 > 0 && len2 > 0 && string1[len1-1] == string2[len2-1]) {
@@ -3211,18 +3126,18 @@ lev_u_editops_find(size_t len1, const lev_wchar *string1,
   len2++;
 
   /* initalize first row and column */
-  matrix = (size_t*)safe_malloc_3(len1, len2, sizeof(size_t));
+  size_t *matrix = (size_t*)safe_malloc_3(len1, len2, sizeof(size_t));
   if (!matrix) {
     *n = (size_t)(-1);
     return NULL;
   }
-  for (i = 0; i < len2; i++)
+  for (size_t i = 0; i < len2; i++)
     matrix[i] = i;
-  for (i = 1; i < len1; i++)
+  for (size_t i = 1; i < len1; i++)
     matrix[len2*i] = i;
 
   /* find the costs and fill the matrix */
-  for (i = 1; i < len1; i++) {
+  for (size_t i = 1; i < len1; i++) {
     size_t *prev = matrix + (i - 1)*len2;
     size_t *p = matrix + i*len2;
     size_t *end = p + len2 - 1;
@@ -3265,25 +3180,21 @@ LevEditOp*
 lev_opcodes_to_editops(size_t nb, const LevOpCode *bops,
                        size_t *n, int keepkeep)
 {
-  size_t i;
-  const LevOpCode *b;
-  LevEditOp *ops, *o;
-
   /* compute the number of atomic operations */
   *n = 0;
   if (!nb)
     return NULL;
 
-  b = bops;
+  const LevOpCode *b = bops;
   if (keepkeep) {
-    for (i = nb; i; i--, b++) {
+    for (size_t i = nb; i; i--, b++) {
       size_t sd = b->send - b->sbeg;
       size_t dd = b->dend - b->dbeg;
       *n += (sd > dd ? sd : dd);
     }
   }
   else {
-    for (i = nb; i; i--, b++) {
+    for (size_t i = nb; i; i--, b++) {
       size_t sd = b->send - b->sbeg;
       size_t dd = b->dend - b->dbeg;
       *n += (b->type != LEV_EDIT_KEEP ? (sd > dd ? sd : dd) : 0);
@@ -3291,19 +3202,18 @@ lev_opcodes_to_editops(size_t nb, const LevOpCode *bops,
   }
 
   /* convert */
-  o = ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
+  LevEditOp *ops = (LevEditOp*)safe_malloc((*n), sizeof(LevEditOp));
+  LevEditOp *o = ops;
   if (!ops) {
     *n = (size_t)(-1);
     return NULL;
   }
   b = bops;
-  for (i = nb; i; i--, b++) {
-    size_t j;
-
+  for (size_t i = nb; i; i--, b++) {
     switch (b->type) {
-      case LEV_EDIT_KEEP:
+    case LEV_EDIT_KEEP:
       if (keepkeep) {
-        for (j = 0; j < b->send - b->sbeg; j++, o++) {
+        for (size_t j = 0; j < b->send - b->sbeg; j++, o++) {
           o->type = LEV_EDIT_KEEP;
           o->spos = b->sbeg + j;
           o->dpos = b->dbeg + j;
@@ -3311,24 +3221,24 @@ lev_opcodes_to_editops(size_t nb, const LevOpCode *bops,
       }
       break;
 
-      case LEV_EDIT_REPLACE:
-      for (j = 0; j < b->send - b->sbeg; j++, o++) {
+    case LEV_EDIT_REPLACE:
+      for (size_t j = 0; j < b->send - b->sbeg; j++, o++) {
         o->type = LEV_EDIT_REPLACE;
         o->spos = b->sbeg + j;
         o->dpos = b->dbeg + j;
       }
       break;
 
-      case LEV_EDIT_DELETE:
-      for (j = 0; j < b->send - b->sbeg; j++, o++) {
+    case LEV_EDIT_DELETE:
+      for (size_t j = 0; j < b->send - b->sbeg; j++, o++) {
         o->type = LEV_EDIT_DELETE;
         o->spos = b->sbeg + j;
         o->dpos = b->dbeg;
       }
       break;
 
-      case LEV_EDIT_INSERT:
-      for (j = 0; j < b->dend - b->dbeg; j++, o++) {
+    case LEV_EDIT_INSERT:
+      for (size_t j = 0; j < b->dend - b->dbeg; j++, o++) {
         o->type = LEV_EDIT_INSERT;
         o->spos = b->sbeg;
         o->dpos = b->dbeg + j;
@@ -3364,17 +3274,13 @@ LevOpCode*
 lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
                        size_t len1, size_t len2)
 {
-  size_t nbl, i, spos, dpos;
-  const LevEditOp *o;
-  LevOpCode *bops, *b;
-  LevEditType type;
-
   /* compute the number of blocks */
-  nbl = 0;
-  o = ops;
-  spos = dpos = 0;
-  type = LEV_EDIT_KEEP;
-  for (i = n; i; ) {
+  size_t nbl = 0;
+  const LevEditOp *o = ops;
+  size_t spos = 0;
+  size_t dpos = 0;
+  LevEditType type = LEV_EDIT_KEEP;
+  for (size_t i = n; i; ) {
     /* simply pretend there are no keep blocks */
     while (o->type == LEV_EDIT_KEEP && --i)
       o++;
@@ -3388,7 +3294,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
     nbl++;
     type = o->type;
     switch (type) {
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_REPLACE:
       do {
         spos++;
         dpos++;
@@ -3397,7 +3303,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
       } while (i && o->type == type && spos == o->spos && dpos == o->dpos);
       break;
 
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       do {
         spos++;
         i--;
@@ -3405,7 +3311,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
       } while (i && o->type == type && spos == o->spos && dpos == o->dpos);
       break;
 
-      case LEV_EDIT_INSERT:
+    case LEV_EDIT_INSERT:
       do {
         dpos++;
         i--;
@@ -3413,7 +3319,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
       } while (i && o->type == type && spos == o->spos && dpos == o->dpos);
       break;
 
-      default:
+    default:
       break;
     }
   }
@@ -3421,7 +3327,8 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
     nbl++;
 
   /* convert */
-  b = bops = (LevOpCode*)safe_malloc(nbl, sizeof(LevOpCode));
+  LevOpCode *bops = (LevOpCode*)safe_malloc(nbl, sizeof(LevOpCode));
+  LevOpCode *b = bops;
   if (!bops) {
     *nb = (size_t)(-1);
     return NULL;
@@ -3429,7 +3336,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
   o = ops;
   spos = dpos = 0;
   type = LEV_EDIT_KEEP;
-  for (i = n; i; ) {
+  for (size_t i = n; i; ) {
     /* simply pretend there are no keep blocks */
     while (o->type == LEV_EDIT_KEEP && --i)
       o++;
@@ -3518,32 +3425,29 @@ lev_opcodes_apply(size_t len1, const lev_byte *string1,
                   size_t nb, const LevOpCode *bops,
                   size_t *len)
 {
-  lev_byte *dst, *dpos;  /* destination string */
-  const lev_byte *spos;  /* source string position */
-  size_t i;
-
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_byte*)safe_malloc((len1 + len2), sizeof(lev_byte));
+  lev_byte *dst = (lev_byte*)safe_malloc((len1 + len2), sizeof(lev_byte));
+  lev_byte *dpos = dst;
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
   }
-  spos = string1;
-  for (i = nb; i; i--, bops++) {
+  const lev_byte *spos = string1;
+  for (size_t i = nb; i; i--, bops++) {
     switch (bops->type) {
-      case LEV_EDIT_INSERT:
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_INSERT:
+    case LEV_EDIT_REPLACE:
       memcpy(dpos, string2 + bops->dbeg,
              (bops->dend - bops->dbeg)*sizeof(lev_byte));
       break;
 
-      case LEV_EDIT_KEEP:
+    case LEV_EDIT_KEEP:
       memcpy(dpos, string1 + bops->sbeg,
              (bops->send - bops->sbeg)*sizeof(lev_byte));
       break;
 
-      default:
+    default:
       break;
     }
     spos += bops->send - bops->sbeg;
@@ -3578,32 +3482,29 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
                     size_t nb, const LevOpCode *bops,
                     size_t *len)
 {
-  lev_wchar *dst, *dpos;  /* destination string */
-  const lev_wchar *spos;  /* source string position */
-  size_t i;
-
   /* this looks too complex for such a simple task, but note ops is not
    * a complete edit sequence, we have to be able to apply anything anywhere */
-  dpos = dst = (lev_wchar*)safe_malloc((len1 + len2), sizeof(lev_wchar));
+  lev_wchar *dst = (lev_wchar*)safe_malloc((len1 + len2), sizeof(lev_wchar));
+  lev_wchar *dpos = dst;
   if (!dst) {
     *len = (size_t)(-1);
     return NULL;
   }
-  spos = string1;
-  for (i = nb; i; i--, bops++) {
+  const lev_wchar *spos = string1;
+  for (size_t i = nb; i; i--, bops++) {
     switch (bops->type) {
-      case LEV_EDIT_INSERT:
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_INSERT:
+    case LEV_EDIT_REPLACE:
       memcpy(dpos, string2 + bops->dbeg,
              (bops->dend - bops->dbeg)*sizeof(lev_wchar));
       break;
 
-      case LEV_EDIT_KEEP:
+    case LEV_EDIT_KEEP:
       memcpy(dpos, string1 + bops->sbeg,
              (bops->send - bops->sbeg)*sizeof(lev_wchar));
       break;
 
-      default:
+    default:
       break;
     }
     spos += bops->send - bops->sbeg;
@@ -3628,12 +3529,8 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
 void
 lev_opcodes_invert(size_t nb, LevOpCode *bops)
 {
-  size_t i;
-
-  for (i = nb; i; i--, bops++) {
-    size_t z;
-
-    z = bops->dbeg;
+  for (size_t i = nb; i; i--, bops++) {
+    size_t z = bops->dbeg;
     bops->dbeg = bops->sbeg;
     bops->sbeg = z;
     z = bops->dend;
@@ -3664,17 +3561,13 @@ lev_editops_matching_blocks(size_t len1,
                             const LevEditOp *ops,
                             size_t *nmblocks)
 {
-  size_t nmb, i, spos, dpos;
-  LevEditType type;
-  const LevEditOp *o;
-  LevMatchingBlock *mblocks, *mb;
-
   /* compute the number of matching blocks */
-  nmb = 0;
-  o = ops;
-  spos = dpos = 0;
-  type = LEV_EDIT_KEEP;
-  for (i = n; i; ) {
+  size_t nmb = 0;
+  const LevEditOp *o = ops;
+  size_t spos = 0;
+  size_t dpos = 0;
+  LevEditType type = LEV_EDIT_KEEP;
+  for (size_t i = n; i; ) {
     /* simply pretend there are no keep blocks */
     while (o->type == LEV_EDIT_KEEP && --i)
       o++;
@@ -3720,7 +3613,8 @@ lev_editops_matching_blocks(size_t len1,
     nmb++;
 
   /* fill the info */
-  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevMatchingBlock));
+  LevMatchingBlock *mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevMatchingBlock));
+  LevMatchingBlock *mb = mblocks;
   if (!mblocks) {
     *nmblocks = (size_t)(-1);
     return NULL;
@@ -3728,7 +3622,7 @@ lev_editops_matching_blocks(size_t len1,
   o = ops;
   spos = dpos = 0;
   type = LEV_EDIT_KEEP;
-  for (i = n; i; ) {
+  for (size_t i = n; i; ) {
     /* simply pretend there are no keep blocks */
     while (o->type == LEV_EDIT_KEEP && --i)
       o++;
@@ -3806,15 +3700,12 @@ lev_opcodes_matching_blocks(size_t len1,
                             const LevOpCode *bops,
                             size_t *nmblocks)
 {
-  size_t nmb, i;
-  const LevOpCode *b;
-  LevMatchingBlock *mblocks, *mb;
   LEV_UNUSED(len2);
 
   /* compute the number of matching blocks */
-  nmb = 0;
-  b = bops;
-  for (i = nb; i; i--, b++) {
+  size_t nmb = 0;
+  const LevOpCode *b = bops;
+  for (size_t i = nb; i; i--, b++) {
     if (b->type == LEV_EDIT_KEEP) {
       nmb++;
       /* adjacent KEEP blocks -- we never produce it, but... */
@@ -3828,13 +3719,14 @@ lev_opcodes_matching_blocks(size_t len1,
   }
 
   /* convert */
-  mb = mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevMatchingBlock));
+  LevMatchingBlock *mblocks = (LevMatchingBlock*)safe_malloc(nmb, sizeof(LevMatchingBlock));
+  LevMatchingBlock *mb = mblocks;
   if (!mblocks) {
     *nmblocks = (size_t)(-1);
     return NULL;
   }
   b = bops;
-  for (i = nb; i; i--, b++) {
+  for (size_t i = nb; i; i--, b++) {
     if (b->type == LEV_EDIT_KEEP) {
       mb->spos = b->sbeg;
       mb->dpos = b->dbeg;
@@ -3876,27 +3768,24 @@ lev_editops_normalize(size_t n,
                       const LevEditOp *ops,
                       size_t *nnorm)
 {
-  size_t nx, i;
-  const LevEditOp *o;
-  LevEditOp *opsnorm, *on;
-
   if (!n || !ops) {
     *nnorm = 0;
     return NULL;
   }
 
-  nx = 0;
-  o = ops;
-  for (i = n; i; i--, o++)
+  size_t nx = 0;
+  const LevEditOp *o = ops;
+  for (size_t i = n; i; i--, o++)
     nx += (o->type == LEV_EDIT_KEEP);
 
   *nnorm = n - nx;
   if (!*nnorm)
     return NULL;
 
-  opsnorm = on = (LevEditOp*)safe_malloc((n - nx), sizeof(LevEditOp));
+  LevEditOp *opsnorm = (LevEditOp*)safe_malloc((n - nx), sizeof(LevEditOp));
+  LevEditOp *on = opsnorm;
   o = ops;
-  for (i = n; i; i--, o++) {
+  for (size_t i = n; i; i--, o++) {
     if (o->type == LEV_EDIT_KEEP)
       continue;
     memcpy(on++, o, sizeof(LevEditOp));
@@ -3930,18 +3819,16 @@ lev_editops_subtract(size_t n,
                      size_t *nrem)
 {
     static const int shifts[] = { 0, 0, 1, -1 };
-    LevEditOp *rem;
-    size_t i, j, nr, nn;
-    int shift;
 
     /* compute remainder size */
     *nrem = (size_t)-1;
-    nr = nn = 0;
-    for (i = 0; i < n; i++) {
+    size_t nr = 0;
+    size_t nn = 0;
+    for (size_t i = 0; i < n; i++) {
         if (ops[i].type != LEV_EDIT_KEEP)
             nr++;
     }
-    for (i = 0; i < ns; i++) {
+    for (size_t i = 0; i < ns; i++) {
         if (sub[i].type != LEV_EDIT_KEEP)
             nn++;
     }
@@ -3953,10 +3840,10 @@ lev_editops_subtract(size_t n,
     /* we could simply return NULL when nr == 0, but then it would be possible
      * to subtract *any* sequence of the right length to get an empty sequence
      * -- clrealy incorrectly; so we have to scan the list to check */
-    rem = nr ? (LevEditOp*)safe_malloc(nr, sizeof(LevEditOp)) : NULL;
-    j = nn = 0;
-    shift = 0;
-    for (i = 0; i < ns; i++) {
+    LevEditOp *rem = nr ? (LevEditOp*)safe_malloc(nr, sizeof(LevEditOp)) : NULL;
+    size_t j = nn = 0;
+    int shift = 0;
+    for (size_t i = 0; i < ns; i++) {
         while ((ops[j].spos != sub[i].spos
                 || ops[j].dpos != sub[i].dpos
                 || ops[j].type != sub[i].type)

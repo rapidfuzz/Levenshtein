@@ -4563,7 +4563,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
  * 
  *         bops = extract_opcodes(arg1)             # <<<<<<<<<<<<<<
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 312, __pyx_L1_error)
     __pyx_t_7 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 312, __pyx_L1_error)
@@ -4573,7 +4573,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     __pyx_t_6 = (__pyx_v_bops != 0);
@@ -4582,16 +4582,16 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
       /* "c_levenshtein.pyx":314
  *         bops = extract_opcodes(arg1)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("editops edit operation list is invalid")
  */
-      __pyx_t_6 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
+      __pyx_t_6 = ((!(lev_opcodes_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0)) != 0);
       if (unlikely(__pyx_t_6)) {
 
         /* "c_levenshtein.pyx":315
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("editops edit operation list is invalid")
  * 
@@ -4599,7 +4599,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
         free(__pyx_v_bops);
 
         /* "c_levenshtein.pyx":316
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("editops edit operation list is invalid")             # <<<<<<<<<<<<<<
  * 
@@ -4614,7 +4614,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
         /* "c_levenshtein.pyx":314
  *         bops = extract_opcodes(arg1)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("editops edit operation list is invalid")
  */
@@ -4711,7 +4711,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     }
@@ -4721,7 +4721,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
  * 
  *         ops = extract_editops(arg1)             # <<<<<<<<<<<<<<
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 328, __pyx_L1_error)
     __pyx_t_8 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 328, __pyx_L1_error)
@@ -4731,7 +4731,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     __pyx_t_6 = (__pyx_v_ops != 0);
@@ -4740,16 +4740,16 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
       /* "c_levenshtein.pyx":330
  *         ops = extract_editops(arg1)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("editops edit operation list is invalid")
  */
-      __pyx_t_6 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
+      __pyx_t_6 = ((!(lev_editops_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0)) != 0);
       if (unlikely(__pyx_t_6)) {
 
         /* "c_levenshtein.pyx":331
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("editops edit operation list is invalid")
  * 
@@ -4757,7 +4757,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
         free(__pyx_v_ops);
 
         /* "c_levenshtein.pyx":332
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("editops edit operation list is invalid")             # <<<<<<<<<<<<<<
  * 
@@ -4772,7 +4772,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
         /* "c_levenshtein.pyx":330
  *         ops = extract_editops(arg1)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("editops edit operation list is invalid")
  */
@@ -4803,7 +4803,7 @@ static PyObject *__pyx_pf_13c_levenshtein_2editops(CYTHON_UNUSED PyObject *__pyx
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     }
@@ -5322,7 +5322,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
  * 
  *         ops = extract_editops(arg1)             # <<<<<<<<<<<<<<
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 413, __pyx_L1_error)
     __pyx_t_7 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 413, __pyx_L1_error)
@@ -5332,7 +5332,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     __pyx_t_6 = (__pyx_v_ops != 0);
@@ -5341,16 +5341,16 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
       /* "c_levenshtein.pyx":415
  *         ops = extract_editops(arg1)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("opcodes edit operation list is invalid")
  */
-      __pyx_t_6 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
+      __pyx_t_6 = ((!(lev_editops_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0)) != 0);
       if (unlikely(__pyx_t_6)) {
 
         /* "c_levenshtein.pyx":416
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("opcodes edit operation list is invalid")
  * 
@@ -5358,7 +5358,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
         free(__pyx_v_ops);
 
         /* "c_levenshtein.pyx":417
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("opcodes edit operation list is invalid")             # <<<<<<<<<<<<<<
  * 
@@ -5373,7 +5373,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
         /* "c_levenshtein.pyx":415
  *         ops = extract_editops(arg1)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("opcodes edit operation list is invalid")
  */
@@ -5470,7 +5470,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
  * 
  *         ops = extract_editops(arg1)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     }
@@ -5480,7 +5480,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
  * 
  *         bops = extract_opcodes(arg1)             # <<<<<<<<<<<<<<
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_arg1))||((__pyx_v_arg1) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_arg1))) __PYX_ERR(0, 429, __pyx_L1_error)
     __pyx_t_8 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_arg1)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 429, __pyx_L1_error)
@@ -5490,7 +5490,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     __pyx_t_6 = (__pyx_v_bops != 0);
@@ -5499,16 +5499,16 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
       /* "c_levenshtein.pyx":431
  *         bops = extract_opcodes(arg1)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("opcodes edit operation list is invalid")
  */
-      __pyx_t_6 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
+      __pyx_t_6 = ((!(lev_opcodes_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0)) != 0);
       if (unlikely(__pyx_t_6)) {
 
         /* "c_levenshtein.pyx":432
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("opcodes edit operation list is invalid")
  * 
@@ -5516,7 +5516,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
         free(__pyx_v_bops);
 
         /* "c_levenshtein.pyx":433
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("opcodes edit operation list is invalid")             # <<<<<<<<<<<<<<
  * 
@@ -5531,7 +5531,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
         /* "c_levenshtein.pyx":431
  *         bops = extract_opcodes(arg1)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("opcodes edit operation list is invalid")
  */
@@ -5562,7 +5562,7 @@ static PyObject *__pyx_pf_13c_levenshtein_4opcodes(CYTHON_UNUSED PyObject *__pyx
  * 
  *         bops = extract_opcodes(arg1)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     }
@@ -6159,7 +6159,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
  * 
  *     ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
  *     if ops:
- *         if lev_editops_check_errors(len1, len2, n, ops):
+ *         if not lev_editops_valid(len1, len2, n, ops):
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 530, __pyx_L1_error)
   __pyx_t_5 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 530, __pyx_L1_error)
@@ -6169,7 +6169,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
- *         if lev_editops_check_errors(len1, len2, n, ops):
+ *         if not lev_editops_valid(len1, len2, n, ops):
  *             free(ops)
  */
   __pyx_t_2 = (__pyx_v_ops != 0);
@@ -6178,16 +6178,16 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
     /* "c_levenshtein.pyx":532
  *     ops = extract_editops(edit_operations)
  *     if ops:
- *         if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *         if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *             free(ops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  */
-    __pyx_t_2 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
+    __pyx_t_2 = ((!(lev_editops_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0)) != 0);
     if (unlikely(__pyx_t_2)) {
 
       /* "c_levenshtein.pyx":533
  *     if ops:
- *         if lev_editops_check_errors(len1, len2, n, ops):
+ *         if not lev_editops_valid(len1, len2, n, ops):
  *             free(ops)             # <<<<<<<<<<<<<<
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  * 
@@ -6195,7 +6195,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
       free(__pyx_v_ops);
 
       /* "c_levenshtein.pyx":534
- *         if lev_editops_check_errors(len1, len2, n, ops):
+ *         if not lev_editops_valid(len1, len2, n, ops):
  *             free(ops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -6210,7 +6210,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
       /* "c_levenshtein.pyx":532
  *     ops = extract_editops(edit_operations)
  *     if ops:
- *         if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *         if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *             free(ops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  */
@@ -6307,7 +6307,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
  * 
  *     ops = extract_editops(edit_operations)
  *     if ops:             # <<<<<<<<<<<<<<
- *         if lev_editops_check_errors(len1, len2, n, ops):
+ *         if not lev_editops_valid(len1, len2, n, ops):
  *             free(ops)
  */
   }
@@ -6317,7 +6317,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
  * 
  *     bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
  *     if bops:
- *         if lev_opcodes_check_errors(len1, len2, n, bops):
+ *         if not lev_opcodes_valid(len1, len2, n, bops):
  */
   if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 545, __pyx_L1_error)
   __pyx_t_6 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 545, __pyx_L1_error)
@@ -6327,7 +6327,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
  * 
  *     bops = extract_opcodes(edit_operations)
  *     if bops:             # <<<<<<<<<<<<<<
- *         if lev_opcodes_check_errors(len1, len2, n, bops):
+ *         if not lev_opcodes_valid(len1, len2, n, bops):
  *             free(bops)
  */
   __pyx_t_2 = (__pyx_v_bops != 0);
@@ -6336,16 +6336,16 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
     /* "c_levenshtein.pyx":547
  *     bops = extract_opcodes(edit_operations)
  *     if bops:
- *         if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *         if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *             free(bops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  */
-    __pyx_t_2 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
+    __pyx_t_2 = ((!(lev_opcodes_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0)) != 0);
     if (unlikely(__pyx_t_2)) {
 
       /* "c_levenshtein.pyx":548
  *     if bops:
- *         if lev_opcodes_check_errors(len1, len2, n, bops):
+ *         if not lev_opcodes_valid(len1, len2, n, bops):
  *             free(bops)             # <<<<<<<<<<<<<<
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  * 
@@ -6353,7 +6353,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
       free(__pyx_v_bops);
 
       /* "c_levenshtein.pyx":549
- *         if lev_opcodes_check_errors(len1, len2, n, bops):
+ *         if not lev_opcodes_valid(len1, len2, n, bops):
  *             free(bops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -6368,7 +6368,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
       /* "c_levenshtein.pyx":547
  *     bops = extract_opcodes(edit_operations)
  *     if bops:
- *         if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *         if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *             free(bops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")
  */
@@ -6465,7 +6465,7 @@ static PyObject *__pyx_pf_13c_levenshtein_6matching_blocks(CYTHON_UNUSED PyObjec
  * 
  *     bops = extract_opcodes(edit_operations)
  *     if bops:             # <<<<<<<<<<<<<<
- *         if lev_opcodes_check_errors(len1, len2, n, bops):
+ *         if not lev_opcodes_valid(len1, len2, n, bops):
  *             free(bops)
  */
   }
@@ -7237,7 +7237,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 682, __pyx_L1_error)
     __pyx_t_6 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 682, __pyx_L1_error)
@@ -7247,7 +7247,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     __pyx_t_2 = (__pyx_v_ops != 0);
@@ -7256,16 +7256,16 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
       /* "c_levenshtein.pyx":684
  *         ops = extract_editops(edit_operations)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
-      __pyx_t_2 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
+      __pyx_t_2 = ((!(lev_editops_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0)) != 0);
       if (unlikely(__pyx_t_2)) {
 
         /* "c_levenshtein.pyx":685
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
@@ -7273,7 +7273,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         free(__pyx_v_ops);
 
         /* "c_levenshtein.pyx":686
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -7288,7 +7288,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         /* "c_levenshtein.pyx":684
  *         ops = extract_editops(edit_operations)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
@@ -7385,7 +7385,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     }
@@ -7395,7 +7395,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 698, __pyx_L1_error)
     __pyx_t_7 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 698, __pyx_L1_error)
@@ -7405,7 +7405,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     __pyx_t_2 = (__pyx_v_bops != 0);
@@ -7414,16 +7414,16 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
       /* "c_levenshtein.pyx":700
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
-      __pyx_t_2 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
+      __pyx_t_2 = ((!(lev_opcodes_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0)) != 0);
       if (unlikely(__pyx_t_2)) {
 
         /* "c_levenshtein.pyx":701
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
@@ -7431,7 +7431,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         free(__pyx_v_bops);
 
         /* "c_levenshtein.pyx":702
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -7446,7 +7446,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         /* "c_levenshtein.pyx":700
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
@@ -7543,7 +7543,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     }
@@ -7672,7 +7672,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         ops = extract_editops(edit_operations)             # <<<<<<<<<<<<<<
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 726, __pyx_L1_error)
     __pyx_t_6 = __pyx_f_13c_levenshtein_extract_editops(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 726, __pyx_L1_error)
@@ -7682,7 +7682,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     __pyx_t_2 = (__pyx_v_ops != 0);
@@ -7691,16 +7691,16 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
       /* "c_levenshtein.pyx":728
  *         ops = extract_editops(edit_operations)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
-      __pyx_t_2 = (lev_editops_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0);
+      __pyx_t_2 = ((!(lev_editops_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_ops) != 0)) != 0);
       if (unlikely(__pyx_t_2)) {
 
         /* "c_levenshtein.pyx":729
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
@@ -7708,7 +7708,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         free(__pyx_v_ops);
 
         /* "c_levenshtein.pyx":730
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -7723,7 +7723,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         /* "c_levenshtein.pyx":728
  *         ops = extract_editops(edit_operations)
  *         if ops:
- *             if lev_editops_check_errors(len1, len2, n, ops):             # <<<<<<<<<<<<<<
+ *             if not lev_editops_valid(len1, len2, n, ops):             # <<<<<<<<<<<<<<
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
@@ -7820,7 +7820,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         ops = extract_editops(edit_operations)
  *         if ops:             # <<<<<<<<<<<<<<
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  */
     }
@@ -7830,7 +7830,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         bops = extract_opcodes(edit_operations)             # <<<<<<<<<<<<<<
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  */
     if (!(likely(PyList_CheckExact(__pyx_v_edit_operations))||((__pyx_v_edit_operations) == Py_None) || __Pyx_RaiseUnexpectedTypeError("list", __pyx_v_edit_operations))) __PYX_ERR(0, 742, __pyx_L1_error)
     __pyx_t_7 = __pyx_f_13c_levenshtein_extract_opcodes(((PyObject*)__pyx_v_edit_operations)); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 742, __pyx_L1_error)
@@ -7840,7 +7840,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     __pyx_t_2 = (__pyx_v_bops != 0);
@@ -7849,16 +7849,16 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
       /* "c_levenshtein.pyx":744
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
-      __pyx_t_2 = (lev_opcodes_check_errors(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0);
+      __pyx_t_2 = ((!(lev_opcodes_valid(__pyx_v_len1, __pyx_v_len2, __pyx_v_n, __pyx_v_bops) != 0)) != 0);
       if (unlikely(__pyx_t_2)) {
 
         /* "c_levenshtein.pyx":745
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)             # <<<<<<<<<<<<<<
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  * 
@@ -7866,7 +7866,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         free(__pyx_v_bops);
 
         /* "c_levenshtein.pyx":746
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -7881,7 +7881,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
         /* "c_levenshtein.pyx":744
  *         bops = extract_opcodes(edit_operations)
  *         if bops:
- *             if lev_opcodes_check_errors(len1, len2, n, bops):             # <<<<<<<<<<<<<<
+ *             if not lev_opcodes_valid(len1, len2, n, bops):             # <<<<<<<<<<<<<<
  *                 free(bops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
  */
@@ -7978,7 +7978,7 @@ static PyObject *__pyx_pf_13c_levenshtein_10apply_edit(CYTHON_UNUSED PyObject *_
  * 
  *         bops = extract_opcodes(edit_operations)
  *         if bops:             # <<<<<<<<<<<<<<
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  */
     }
@@ -8272,7 +8272,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__3);
 
   /* "c_levenshtein.pyx":316
- *             if lev_opcodes_check_errors(len1, len2, n, bops):
+ *             if not lev_opcodes_valid(len1, len2, n, bops):
  *                 free(bops)
  *                 raise ValueError("editops edit operation list is invalid")             # <<<<<<<<<<<<<<
  * 
@@ -8316,7 +8316,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__7);
 
   /* "c_levenshtein.pyx":417
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("opcodes edit operation list is invalid")             # <<<<<<<<<<<<<<
  * 
@@ -8360,7 +8360,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__11);
 
   /* "c_levenshtein.pyx":534
- *         if lev_editops_check_errors(len1, len2, n, ops):
+ *         if not lev_editops_valid(len1, len2, n, ops):
  *             free(ops)
  *             raise ValueError("matching_blocks edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 
@@ -8415,7 +8415,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__16);
 
   /* "c_levenshtein.pyx":686
- *             if lev_editops_check_errors(len1, len2, n, ops):
+ *             if not lev_editops_valid(len1, len2, n, ops):
  *                 free(ops)
  *                 raise ValueError("apply_edit edit operations are invalid or inapplicable")             # <<<<<<<<<<<<<<
  * 

@@ -184,14 +184,12 @@ lev_u_set_distance(size_t n1,
                    const size_t *lengths2,
                    const lev_wchar *strings2[]);
 
-int
-lev_editops_check_errors(size_t len1,
+bool lev_editops_valid(size_t len1,
                          size_t len2,
                          size_t n,
                          const LevEditOp *ops);
 
-int
-lev_opcodes_check_errors(size_t len1,
+bool lev_opcodes_valid(size_t len1,
                          size_t len2,
                          size_t nb,
                          const LevOpCode *bops);
