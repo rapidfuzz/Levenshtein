@@ -1,5 +1,8 @@
 ## Changelog
 
+### v0.16.0
+* Add support for Python 3.10
+
 ### v0.15.0
 * Update SequenceMatcher interface to support the autojunk parameter
 
