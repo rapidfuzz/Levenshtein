@@ -89,7 +89,7 @@
 #include <stdint.h>
 
 #include <assert.h>
-#include "_levenshtein.h"
+#include "_levenshtein.hpp"
 
 #define LEV_UNUSED(x) ((void)x)
 
@@ -132,6 +132,11 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
   size_t *end;
   size_t half;
 
+  /* make the inner cycle (i.e. string2) the longer one */
+  if (len1 > len2) {
+    return lev_edit_distance(len2, string2, len1, string1, xcost);
+  }
+
   /* strip common prefix */
   while (len1 > 0 && len2 > 0 && *string1 == *string2) {
     len1--;
@@ -152,15 +157,6 @@ lev_edit_distance(size_t len1, const lev_byte *string1,
   if (len2 == 0)
     return len1;
 
-  /* make the inner cycle (i.e. string2) the longer one */
-  if (len1 > len2) {
-    size_t nx = len1;
-    const lev_byte *sx = string1;
-    len1 = len2;
-    len2 = nx;
-    string1 = string2;
-    string2 = sx;
-  }
   /* check len1 == 1 separately */
   if (len1 == 1) {
     if (xcost)
@@ -312,12 +308,7 @@ lev_u_edit_distance(size_t len1, const lev_wchar *string1,
 
   /* make the inner cycle (i.e. string2) the longer one */
   if (len1 > len2) {
-    size_t nx = len1;
-    const lev_wchar *sx = string1;
-    len1 = len2;
-    len2 = nx;
-    string1 = string2;
-    string2 = sx;
+    return lev_u_edit_distance(len2, string2, len1, string1, xcost);
   }
   /* check len1 == 1 separately */
   if (len1 == 1) {
@@ -2281,6 +2272,11 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   double *row;  /* we only need to keep one row of costs */
   double *end;
 
+  /* make the inner cycle (i.e. strings2) the longer one */
+  if (n1 > n2) {
+    return lev_edit_seq_distance(n2, lengths2, strings2, n1, lengths1, strings1);
+  }
+
   /* strip common prefix */
   while (n1 > 0 && n2 > 0
          && *lengths1 == *lengths2
@@ -2309,18 +2305,6 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   if (n2 == 0)
     return (double)n1;
 
-  /* make the inner cycle (i.e. strings2) the longer one */
-  if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_byte **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
-  }
   n1++;
   n2++;
 
@@ -2401,6 +2385,11 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   double *row;  /* we only need to keep one row of costs */
   double *end;
 
+  /* make the inner cycle (i.e. strings2) the longer one */
+  if (n1 > n2) {
+    return lev_u_edit_seq_distance(n2, lengths2, strings2, n1, lengths1, strings1);
+  }
+
   /* strip common prefix */
   while (n1 > 0 && n2 > 0
          && *lengths1 == *lengths2
@@ -2429,18 +2418,6 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   if (n2 == 0)
     return (double)n1;
 
-  /* make the inner cycle (i.e. strings2) the longer one */
-  if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_wchar **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
-  }
   n1++;
   n2++;
 
@@ -2524,24 +2501,16 @@ lev_set_distance(size_t n1, const size_t *lengths1,
   size_t *map;
   double sum;
 
+  /* make the number of columns (n1) smaller than the number of rows */
+  if (n1 > n2) {
+    return lev_set_distance(n2, lengths2, strings2, n1, lengths1, strings1);
+  }
+
   /* catch trivial cases */
   if (n1 == 0)
     return (double)n2;
   if (n2 == 0)
     return (double)n1;
-
-  /* make the number of columns (n1) smaller than the number of rows */
-  if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_byte **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
-  }
 
   /* compute distances from each to each */
   r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
@@ -2624,24 +2593,16 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
   size_t *map;
   double sum;
 
+  /* make the number of columns (n1) smaller than the number of rows */
+  if (n1 > n2) {
+    return lev_u_set_distance(n2, lengths2, strings2, n1, lengths1, strings1);
+  }
+
   /* catch trivial cases */
   if (n1 == 0)
     return (double)n2;
   if (n2 == 0)
     return (double)n1;
-
-  /* make the number of columns (n1) smaller than the number of rows */
-  if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_wchar **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
-  }
 
   /* compute distances from each to each */
   r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));

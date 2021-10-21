@@ -13,6 +13,11 @@ class BuildExt(build_ext):
         'unix': [],
     }
 
+    if sys.platform == 'darwin':
+        darwin_opts = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
+        c_opts['unix'] += darwin_opts
+        l_opts['unix'] += darwin_opts
+
     def build_extensions(self):
         ct = self.compiler.compiler_type
         opts = self.c_opts.get(ct, [])
@@ -30,22 +35,24 @@ ext_modules = [
     Extension(
         name='Levenshtein._levenshtein',
         sources=[
-            'src/Levenshtein-c/_levenshtein.c',
-            'src/_levenshtein.c'
+            'src/Levenshtein-c/_levenshtein.cpp',
+            'src/_levenshtein.cpp'
         ],
         include_dirs=[
             "src/Levenshtein-c/",
-        ]
+        ],
+        language='c++'
     ),
     Extension(
         name='Levenshtein.c_levenshtein',
         sources=[
-            'src/Levenshtein-c/_levenshtein.c',
-            'src/c_levenshtein.c'
+            'src/Levenshtein-c/_levenshtein.cpp',
+            'src/c_levenshtein.cpp'
         ],
         include_dirs=[
             "src/Levenshtein-c/",
-        ]
+        ],
+        language='c++'
     ),
 ]
 
