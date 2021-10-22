@@ -93,6 +93,9 @@
 
 #include "rapidfuzz/string_metric.hpp"
 
+#include <vector>
+#include <memory>
+
 #define LEV_UNUSED(x) ((void)x)
 
 #define LEV_EPSILON 1e-14
@@ -114,50 +117,37 @@ munkers_blackman(size_t n1,
 /* compute the sets of symbols each string contains, and the set of symbols
  * in any of them (symset).  meanwhile, count how many different symbols
  * there are (used below for symlist). */
-static lev_byte*
+static std::vector<lev_byte>
 make_symlist(size_t n, const size_t *lengths,
-             const lev_byte *strings[], size_t *symlistlen)
+             const lev_byte *strings[])
 {
+  std::vector<lev_byte> symlist;
   /* indexed by ALL symbols, contains 1 for symbols
      present in the strings, zero for others */
-  short int *symset = (short int*)calloc(0x100, sizeof(short int));
-  if (!symset) {
-    *symlistlen = (size_t)(-1);
-    return NULL;
-  }
-  *symlistlen = 0;
+  std::vector<short int> symset(0x100);
+  size_t symlistlen = 0;
   for (size_t i = 0; i < n; i++) {
     const lev_byte *stri = strings[i];
     for (size_t j = 0; j < lengths[i]; j++) {
       int c = stri[j];
       if (!symset[c]) {
-        (*symlistlen)++;
+        symlistlen++;
         symset[c] = 1;
       }
     }
   }
-  if (!*symlistlen) {
-    free(symset);
-    return NULL;
+  if (!symlistlen) {
+    return symlist;
   }
 
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
-  lev_byte *symlist;
-  {
-    size_t pos = 0;
-    symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
-    if (!symlist) {
-      *symlistlen = (size_t)(-1);
-      free(symset);
-      return NULL;
-    }
-    for (size_t j = 0; j < 0x100; j++) {
-      if (symset[j])
-        symlist[pos++] = (lev_byte)j;
-    }
+  
+  symlist.reserve(symlistlen);
+  for (size_t j = 0; j < 0x100; j++) {
+    if (symset[j])
+      symlist.push_back((lev_byte)j);
   }
-  free(symset);
 
   return symlist;
 }
@@ -185,113 +175,54 @@ lev_greedy_median(size_t n, const size_t *lengths,
                   const double *weights,
                   size_t *medlength)
 {
-  size_t i;  /* usually iterates over strings (n) */
-  size_t j;  /* usually iterates over characters */
-  size_t len;  /* usually iterates over the approximate median string */
-  lev_byte *symlist;  /* list of symbols present in the strings,
-                              we iterate over it insead of set of all
-                              existing symbols */
-  size_t symlistlen;  /* length of symlist */
-  size_t maxlen;  /* maximum input string length */
-  size_t stoplen;  /* maximum tried median string length -- this is slightly
-                      higher than maxlen, because the median string may be
-                      longer than any of the input strings */
-  size_t **rows;  /* Levenshtein matrix rows for each string, we need to keep
-                     only one previous row to construct the current one */
-  size_t *row;  /* a scratch buffer for new Levenshtein matrix row computation,
-                   shared among all strings */
-  lev_byte *median;  /* the resulting approximate median string */
-  double *mediandist;  /* the total distance of the best median string of
-                          given length.  warning!  mediandist[0] is total
-                          distance for empty string, while median[] itself
-                          is normally zero-based */
-  size_t bestlen;  /* the best approximate median string length */
-
   /* find all symbols */
-  symlist = make_symlist(n, lengths, strings, &symlistlen);
-  if (!symlist) {
+  std::vector<lev_byte> symlist = make_symlist(n, lengths, strings);
+  if (symlist.empty()) {
     *medlength = 0;
-    if (symlistlen != 0)
-      return NULL;
-    else
-      return (lev_byte*)calloc(1, sizeof(lev_byte));
+    return NULL;
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
-  if (!rows) {
-    free(symlist);
-    return NULL;
-  }
-  maxlen = 0;
-  for (i = 0; i < n; i++) {
-    size_t *ri;
+  /* Levenshtein matrix rows for each string, we need to keep
+     only one previous row to construct the current one */
+  auto rows = std::make_unique<std::unique_ptr<size_t[]>[]>(n); 
+  size_t maxlen = 0;
+  for (size_t i = 0; i < n; i++) {
     size_t leni = lengths[i];
     if (leni > maxlen)
       maxlen = leni;
-    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
-    if (!ri) {
-      for (j = 0; j < i; j++)
-        free(rows[j]);
-      free(rows);
-      free(symlist);
-      return NULL;
-    }
-    for (j = 0; j <= leni; j++)
-      ri[j] = j;
-  }
-  stoplen = 2*maxlen + 1;
-  row = (size_t*)safe_malloc((stoplen + 1), sizeof(size_t));
-  if (!row) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(symlist);
-    return NULL;
+    
+    rows[i] = std::make_unique<size_t[]>(leni + 1);
+    // todo iota
+    for (size_t j = 0; j < leni + 1; j++)
+      rows[i][j] = j;
   }
 
-  /* compute final cost of string of length 0 (empty string may be also
-   * a valid answer) */
-  median = (lev_byte*)safe_malloc(stoplen, sizeof(lev_byte));
-  if (!median) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(row);
-    free(symlist);
-    return NULL;
-  }
-  mediandist = (double*)safe_malloc((stoplen + 1), sizeof(double));
-  if (!mediandist) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(row);
-    free(symlist);
-    free(median);
-    return NULL;
-  }
+  size_t stoplen = 2 * maxlen + 1;
+  auto row = std::make_unique<size_t[]>(stoplen + 1);
+  auto median = std::make_unique<lev_byte[]>(stoplen);
+  auto mediandist = std::make_unique<double[]>(stoplen + 1);
   mediandist[0] = 0.0;
-  for (i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
     mediandist[0] += (double)lengths[i]*weights[i];
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
-  for (len = 1; len <= stoplen; len++) {
+  for (size_t len = 1; len < stoplen + 1; len++) {
     lev_byte symbol;
     double minminsum = LEV_INFINITY;
     row[0] = len;
     /* iterate over all symbols we may want to add */
-    for (j = 0; j < symlistlen; j++) {
+    for (size_t j = 0; j < symlist.size(); j++) {
       double totaldist = 0.0;
       double minsum = 0.0;
       symbol = symlist[j];
       /* sum Levenshtein distances from all the strings, with given weights */
-      for (i = 0; i < n; i++) {
+      for (size_t i = 0; i < n; i++) {
         const lev_byte *stri = strings[i];
-        size_t *p = rows[i];
+        size_t *p = rows[i].get();
         size_t leni = lengths[i];
-        size_t *end = rows[i] + leni;
+        size_t *end = rows[i].get() + leni;
         size_t min = len;
         size_t x = len; /* == row[0] */
         /* compute how another row of Levenshtein matrix would look for median
@@ -327,13 +258,12 @@ lev_greedy_median(size_t n, const size_t *lengths,
     /* now the best symbol is known, so recompute all matrix rows for this
      * one */
     symbol = median[len - 1];
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
       const lev_byte *stri = strings[i];
-      size_t *oldrow = rows[i];
+      size_t *oldrow = rows[i].get();
       size_t leni = lengths[i];
-      size_t k;
       /* compute a row of Levenshtein matrix */
-      for (k = 1; k <= leni; k++) {
+      for (size_t k = 1; k <= leni; k++) {
         size_t c1 = oldrow[k] + 1;
         size_t c2 = row[k - 1] + 1;
         size_t c3 = oldrow[k - 1] + (symbol != stri[k - 1]);
@@ -341,34 +271,25 @@ lev_greedy_median(size_t n, const size_t *lengths,
         if (row[k] > c1)
           row[k] = c1;
       }
-      memcpy(oldrow, row, (leni + 1)*sizeof(size_t));
+      memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
     }
   }
 
   /* find the string with minimum total distance */
-  bestlen = 0;
-  for (len = 1; len <= stoplen; len++) {
+  size_t bestlen = 0;
+  for (size_t len = 1; len < stoplen + 1; len++) {
     if (mediandist[len] < mediandist[bestlen])
       bestlen = len;
   }
 
-  /* clean up */
-  for (i = 0; i < n; i++)
-    free(rows[i]);
-  free(rows);
-  free(row);
-  free(symlist);
-  free(mediandist);
 
   /* return result */
   {
     lev_byte *result = (lev_byte*)safe_malloc(bestlen, sizeof(lev_byte));
     if (!result) {
-      free(median);
       return NULL;
     }
-    memcpy(result, median, bestlen*sizeof(lev_byte));
-    free(median);
+    memcpy(result, median.get(), bestlen*sizeof(lev_byte));
     *medlength = bestlen;
     return result;
   }
@@ -384,8 +305,8 @@ static double
 finish_distance_computations(size_t len1, lev_byte *string1,
                              size_t n, const size_t *lengths,
                              const lev_byte **strings,
-                             const double *weights, size_t **rows,
-                             size_t *row)
+                             const double *weights, const std::unique_ptr<std::unique_ptr<size_t[]>[]>& rows,
+                             std::unique_ptr<size_t[]>& row)
 {
   double distsum = 0.0;  /* sum of distances */
 
@@ -398,7 +319,7 @@ finish_distance_computations(size_t len1, lev_byte *string1,
 
   /* iterate through the strings and sum the distances */
   for (size_t j = 0; j < n; j++) {
-    size_t *rowi = rows[j];  /* current row */
+    const size_t* rowi = rows[j].get();  /* current row */
     size_t leni = lengths[j];  /* current length */
     size_t len = len1;  /* temporary len1 for suffix stripping */
     const lev_byte *stringi = strings[j];  /* current string */
@@ -421,11 +342,11 @@ finish_distance_computations(size_t len1, lev_byte *string1,
     }
 
     /* complete the matrix */
-    memcpy(row, rowi, (leni + 1)*sizeof(size_t));
-    size_t *end = row + leni;
+    memcpy(row.get(), rowi, (leni + 1)*sizeof(size_t));
+    size_t *end = row.get() + leni;
 
     for (size_t i = 1; i <= len; i++) {
-      size_t *p = row + 1;
+      size_t *p = row.get() + 1;
       const lev_byte char1 = string1[i - 1];
       const lev_byte *char2p = stringi;
       size_t D, x;
@@ -480,79 +401,42 @@ lev_median_improve(size_t len, const lev_byte *s,
   size_t j;  /* usually iterates over characters */
   size_t pos;  /* the position in the approximate median string we are
                   trying to change */
-  lev_byte *symlist;  /* list of symbols present in the strings,
-                              we iterate over it insead of set of all
-                              existing symbols */
-  size_t symlistlen;  /* length of symlist */
   size_t maxlen;  /* maximum input string length */
   size_t stoplen;  /* maximum tried median string length -- this is slightly
                       higher than maxlen, because the median string may be
                       longer than any of the input strings */
-  size_t **rows;  /* Levenshtein matrix rows for each string, we need to keep
-                     only one previous row to construct the current one */
-  size_t *row;  /* a scratch buffer for new Levenshtein matrix row computation,
-                   shared among all strings */
-  lev_byte *median;  /* the resulting approximate median string */
   size_t medlen;  /* the current approximate median string length */
   double minminsum;  /* the current total distance sum */
 
   /* find all symbols */
-  symlist = make_symlist(n, lengths, strings, &symlistlen);
-  if (!symlist) {
+  std::vector<lev_byte> symlist = make_symlist(n, lengths, strings);
+  if (symlist.empty()) {
     *medlength = 0;
-    if (symlistlen != 0)
-      return NULL;
-    else
-      return (lev_byte*)calloc(1, sizeof(lev_byte));
+    return NULL;
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
-  if (!rows) {
-    free(symlist);
-    return NULL;
-  }
+  /* Levenshtein matrix rows for each string, we need to keep
+     only one previous row to construct the current one */
+  auto rows = std::make_unique<std::unique_ptr<size_t[]>[]>(n); 
   maxlen = 0;
   for (i = 0; i < n; i++) {
-    size_t *ri;
     size_t leni = lengths[i];
     if (leni > maxlen)
       maxlen = leni;
-    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
-    if (!ri) {
-      for (j = 0; j < i; j++)
-        free(rows[j]);
-      free(rows);
-      free(symlist);
-      return NULL;
-    }
+    rows[i] = std::make_unique<size_t[]>(leni + 1);
+    // todo iota
     for (j = 0; j <= leni; j++)
-      ri[j] = j;
+      rows[i][j] = j;
   }
   stoplen = 2*maxlen + 1;
-  row = (size_t*)safe_malloc((stoplen + 2), sizeof(size_t));
-  if (!row) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(symlist);
-    return NULL;
-  }
+  auto row = std::make_unique<size_t[]>(stoplen + 2);
+  auto median = std::make_unique<lev_byte[]>(stoplen + 1);
+  lev_byte* median_ptr = median.get() + 1; /* we need -1st element for insertions a pos 0 */
 
-  /* initialize median to given string */
-  median = (lev_byte*)safe_malloc((stoplen+1), sizeof(lev_byte));
-  if (!median) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(row);
-    free(symlist);
-    return NULL;
-  }
-  median++;  /* we need -1st element for insertions a pos 0 */
   medlen = len;
-  memcpy(median, s, (medlen)*sizeof(lev_byte));
-  minminsum = finish_distance_computations(medlen, median,
+  memcpy(median_ptr, s, (medlen)*sizeof(lev_byte));
+  minminsum = finish_distance_computations(medlen, median_ptr,
                                            n, lengths, strings,
                                            weights, rows, row);
 
@@ -568,11 +452,11 @@ lev_median_improve(size_t len, const lev_byte *s,
      * at pos, if some lower the total distance, chooste the best */
     if (pos < medlen) {
       orig_symbol = median[pos];
-      for (j = 0; j < symlistlen; j++) {
+      for (j = 0; j < symlist.size(); j++) {
         if (symlist[j] == orig_symbol)
           continue;
         median[pos] = symlist[j];
-        sum = finish_distance_computations(medlen - pos, median + pos,
+        sum = finish_distance_computations(medlen - pos, median_ptr + pos,
                                            n, lengths, strings,
                                            weights, rows, row);
         if (sum < minminsum) {
@@ -586,10 +470,10 @@ lev_median_improve(size_t len, const lev_byte *s,
     /* FOREACH symbol: try to add it at pos, if some lower the total
      * distance, chooste the best (increase medlength)
      * We simulate insertion by replacing the character at pos-1 */
-    orig_symbol = *(median + pos - 1);
-    for (j = 0; j < symlistlen; j++) {
-      *(median + pos - 1) = symlist[j];
-      sum = finish_distance_computations(medlen - pos + 1, median + pos - 1,
+    orig_symbol = *(median_ptr + pos - 1);
+    for (j = 0; j < symlist.size(); j++) {
+      median_ptr[pos - 1] = symlist[j];
+      sum = finish_distance_computations(medlen - pos + 1, median_ptr + pos - 1,
                                           n, lengths, strings,
                                          weights, rows, row);
       if (sum < minminsum) {
@@ -598,11 +482,11 @@ lev_median_improve(size_t len, const lev_byte *s,
         operation = LEV_EDIT_INSERT;
       }
     }
-    *(median + pos - 1) = orig_symbol;
+    median_ptr[pos - 1] = orig_symbol;
     /* IF pos < medlength: try to delete the symbol at pos, if it lowers
      * the total distance remember it (decrease medlength) */
     if (pos < medlen) {
-      sum = finish_distance_computations(medlen - pos - 1, median + pos + 1,
+      sum = finish_distance_computations(medlen - pos - 1, median_ptr + pos + 1,
                                          n, lengths, strings,
                                          weights, rows, row);
       if (sum < minminsum) {
@@ -612,24 +496,24 @@ lev_median_improve(size_t len, const lev_byte *s,
     }
     /* actually perform the operation */
     switch (operation) {
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_REPLACE:
       median[pos] = symbol;
       break;
 
-      case LEV_EDIT_INSERT:
-      memmove(median+pos+1, median+pos,
+    case LEV_EDIT_INSERT:
+      memmove(median_ptr+pos+1, median_ptr+pos,
               (medlen - pos)*sizeof(lev_byte));
       median[pos] = symbol;
       medlen++;
       break;
 
-      case LEV_EDIT_DELETE:
-      memmove(median+pos, median + pos+1,
+    case LEV_EDIT_DELETE:
+      memmove(median_ptr+pos, median_ptr + pos+1,
               (medlen - pos-1)*sizeof(lev_byte));
       medlen--;
       break;
 
-      default:
+    default:
       break;
     }
     assert(medlen <= stoplen);
@@ -639,7 +523,7 @@ lev_median_improve(size_t len, const lev_byte *s,
       row[0] = pos + 1;
       for (i = 0; i < n; i++) {
         const lev_byte *stri = strings[i];
-        size_t *oldrow = rows[i];
+        size_t *oldrow = rows[i].get();
         size_t leni = lengths[i];
         size_t k;
         /* compute a row of Levenshtein matrix */
@@ -651,31 +535,20 @@ lev_median_improve(size_t len, const lev_byte *s,
           if (row[k] > c1)
             row[k] = c1;
         }
-        memcpy(oldrow, row, (leni + 1)*sizeof(size_t));
+        memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
       }
       pos++;
     }
   }
 
-  /* clean up */
-  for (i = 0; i < n; i++)
-    free(rows[i]);
-  free(rows);
-  free(row);
-  free(symlist);
-
   /* return result */
   {
     lev_byte *result = (lev_byte*)safe_malloc(medlen, sizeof(lev_byte));
     if (!result) {
-      median--;
-      free(median);
       return NULL;
     }
     *medlength = medlen;
-    memcpy(result, median, medlen*sizeof(lev_byte));
-    median--;
-    free(median);
+    memcpy(result, median_ptr, medlen*sizeof(lev_byte));
     return result;
   }
 }
@@ -1318,41 +1191,33 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
  * there are (used below for symlist).
  * the symset is passed as an argument to avoid its allocation and
  * deallocation when it's used in the caller too */
-static lev_byte*
+static std::vector<lev_byte>
 make_symlistset(size_t n, const size_t *lengths,
-                const lev_byte *strings[], size_t *symlistlen,
-                double *symset)
+                const lev_byte *strings[],
+                std::unique_ptr<double[]>& symset)
 {
-  if (!symset) {
-    *symlistlen = (size_t)(-1);
-    return NULL;
-  }
-  memset(symset, 0, 0x100*sizeof(double));  /* XXX: needs IEEE doubles?! */
-  *symlistlen = 0;
+  std::vector<lev_byte> symlist;
+  memset(symset.get(), 0, 0x100*sizeof(double));  /* XXX: needs IEEE doubles?! */
+  size_t symlistlen = 0;
   for (size_t i = 0; i < n; i++) {
     const lev_byte *stri = strings[i];
     for (size_t j = 0; j < lengths[i]; j++) {
       int c = stri[j];
       if (!symset[c]) {
-        (*symlistlen)++;
+        symlistlen++;
         symset[c] = 1.0;
       }
     }
   }
-  if (!*symlistlen)
-    return NULL;
+  if (!symlistlen)
+    return symlist;
 
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
-  lev_byte *symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
-  if (!symlist) {
-    *symlistlen = (size_t)(-1);
-    return NULL;
-  }
-  size_t pos = 0;
+  symlist.reserve(symlistlen);
   for (size_t j = 0; j < 0x100; j++) {
     if (symset[j])
-      symlist[pos++] = (lev_byte)j;
+      symlist.push_back((lev_byte)j);
   }
 
   return symlist;
@@ -1381,34 +1246,27 @@ lev_quick_median(size_t n,
   if (!len)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
 
+  /* find the symbol set;
+   * now an empty symbol set is really a failure */
+  auto symset = std::make_unique<double[]>(0x100);
+
+  auto symlist = make_symlistset(n, lengths, strings, symset);
+  if (symlist.empty()) {
+    return NULL;
+  }
+
   lev_byte *median = (lev_byte*)safe_malloc(len, sizeof(lev_byte));
   if (!median)
     return NULL;
 
-  /* find the symbol set;
-   * now an empty symbol set is really a failure */
-  double *symset = (double*)calloc(0x100, sizeof(double));
-  if (!symset) {
-    free(median);
-    return NULL;
-  }
-
-  size_t symlistlen;
-  lev_byte *symlist = make_symlistset(n, lengths, strings, &symlistlen, symset);
-  if (!symlist) {
-    free(median);
-    free(symset);
-    return NULL;
-  }
-
   for (size_t j = 0; j < len; j++) {
     /* clear the symbol probabilities */
-    if (symlistlen < 32) {
-      for (size_t i = 0; i < symlistlen; i++)
+    if (symlist.size() < 32) {
+      for (size_t i = 0; i < symlist.size(); i++)
         symset[symlist[i]] = 0.0;
     }
     else
-      memset(symset, 0, 0x100*sizeof(double));
+      memset(symset.get(), 0, 0x100*sizeof(double));
 
     /* let all strings vote */
     for (size_t i = 0; i < n; i++) {
@@ -1432,15 +1290,12 @@ lev_quick_median(size_t n,
 
     /* find the elected symbol */
     size_t k = symlist[0];
-    for (size_t i = 1; i < symlistlen; i++) {
+    for (size_t i = 1; i < symlist.size(); i++) {
       if (symset[symlist[i]] > symset[k])
         k = symlist[i];
     }
     median[j] = (lev_byte)k;
   }
-
-  free(symset);
-  free(symlist);
 
   return median;
 }
@@ -1697,11 +1552,8 @@ lev_set_median_index(size_t n, const size_t *lengths,
   size_t minidx = 0;
   double mindist = LEV_INFINITY;
 
-  long int *distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
-  if (!distances)
-    return (size_t)-1;
+  std::vector<long int> distances(n*(n - 1)/2, 0xff);
 
-  memset(distances, 0xff, (n*(n - 1)/2)*sizeof(long int)); /* XXX */
   for (size_t i = 0; i < n; i++) {
     size_t j = 0;
     double dist = 0.0;
@@ -1719,7 +1571,6 @@ lev_set_median_index(size_t n, const size_t *lengths,
           rapidfuzz::basic_string_view<lev_byte>(stri, leni)
         );
         if (d < 0) {
-          free(distances);
           return (size_t)-1;
         }
       }
@@ -1735,7 +1586,6 @@ lev_set_median_index(size_t n, const size_t *lengths,
         rapidfuzz::basic_string_view<lev_byte>(stri, leni)
       );
       if (distances[dindex] < 0) {
-        free(distances);
         return (size_t)-1;
       }
       dist += weights[j] * (double)distances[dindex];
@@ -1748,7 +1598,6 @@ lev_set_median_index(size_t n, const size_t *lengths,
     }
   }
 
-  free(distances);
   return minidx;
 }
 
@@ -1773,11 +1622,8 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
   size_t minidx = 0;
   double mindist = LEV_INFINITY;
 
-  long int *distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
-  if (!distances)
-    return (size_t)-1;
+  std::vector<long int> distances(n*(n - 1)/2, 0xff);
 
-  memset(distances, 0xff, (n*(n - 1)/2)*sizeof(long int)); /* XXX */
   for (size_t i = 0; i < n; i++) {
     size_t j = 0;
     double dist = 0.0;
@@ -1795,7 +1641,6 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
           rapidfuzz::basic_string_view<lev_wchar>(stri, leni)
         );
         if (d < 0) {
-          free(distances);
           return (size_t)-1;
         }
       }
@@ -1811,7 +1656,6 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
         rapidfuzz::basic_string_view<lev_wchar>(stri, leni)
       );
       if (distances[dindex] < 0) {
-        free(distances);
         return (size_t)-1;
       }
       dist += weights[j] * (double)distances[dindex];
@@ -1824,7 +1668,6 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
     }
   }
 
-  free(distances);
   return minidx;
 }
 
@@ -1967,10 +1810,8 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   n2++;
 
   /* initalize first row */
-  double *row = (double*)safe_malloc(n2, sizeof(double));
-  if (!row)
-    return -1.0;
-  double *end = row + n2 - 1;
+  auto row = std::make_unique<double[]>(n2);
+  double *end = row.get() + n2 - 1;
   for (size_t i = 0; i < n2; i++)
     row[i] = (double)i;
 
@@ -1978,7 +1819,7 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
    * obfuscated version, but also extremely memory-conservative and relatively
    * fast.  */
   for (size_t i = 1; i < n1; i++) {
-    double *p = row + 1;
+    double *p = row.get() + 1;
     const lev_byte *str1 = strings1[i - 1];
     const size_t len1 = lengths1[i - 1];
     const lev_byte **str2p = strings2;
@@ -1999,7 +1840,6 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
         str2p++;
         len2p++;
         if (d == (size_t)(-1)) {
-          free(row);
           return -1.0;
         }
         q = D + 2.0 / (double)l * (double)d;
@@ -2014,9 +1854,7 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
     }
   }
 
-  double q = *end;
-  free(row);
-  return q;
+  return *end;
 }
 
 /**
@@ -2080,10 +1918,8 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   n2++;
 
   /* initalize first row */
-  double *row = (double*)safe_malloc(n2, sizeof(double));
-  if (!row)
-    return -1.0;
-  double *end = row + n2 - 1;
+  auto row = std::make_unique<double[]>(n2);
+  double *end = row.get() + n2 - 1;
   for (size_t i = 0; i < n2; i++)
     row[i] = (double)i;
 
@@ -2091,7 +1927,7 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
    * obfuscated version, but also extremely memory-conservative and relatively
    * fast.  */
   for (size_t i = 1; i < n1; i++) {
-    double *p = row + 1;
+    double *p = row.get() + 1;
     const lev_wchar *str1 = strings1[i - 1];
     const size_t len1 = lengths1[i - 1];
     const lev_wchar **str2p = strings2;
@@ -2112,7 +1948,6 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
         str2p++;
         len2p++;
         if (d == (size_t)(-1)) {
-          free(row);
           return -1.0;
         }
         q = D + 2.0 / (double)l * (double)d;
@@ -2128,7 +1963,6 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   }
 
   double q = *end;
-  free(row);
   return q;
 }
 
@@ -2331,43 +2165,15 @@ static size_t*
 munkers_blackman(size_t n1, size_t n2, double *dists)
 {
   size_t i, j;
-  size_t *covc, *covr;  /* 1 if column/row is covered */
-  /* these contain 1-based indices, so we can use zero as `none'
-   * zstarr: column of a z* in given row
-   * zstarc: row of a z* in given column
-   * zprimer: column of a z' in given row */
-  size_t *zstarr, *zstarc, *zprimer;
-
   /* allocate memory */
-  covc = (size_t*)calloc(n1, sizeof(size_t));
-  if (!covc)
-    return NULL;
-  zstarc = (size_t*)calloc(n1, sizeof(size_t));
+  std::vector<size_t> covc(n1);
+  size_t* zstarc = (size_t*)calloc(n1, sizeof(size_t));
   if (!zstarc) {
-    free(covc);
     return NULL;
   }
-  covr = (size_t*)calloc(n2, sizeof(size_t));
-  if (!covr) {
-    free(zstarc);
-    free(covc);
-    return NULL;
-  }
-  zstarr = (size_t*)calloc(n2, sizeof(size_t));
-  if (!zstarr) {
-    free(covr);
-    free(zstarc);
-    free(covc);
-    return NULL;
-  }
-  zprimer = (size_t*)calloc(n2, sizeof(size_t));
-  if (!zprimer) {
-    free(zstarr);
-    free(covr);
-    free(zstarc);
-    free(covc);
-    return NULL;
-  }
+  std::vector<size_t> covr(n2);
+  std::vector<size_t> zstarr(n2);
+  std::vector<size_t> zprimer(n2);
 
   /* step 0 (subtract minimal distance) and step 1 (find zeroes) */
   for (j = 0; j < n1; j++) {
@@ -2505,17 +2311,11 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
       i = zstarc[j];       /* move to z* in the same column */
       zstarc[j] = x;       /* mark the z' as being new z* */
     } while (i);
-    memset(zprimer, 0, n2*sizeof(size_t));
-    memset(covr, 0, n2*sizeof(size_t));
-    memset(covc, 0, n1*sizeof(size_t));
-  }
 
-  free(dists);
-  free(covc);
-  free(covr);
-  /*free(zstarc);  this is the result */
-  free(zstarr);
-  free(zprimer);
+    std::fill(zprimer.begin(), zprimer.end(), 0);
+    std::fill(covr.begin(), covr.end(), 0);
+    std::fill(covc.begin(), covc.end(), 0);
+  }
 
   for (j = 0; j < n1; j++)
     zstarc[j]--;
