@@ -377,11 +377,11 @@ lev_median_improve(size_t len, const lev_byte *s,
   /* sequentially try perturbations on all positions */
   for (pos = 0; pos <= medlen; ) {
     lev_byte orig_symbol, symbol;
-    LevEditType operation;
+    rapidfuzz::LevenshteinEditType operation;
     double sum;
 
     symbol = median[pos];
-    operation = LEV_EDIT_KEEP;
+    operation = rapidfuzz::LevenshteinEditType::None;
     /* IF pos < medlength: FOREACH symbol: try to replace the symbol
      * at pos, if some lower the total distance, chooste the best */
     if (pos < medlen) {
@@ -396,7 +396,7 @@ lev_median_improve(size_t len, const lev_byte *s,
         if (sum < minminsum) {
           minminsum = sum;
           symbol = symlist[j];
-          operation = LEV_EDIT_REPLACE;
+          operation = rapidfuzz::LevenshteinEditType::Replace;
         }
       }
       median[pos] = orig_symbol;
@@ -413,7 +413,7 @@ lev_median_improve(size_t len, const lev_byte *s,
       if (sum < minminsum) {
         minminsum = sum;
         symbol = symlist[j];
-        operation = LEV_EDIT_INSERT;
+        operation = rapidfuzz::LevenshteinEditType::Insert;
       }
     }
     median_ptr[pos - 1] = orig_symbol;
@@ -425,23 +425,23 @@ lev_median_improve(size_t len, const lev_byte *s,
                                          weights, rows, row);
       if (sum < minminsum) {
         minminsum = sum;
-        operation = LEV_EDIT_DELETE;
+        operation = rapidfuzz::LevenshteinEditType::Delete;
       }
     }
     /* actually perform the operation */
     switch (operation) {
-    case LEV_EDIT_REPLACE:
+    case rapidfuzz::LevenshteinEditType::Replace:
       median[pos] = symbol;
       break;
 
-    case LEV_EDIT_INSERT:
+    case rapidfuzz::LevenshteinEditType::Insert:
       memmove(median_ptr+pos+1, median_ptr+pos,
               (medlen - pos)*sizeof(lev_byte));
       median[pos] = symbol;
       medlen++;
       break;
 
-    case LEV_EDIT_DELETE:
+    case rapidfuzz::LevenshteinEditType::Delete:
       memmove(median_ptr+pos, median_ptr + pos+1,
               (medlen - pos-1)*sizeof(lev_byte));
       medlen--;
@@ -452,7 +452,7 @@ lev_median_improve(size_t len, const lev_byte *s,
     }
     assert(medlen <= stoplen);
     /* now the result is known, so recompute all matrix rows and move on */
-    if (operation != LEV_EDIT_DELETE) {
+    if (operation != rapidfuzz::LevenshteinEditType::Delete) {
       symbol = median[pos];
       row[0] = pos + 1;
       for (i = 0; i < n; i++) {
@@ -991,11 +991,11 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
   /* sequentially try perturbations on all positions */
   for (pos = 0; pos <= medlen; ) {
     lev_wchar orig_symbol, symbol;
-    LevEditType operation;
+    rapidfuzz::LevenshteinEditType operation;
     double sum;
 
     symbol = median[pos];
-    operation = LEV_EDIT_KEEP;
+    operation = rapidfuzz::LevenshteinEditType::None;
     /* IF pos < medlength: FOREACH symbol: try to replace the symbol
      * at pos, if some lower the total distance, chooste the best */
     if (pos < medlen) {
@@ -1010,7 +1010,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
         if (sum < minminsum) {
           minminsum = sum;
           symbol = symlist[j];
-          operation = LEV_EDIT_REPLACE;
+          operation = rapidfuzz::LevenshteinEditType::Replace;
         }
       }
       median[pos] = orig_symbol;
@@ -1027,7 +1027,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
       if (sum < minminsum) {
         minminsum = sum;
         symbol = symlist[j];
-        operation = LEV_EDIT_INSERT;
+        operation = rapidfuzz::LevenshteinEditType::Insert;
       }
     }
     *(median + pos - 1) = orig_symbol;
@@ -1039,23 +1039,23 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
                                           weights, rows, row);
       if (sum < minminsum) {
         minminsum = sum;
-        operation = LEV_EDIT_DELETE;
+        operation = rapidfuzz::LevenshteinEditType::Delete;
       }
     }
     /* actually perform the operation */
     switch (operation) {
-    case LEV_EDIT_REPLACE:
+    case rapidfuzz::LevenshteinEditType::Replace:
       median[pos] = symbol;
       break;
 
-    case LEV_EDIT_INSERT:
+    case rapidfuzz::LevenshteinEditType::Insert:
       memmove(median+pos+1, median+pos,
               (medlen - pos)*sizeof(lev_wchar));
       median[pos] = symbol;
       medlen++;
       break;
 
-    case LEV_EDIT_DELETE:
+    case rapidfuzz::LevenshteinEditType::Delete:
       memmove(median+pos, median + pos+1,
               (medlen - pos-1)*sizeof(lev_wchar));
       medlen--;
@@ -1066,7 +1066,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     }
     assert(medlen <= stoplen);
     /* now the result is known, so recompute all matrix rows and move on */
-    if (operation != LEV_EDIT_DELETE) {
+    if (operation != rapidfuzz::LevenshteinEditType::Delete) {
       symbol = median[pos];
       row[0] = pos + 1;
       for (i = 0; i < n; i++) {
@@ -2171,150 +2171,6 @@ lev_editops_invert(size_t n, LevEditOp *ops)
 }
 
 /**
- * lev_editops_apply:
- * @len1: The length of @string1.
- * @string1: A string of length @len1, may contain NUL characters.
- * @len2: The length of @string2.
- * @string2: A string of length @len2, may contain NUL characters.
- * @n: The size of @ops.
- * @ops: An array of elementary edit operations.
- * @len: Where the size of the resulting string should be stored.
- *
- * Applies a partial edit @ops from @string1 to @string2.
- *
- * NB: @ops is not checked for applicability.
- *
- * Returns: The result of the partial edit as a newly allocated string, its
- *          length is stored in @len.
- **/
-lev_byte*
-lev_editops_apply(size_t len1, const lev_byte *string1,
-                  size_t len2, const lev_byte *string2,
-                  size_t n, const LevEditOp *ops,
-                  size_t *len)
-{
-  LEV_UNUSED(len2);
-
-  /* this looks too complex for such a simple task, but note ops is not
-   * a complete edit sequence, we have to be able to apply anything anywhere */
-  lev_byte *dst = (lev_byte*)safe_malloc((n + len1), sizeof(lev_byte));
-  if (!dst) {
-    *len = (size_t)(-1);
-    return NULL;
-  }
-  lev_byte *dpos = dst;
-  const lev_byte *spos = string1;
-  for (size_t i = n; i; i--, ops++) {
-    /* XXX: this fine with gcc internal memcpy, but when memcpy is
-     * actually a function, it may be pretty slow */
-    size_t j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
-    if (j) {
-      memcpy(dpos, spos, j*sizeof(lev_byte));
-      spos += j;
-      dpos += j;
-    }
-    switch (ops->type) {
-    case LEV_EDIT_DELETE:
-      spos++;
-      break;
-
-    case LEV_EDIT_REPLACE:
-      spos++;
-      *(dpos++) = string2[ops->dpos];
-      break;
-    case LEV_EDIT_INSERT:
-      *(dpos++) = string2[ops->dpos];
-      break;
-
-    default:
-      break;
-    }
-  }
-  size_t j = len1 - (size_t)(spos - string1);
-  if (j) {
-    memcpy(dpos, spos, j*sizeof(lev_byte));
-    spos += j;
-    dpos += j;
-  }
-
-  *len = (size_t)(dpos - dst);
-  /* possible realloc failure is detected with *len != 0 */
-  return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
-}
-
-/**
- * lev_u_editops_apply:
- * @len1: The length of @string1.
- * @string1: A string of length @len1, may contain NUL characters.
- * @len2: The length of @string2.
- * @string2: A string of length @len2, may contain NUL characters.
- * @n: The size of @ops.
- * @ops: An array of elementary edit operations.
- * @len: Where the size of the resulting string should be stored.
- *
- * Applies a partial edit @ops from @string1 to @string2.
- *
- * NB: @ops is not checked for applicability.
- *
- * Returns: The result of the partial edit as a newly allocated string, its
- *          length is stored in @len.
- **/
-lev_wchar*
-lev_u_editops_apply(size_t len1, const lev_wchar *string1,
-                    size_t len2, const lev_wchar *string2,
-                    size_t n, const LevEditOp *ops,
-                    size_t *len)
-{
-  LEV_UNUSED(len2);
-
-  /* this looks too complex for such a simple task, but note ops is not
-   * a complete edit sequence, we have to be able to apply anything anywhere */
-  lev_wchar *dst = (lev_wchar*)safe_malloc((n + len1), sizeof(lev_wchar));
-  if (!dst) {
-    *len = (size_t)(-1);
-    return NULL;
-  }
-  lev_wchar *dpos = dst;
-  const lev_wchar *spos = string1;
-  for (size_t i = n; i; i--, ops++) {
-    /* XXX: this is fine with gcc internal memcpy, but when memcpy is
-     * actually a function, it may be pretty slow */
-    size_t j = ops->spos - (size_t)(spos - string1) + (ops->type == LEV_EDIT_KEEP);
-    if (j) {
-      memcpy(dpos, spos, j*sizeof(lev_wchar));
-      spos += j;
-      dpos += j;
-    }
-    switch (ops->type) {
-    case LEV_EDIT_DELETE:
-      spos++;
-      break;
-
-    case LEV_EDIT_REPLACE:
-      spos++;
-      *(dpos++) = string2[ops->dpos];
-      break;
-    case LEV_EDIT_INSERT:
-      *(dpos++) = string2[ops->dpos];
-      break;
-
-    default:
-      break;
-    }
-  }
-  size_t j = len1 - (size_t)(spos - string1);
-  if (j) {
-    memcpy(dpos, spos, j*sizeof(lev_wchar));
-    spos += j;
-    dpos += j;
-  }
-
-  *len = (size_t)(dpos - dst);
-  /* possible realloc failure is detected with *len != 0 */
-  return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
-}
-
-/**
  * editops_from_cost_matrix:
  * @len1: The length of @string1.
  * @string1: A string of length @len1, may contain NUL characters.
@@ -2916,120 +2772,6 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
 
   *nb = nbl;
   return bops;
-}
-
-/**
- * lev_opcodes_apply:
- * @len1: The length of the source string.
- * @string1: A string of length @len1, may contain NUL characters.
- * @len2: The length of the destination string.
- * @string2: A string of length @len2, may contain NUL characters.
- * @nb: The length of @bops.
- * @bops: An array of difflib block edit operation codes.
- * @len: Where the size of the resulting string should be stored.
- *
- * Applies a sequence of difflib block operations to a string.
- *
- * NB: @bops is not checked for applicability.
- *
- * Returns: The result of the edit as a newly allocated string, its length
- *          is stored in @len.
- **/
-lev_byte*
-lev_opcodes_apply(size_t len1, const lev_byte *string1,
-                  size_t len2, const lev_byte *string2,
-                  size_t nb, const LevOpCode *bops,
-                  size_t *len)
-{
-  /* this looks too complex for such a simple task, but note ops is not
-   * a complete edit sequence, we have to be able to apply anything anywhere */
-  lev_byte *dst = (lev_byte*)safe_malloc((len1 + len2), sizeof(lev_byte));
-  lev_byte *dpos = dst;
-  if (!dst) {
-    *len = (size_t)(-1);
-    return NULL;
-  }
-  const lev_byte *spos = string1;
-  for (size_t i = nb; i; i--, bops++) {
-    switch (bops->type) {
-    case LEV_EDIT_INSERT:
-    case LEV_EDIT_REPLACE:
-      memcpy(dpos, string2 + bops->dbeg,
-             (bops->dend - bops->dbeg)*sizeof(lev_byte));
-      break;
-
-    case LEV_EDIT_KEEP:
-      memcpy(dpos, string1 + bops->sbeg,
-             (bops->send - bops->sbeg)*sizeof(lev_byte));
-      break;
-
-    default:
-      break;
-    }
-    spos += bops->send - bops->sbeg;
-    dpos += bops->dend - bops->dbeg;
-  }
-
-  *len = (size_t)(dpos - dst);
-  /* possible realloc failure is detected with *len != 0 */
-  return (lev_byte*)realloc(dst, *len*sizeof(lev_byte));
-}
-
-/**
- * lev_u_opcodes_apply:
- * @len1: The length of the source string.
- * @string1: A string of length @len1, may contain NUL characters.
- * @len2: The length of the destination string.
- * @string2: A string of length @len2, may contain NUL characters.
- * @nb: The length of @bops.
- * @bops: An array of difflib block edit operation codes.
- * @len: Where the size of the resulting string should be stored.
- *
- * Applies a sequence of difflib block operations to a string.
- *
- * NB: @bops is not checked for applicability.
- *
- * Returns: The result of the edit as a newly allocated string, its length
- *          is stored in @len.
- **/
-lev_wchar*
-lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
-                    size_t len2, const lev_wchar *string2,
-                    size_t nb, const LevOpCode *bops,
-                    size_t *len)
-{
-  /* this looks too complex for such a simple task, but note ops is not
-   * a complete edit sequence, we have to be able to apply anything anywhere */
-  lev_wchar *dst = (lev_wchar*)safe_malloc((len1 + len2), sizeof(lev_wchar));
-  lev_wchar *dpos = dst;
-  if (!dst) {
-    *len = (size_t)(-1);
-    return NULL;
-  }
-  const lev_wchar *spos = string1;
-  for (size_t i = nb; i; i--, bops++) {
-    switch (bops->type) {
-    case LEV_EDIT_INSERT:
-    case LEV_EDIT_REPLACE:
-      memcpy(dpos, string2 + bops->dbeg,
-             (bops->dend - bops->dbeg)*sizeof(lev_wchar));
-      break;
-
-    case LEV_EDIT_KEEP:
-      memcpy(dpos, string1 + bops->sbeg,
-             (bops->send - bops->sbeg)*sizeof(lev_wchar));
-      break;
-
-    default:
-      break;
-    }
-    spos += bops->send - bops->sbeg;
-    dpos += bops->dend - bops->dbeg;
-  }
-
-  *len = (size_t)(dpos - dst);
-  /* possible realloc failure is detected with *len != 0 */
-  return (lev_wchar*)realloc(dst, *len*sizeof(lev_wchar));
 }
 
 /**

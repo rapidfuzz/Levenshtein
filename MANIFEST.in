@@ -1,3 +1,4 @@
+recursive-include 3rd-party/ *.cpp *.c *.h *.hpp *.py
 recursive-include src/ *.cpp *.c *.h *.hpp *.py
 include README.md
 include HISTORY.md

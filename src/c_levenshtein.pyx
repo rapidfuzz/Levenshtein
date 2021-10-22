@@ -58,11 +58,8 @@ cdef extern from "_levenshtein.hpp":
     LevEditOp* lev_opcodes_to_editops(size_t nb, const LevOpCode *bops, size_t *n, int keepkeep)
     LevOpCode* lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb, size_t len1, size_t len2)
 
-    lev_byte* lev_editops_apply(size_t len1, const lev_byte* string1, size_t len2,const lev_byte* string2, size_t n, const LevEditOp *ops, size_t *len)
-    wchar_t*  lev_u_editops_apply(size_t len1, const wchar_t* string1, size_t len2, const wchar_t* string2, size_t n, const LevEditOp *ops, size_t *len)
-
-    lev_byte* lev_opcodes_apply(size_t len1, const lev_byte* string1, size_t len2, const lev_byte* string2, size_t nb, const LevOpCode *bops, size_t *len)
-    wchar_t* lev_u_opcodes_apply(size_t len1, const wchar_t* string1, size_t len2, const wchar_t* string2, size_t nb, const LevOpCode *bops, size_t *len)
+    CharT* lev_editops_apply[CharT](size_t len1, const CharT* string1, size_t len2, const CharT* string2, size_t n, const LevEditOp *ops, size_t *len)
+    CharT* lev_opcodes_apply[CharT](size_t len1, const CharT* string1, size_t len2, const CharT* string2, size_t nb, const LevOpCode *bops, size_t *len)
 
     LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2, size_t n, const LevEditOp *ops, size_t *nmblocks)
     LevMatchingBlock* lev_opcodes_matching_blocks(size_t len1, size_t len2, size_t nb, const LevOpCode *bops, size_t *nmblocks)
@@ -663,6 +660,8 @@ def apply_edit(edit_operations, source_string, destination_string):
     cdef size_t n, len1, len2, len3
     cdef LevEditOp *ops
     cdef LevOpCode *bops
+    cdef lev_byte* s
+    cdef wchar_t* s2
 
     if not isinstance(edit_operations, list):
         raise TypeError("apply_edit first argument must be a List of edit operations")
@@ -685,7 +684,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
-            s = lev_editops_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
+            s = lev_editops_apply[lev_byte](len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
                             n, ops, &len3)
             free(ops)
             if not s and len3:
@@ -701,7 +700,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             
-            s = lev_opcodes_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
+            s = lev_opcodes_apply[lev_byte](len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
                             n, bops, &len3)
             free(bops)
             if not s and len3:
@@ -729,14 +728,14 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
-            s = lev_u_editops_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
+            s2 = lev_editops_apply[wchar_t](len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
                             n, ops, &len3)
             free(ops)
-            if not s and len3:
+            if not s2 and len3:
                 raise MemoryError
             
-            result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
-            free(s)
+            result = PyUnicode_FromWideChar(<const wchar_t*>s2, <Py_ssize_t>len3)
+            free(s2)
             return result
 
         bops = extract_opcodes(edit_operations)
@@ -745,14 +744,14 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             
-            s = lev_u_opcodes_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
+            s2 = lev_opcodes_apply[wchar_t](len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
                             n, bops, &len3)
             free(bops)
-            if not s and len3:
+            if not s2 and len3:
                 raise MemoryError
 
-            result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
-            free(s)
+            result = PyUnicode_FromWideChar(<const wchar_t*>s2, <Py_ssize_t>len3)
+            free(s2)
             return result
         
         raise TypeError("apply_edit first argument must be a list of edit operations")

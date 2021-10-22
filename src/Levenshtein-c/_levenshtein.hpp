@@ -6,6 +6,8 @@
 #  include <stdlib.h>
 #endif
 
+#include "rapidfuzz/string_metric.hpp"
+
 #define LEV_UNUSED(x) ((void)x)
 
 #define LEV_EPSILON 1e-14
@@ -29,18 +31,6 @@ typedef enum {
   LEV_EDIT_DELETE = 3,
   LEV_EDIT_LAST  /* sometimes returned when an error occurs */
 } LevEditType;
-
-/* Error codes returned by editop check functions */
-typedef enum {
-  LEV_EDIT_ERR_OK = 0,
-  LEV_EDIT_ERR_TYPE,  /* nonexistent edit type */
-  LEV_EDIT_ERR_OUT,  /* edit out of string bounds */
-  LEV_EDIT_ERR_ORDER,  /* ops are not ordered */
-  LEV_EDIT_ERR_BLOCK,  /* incosistent block boundaries (block ops) */
-  LEV_EDIT_ERR_SPAN,  /* sequence is not a full transformation (block ops) */
-  LEV_EDIT_ERR_LAST
-} LevEditOpError;
-
 /* Edit operation (atomic).
  * This is the `native' atomic edit operation.  It differs from the difflib
  * one's because it represents a change of one character, not a block.  And
@@ -208,41 +198,17 @@ lev_opcodes_matching_blocks(size_t len1,
                             const LevOpCode *bops,
                             size_t *nmblocks);
 
-lev_byte*
-lev_editops_apply(size_t len1,
-                  const lev_byte* string1,
-                  size_t len2,
-                  const lev_byte* string2,
-                  size_t n,
-                  const LevEditOp *ops,
-                  size_t *len);
+template <typename CharT>
+CharT* lev_editops_apply(size_t len1, const CharT* string1,
+                         size_t len2, const CharT* string2,
+                         size_t n, const LevEditOp *ops,
+                         size_t *len);
 
-lev_wchar*
-lev_u_editops_apply(size_t len1,
-                    const lev_wchar* string1,
-                    size_t len2,
-                    const lev_wchar* string2,
-                    size_t n,
-                    const LevEditOp *ops,
-                    size_t *len);
-
-lev_byte*
-lev_opcodes_apply(size_t len1,
-                  const lev_byte* string1,
-                  size_t len2,
-                  const lev_byte* string2,
-                  size_t nb,
-                  const LevOpCode *bops,
-                  size_t *len);
-
-lev_wchar*
-lev_u_opcodes_apply(size_t len1,
-                    const lev_wchar* string1,
-                    size_t len2,
-                    const lev_wchar* string2,
-                    size_t nb,
-                    const LevOpCode *bops,
-                    size_t *len);
+template <typename CharT>
+CharT* lev_opcodes_apply(size_t len1, const CharT* string1,
+                         size_t len2, const CharT* string2,
+                         size_t nb, const LevOpCode* bops,
+                         size_t* len);
 
 LevEditOp*
 lev_editops_find(size_t len1,
