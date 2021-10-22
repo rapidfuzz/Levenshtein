@@ -5,8 +5,8 @@ import sys
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
-        'msvc': ['/EHsc', '-std=c++14', '/O2', '/W4'],
-        'unix': ['-O3', '/std:c++14', '-Wextra', '-Wall', '-Wconversion', '-g0'],
+        'msvc': ['/EHsc', '/std:c++14', '/O2', '/W4'],
+        'unix': ['-O3', '-std=c++14', '-Wextra', '-Wall', '-Wconversion', '-g0'],
     }
     l_opts = {
         'msvc': [],

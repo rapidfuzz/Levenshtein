@@ -2665,6 +2665,7 @@ lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb,
     }
     nbl++;
     type = o->type;
+
     switch (type) {
     case LEV_EDIT_REPLACE:
       do {
