@@ -297,7 +297,7 @@ quickmedian_py(PyObject *self, PyObject *args)
 static PyObject*
 setmedian_py(PyObject *self, PyObject *args)
 {
-  MedianFuncs engines = { lev_set_median, lev_u_set_median };
+  MedianFuncs engines = { lev_set_median<lev_byte>, lev_set_median<lev_wchar> };
   LEV_UNUSED(self);
   return median_common(args, "setmedian", engines);
 }

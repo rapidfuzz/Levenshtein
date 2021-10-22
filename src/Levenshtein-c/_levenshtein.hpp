@@ -6,6 +6,11 @@
 #  include <stdlib.h>
 #endif
 
+#define LEV_UNUSED(x) ((void)x)
+
+#define LEV_EPSILON 1e-14
+#define LEV_INFINITY 1e100
+
 /* In C, this is just wchar_t and unsigned char, in Python, lev_wchar can
  * be anything.  If you really want to cheat, define wchar_t to any integer
  * type you like before including Levenshtein.h and recompile it. */
@@ -128,29 +133,16 @@ lev_u_quick_median(size_t n,
                    const double *weights,
                    size_t *medlength);
 
-lev_byte*
-lev_set_median(size_t n,
-               const size_t *lengths,
-               const lev_byte *strings[],
-               const double *weights,
-               size_t *medlength);
+template <typename CharT>
+CharT* lev_set_median(size_t n, const size_t* lengths,
+               const CharT** strings,
+               const double* weights,
+               size_t* medlength);
 
-size_t
-lev_set_median_index(size_t n, const size_t *lengths,
-                     const lev_byte *strings[],
-                     const double *weights);
-
-lev_wchar*
-lev_u_set_median(size_t n,
-                 const size_t *lengths,
-                 const lev_wchar *strings[],
-                 const double *weights,
-                 size_t *medlength);
-
-size_t
-lev_u_set_median_index(size_t n, const size_t *lengths,
-                       const lev_wchar *strings[],
-                       const double *weights);
+template <typename CharT>
+size_t lev_set_median_index(size_t n, const size_t* lengths,
+                            const CharT** strings,
+                            const double* weights);
 
 double
 lev_edit_seq_distance(size_t n1,
@@ -292,3 +284,5 @@ lev_editops_subtract(size_t n,
                      size_t *nrem);
 
 #endif /* not LEVENSHTEIN_H */
+
+#include "_levenshtein_impl.hpp"
