@@ -8,13 +8,39 @@ on:
       - published
 
 jobs:
+  build_legacy:
+    name: Build wheel for legacy Python versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      CIBW_BUILD: cp35-*
+      CIBW_BUILD_VERBOSITY: 3
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v1.12.0
+        with:
+          output-dir: wheelhouse
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+
   build_wheels:
     name: Build wheel on ${{ matrix.os }}/auto/${{matrix.python_tag}}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python_tag: [ "cp35-*", "cp36-*", "cp37-*", "cp38-*", "cp39-*", "cp310-*"]
+        python_tag: ["cp36-*", "cp37-*", "cp38-*", "cp39-*", "cp310-*"]
         os: [windows-latest, macos-latest]
     env:
       CIBW_BUILD: ${{matrix.python_tag}}
@@ -28,7 +54,7 @@ jobs:
           submodules: 'true'
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v1.12.0
+        uses: pypa/cibuildwheel@v2.1.1
         with:
           output-dir: wheelhouse
 
@@ -51,7 +77,7 @@ jobs:
           submodules: 'true'
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v1.12.0
+        uses: pypa/cibuildwheel@v2.1.1
         with:
           output-dir: wheelhouse
 
@@ -67,7 +93,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [auto, aarch64, ppc64le, s390x]
-        python_tag: [ "cp35-*", "cp36-*", "cp37-*", "cp38-*", "cp39-*", "cp310-*"]
+        python_tag: ["cp36-*", "cp37-*", "cp38-*", "cp39-*", "cp310-*"]
     env:
       CIBW_ARCHS_LINUX: ${{matrix.arch}}
       CIBW_BUILD: ${{matrix.python_tag}}
@@ -85,7 +111,7 @@ jobs:
         name: Set up QEMU
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@v1.12.0
+        uses: pypa/cibuildwheel@v2.1.1
         with:
           output-dir: wheelhouse
 
@@ -100,7 +126,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_tag: [ "pp36-*", "pp37-*"]
+        python_tag: ["pp36-*", "pp37-*"]
         os: [ubuntu-latest, windows-latest, macos-latest]
     env:
       CIBW_BUILD: ${{matrix.python_tag}}
@@ -112,7 +138,7 @@ jobs:
           submodules: 'true'
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v1.12.0
+        uses: pypa/cibuildwheel@v2.1.1
         with:
           output-dir: wheelhouse
 
@@ -147,7 +173,7 @@ jobs:
 
   deploy-wheels:
     if: github.event_name == 'release' && github.event.action == 'published'
-    needs: [build_wheels, build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
+    needs: [build_legacy, build_wheels, build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
     name: deploy wheels to pypi
     runs-on: ubuntu-18.04
 
