@@ -6,7 +6,7 @@ The recommended method to install Levenshtein is by using `pip` (the Python pack
 using pip
 ---------
 
-RapidFuzz can be installed with `pip`:
+Levenshtein can be installed with `pip`:
 
 .. code-block:: sh
 
@@ -17,7 +17,7 @@ There are pre-built binaries (wheels) of Levenshtein for MacOS (10.9 and later),
 from git
 --------
 
-RapidFuzz can be directly used from GitHub by cloning the
+Levenshtein can be directly used from GitHub by cloning the
 repository which might be useful when you want to work on it:
 
 .. code-block:: sh
