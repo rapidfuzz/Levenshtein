@@ -1,5 +1,8 @@
 ## Changelog
 
+### v0.16.1
+* Add support for RapidFuzz v1.9.*
+
 ### v0.16.0
 * Add support for Python 3.10
 

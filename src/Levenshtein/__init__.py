@@ -16,7 +16,7 @@ subclasses).
 
 __author__ = "Max Bachmann"
 __license__ = "GPL"
-__version__ = "0.16.0"
+__version__ = "0.16.1"
 
 from rapidfuzz import string_metric as _string_metric
 
