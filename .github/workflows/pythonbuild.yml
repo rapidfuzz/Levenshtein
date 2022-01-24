@@ -28,7 +28,7 @@ jobs:
           submodules: 'true'
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.1.1
+        uses: pypa/cibuildwheel@v2.3.1
         with:
           output-dir: wheelhouse
 
@@ -51,7 +51,7 @@ jobs:
           submodules: 'true'
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.1.1
+        uses: pypa/cibuildwheel@v2.3.1
         with:
           output-dir: wheelhouse
 
@@ -71,6 +71,7 @@ jobs:
     env:
       CIBW_ARCHS_LINUX: ${{matrix.arch}}
       CIBW_BUILD: ${{matrix.python_tag}}
+      CIBW_SKIP: "*musllinux_*"
       CIBW_TEST_SKIP: "*-manylinux_{aarch64,ppc64le,s390x}"
       CIBW_TEST_REQUIRES: pytest hypothesis
       CIBW_TEST_COMMAND: pytest {package}/tests
@@ -85,7 +86,7 @@ jobs:
         name: Set up QEMU
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@v2.1.1
+        uses: pypa/cibuildwheel@v2.3.1
         with:
           output-dir: wheelhouse
 
@@ -94,32 +95,32 @@ jobs:
         with:
           path: ./wheelhouse/*.whl
 
-  build_wheels_pypy:
-    name: Build wheel on ${{ matrix.os }}/auto/${{matrix.python_tag}}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        python_tag: ["pp37-*"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    env:
-      CIBW_BUILD: ${{matrix.python_tag}}
-      CIBW_BUILD_VERBOSITY: 3
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'true'
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.1.1
-        with:
-          output-dir: wheelhouse
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v2
-        with:
-          path: ./wheelhouse/*.whl
+  #build_wheels_pypy:
+  #  name: Build wheel on ${{ matrix.os }}/auto/${{matrix.python_tag}}
+  #  runs-on: ${{ matrix.os }}
+  #  strategy:
+  #    fail-fast: false
+  #    matrix:
+  #      python_tag: ["pp37-*"]
+  #      os: [ubuntu-latest, windows-latest, macos-latest]
+  #  env:
+  #    CIBW_BUILD: ${{matrix.python_tag}}
+  #    CIBW_BUILD_VERBOSITY: 3
+  #
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #      with:
+  #        submodules: 'true'
+  #
+  #    - name: Build wheels
+  #      uses: pypa/cibuildwheel@v2.1.1
+  #      with:
+  #        output-dir: wheelhouse
+  #
+  #    - name: Upload wheels
+  #      uses: actions/upload-artifact@v2
+  #      with:
+  #        path: ./wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
@@ -147,7 +148,7 @@ jobs:
 
   deploy-wheels:
     if: github.event_name == 'release' && github.event.action == 'published'
-    needs: [build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
+    needs: [build_wheels_apple_silicon, build_wheels_manylinux, build_sdist]
     name: deploy wheels to pypi
     runs-on: ubuntu-18.04
 
