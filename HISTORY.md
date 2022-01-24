@@ -1,5 +1,8 @@
 ## Changelog
 
+### v0.17.0
+* Removed support for Python 3.5
+
 ### v0.16.1
 * Add support for RapidFuzz v1.9.*
 

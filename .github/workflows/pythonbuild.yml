@@ -8,32 +8,6 @@ on:
       - published
 
 jobs:
-  build_legacy:
-    name: Build wheel for legacy Python versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    env:
-      CIBW_BUILD: cp35-*
-      CIBW_BUILD_VERBOSITY: 3
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'true'
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v1.12.0
-        with:
-          output-dir: wheelhouse
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v2
-        with:
-          path: ./wheelhouse/*.whl
-
   build_wheels:
     name: Build wheel on ${{ matrix.os }}/auto/${{matrix.python_tag}}
     runs-on: ${{ matrix.os }}
@@ -173,7 +147,7 @@ jobs:
 
   deploy-wheels:
     if: github.event_name == 'release' && github.event.action == 'published'
-    needs: [build_legacy, build_wheels, build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
+    needs: [build_wheels_apple_silicon, build_wheels_manylinux, build_wheels_pypy, build_sdist]
     name: deploy wheels to pypi
     runs-on: ubuntu-18.04
 
