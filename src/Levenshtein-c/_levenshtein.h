@@ -255,38 +255,6 @@ lev_u_opcodes_apply(size_t len1,
                     size_t *len);
 
 LevEditOp*
-lev_editops_find(size_t len1,
-                 const lev_byte *string1,
-                 size_t len2,
-                 const lev_byte *string2,
-                 size_t *n);
-
-LevEditOp*
-lev_u_editops_find(size_t len1,
-                   const lev_wchar *string1,
-                   size_t len2,
-                   const lev_wchar *string2,
-                   size_t *n);
-
-LevEditOp*
-lev_opcodes_to_editops(size_t nb,
-                       const LevOpCode *bops,
-                       size_t *n,
-                       int keepkeep);
-
-LevOpCode*
-lev_editops_to_opcodes(size_t n,
-                       const LevEditOp *ops,
-                       size_t *nb,
-                       size_t len1,
-                       size_t len2);
-
-LevEditOp*
-lev_editops_normalize(size_t n,
-                      const LevEditOp *ops,
-                      size_t *nnorm);
-
-LevEditOp*
 lev_editops_subtract(size_t n,
                      const LevEditOp *ops,
                      size_t ns,

@@ -14,6 +14,15 @@ from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_FromStringAndSize
 from cpython.sequence cimport PySequence_Check, PySequence_Length
 from libc.stddef cimport wchar_t
 
+from rapidfuzz.distance import (
+    Editops as RfEditops,
+    Opcodes as RfOpcodes
+)
+from rapidfuzz.distance.Levenshtein import (
+    editops as rf_editops,
+    opcodes as rf_opcodes
+)
+
 cdef extern from *:
     object PyUnicode_FromWideChar(const wchar_t *w, Py_ssize_t size)
 
@@ -51,12 +60,6 @@ cdef extern from "_levenshtein.h":
 
     int lev_editops_check_errors(size_t len1, size_t len2, size_t n, const LevEditOp *ops)
     int lev_opcodes_check_errors(size_t len1, size_t len2, size_t nb, const LevOpCode *bops)
-
-    LevEditOp* lev_editops_find(size_t len1, const lev_byte *string1, size_t len2, const lev_byte *string2, size_t *n)
-    LevEditOp* lev_u_editops_find(size_t len1, const wchar_t *string1, size_t len2, const wchar_t *string2, size_t *n)
-
-    LevEditOp* lev_opcodes_to_editops(size_t nb, const LevOpCode *bops, size_t *n, int keepkeep)
-    LevOpCode* lev_editops_to_opcodes(size_t n, const LevEditOp *ops, size_t *nb, size_t len1, size_t len2)
 
     lev_byte* lev_editops_apply(size_t len1, const lev_byte* string1, size_t len2,const lev_byte* string2, size_t n, const LevEditOp *ops, size_t *len)
     wchar_t*  lev_u_editops_apply(size_t len1, const wchar_t* string1, size_t len2, const wchar_t* string2, size_t n, const LevEditOp *ops, size_t *len)
@@ -196,8 +199,6 @@ cdef opcodes_to_tuple_list(size_t nb, LevOpCode *bops):
 
     return tuple_list
 
-
-
 cdef matching_blocks_to_tuple_list(size_t len1, size_t len2, size_t nmb, LevMatchingBlock *mblocks):
     cdef list tuple_list = PyList_New(<Py_ssize_t>nmb + 1)
 
@@ -296,75 +297,16 @@ def editops(*args):
     # convert: we were called (bops, s1, s2)
     if len(args) == 3:
         arg1, arg2, arg3 = args
-
-        if not isinstance(arg1, list):
-            raise ValueError("editops first argument must be a List of edit operations")
-        
-        n = <size_t>len(<list>arg1)
-        if not n:
-            return arg1
-
         len1 = get_length_of_anything(arg2)
         len2 = get_length_of_anything(arg3)
         if len1 == <size_t>-1 or len2 == <size_t>-1:
             raise ValueError("editops second and third argument must specify sizes")
 
-        bops = extract_opcodes(arg1)
-        if bops:
-            if lev_opcodes_check_errors(len1, len2, n, bops):
-                free(bops)
-                raise ValueError("editops edit operation list is invalid")
-
-            ops = lev_opcodes_to_editops(n, bops, &n, 0)
-            free(bops)
-
-            if not ops and n:
-                raise MemoryError
-
-            oplist = editops_to_tuple_list(n, ops)
-            free(ops)
-            return oplist
-
-        ops = extract_editops(arg1)
-        if ops:
-            if lev_editops_check_errors(len1, len2, n, ops):
-                free(ops)
-                raise ValueError("editops edit operation list is invalid")
-            
-            free(ops)
-            return arg1
-        
-        raise TypeError("editops first argument must be a List of edit operations")
+        return RfEditops(arg1, len1, len2).as_list()
 
     # find editops: we were called (s1, s2)
     arg1, arg2 = args
-    if isinstance(arg1, bytes) and isinstance(arg2, bytes):
-        len1 = len(<bytes>arg1)
-        len2 = len(<bytes>arg2)
-
-        ops = lev_editops_find(
-            len1, <lev_byte*>PyBytes_AS_STRING(arg1),
-            len2, <lev_byte*>PyBytes_AS_STRING(arg2),
-            &n)
-
-    elif isinstance(arg1, str) and isinstance(arg2, str):
-        len1 = len(<str>arg1)
-        len2 = len(<str>arg2)
-
-        ops = lev_u_editops_find(
-            len1, <wchar_t*>PyUnicode_AS_UNICODE(arg1),
-            len2, <wchar_t*>PyUnicode_AS_UNICODE(arg2),
-            &n)
-
-    else:
-        raise TypeError("editops expected two Strings or two Unicodes")
-
-    if not ops and n:
-        raise MemoryError
-  
-    oplist = editops_to_tuple_list(n, ops)
-    free(ops)
-    return oplist
+    return rf_editops(arg1, arg2).as_list()
 
 
 def opcodes(*args):
@@ -400,77 +342,16 @@ def opcodes(*args):
     # convert: we were called (ops, s1, s2)
     if len(args) == 3:
         arg1, arg2, arg3 = args
-
-        if not isinstance(arg1, list):
-            raise ValueError("opcodes first argument must be a List of edit operations")
-        
-        n = <size_t>len(<list>arg1)
         len1 = get_length_of_anything(arg2)
         len2 = get_length_of_anything(arg3)
         if len1 == <size_t>-1 or len2 == <size_t>-1:
             raise ValueError("opcodes second and third argument must specify sizes")
 
-        ops = extract_editops(arg1)
-        if ops:
-            if lev_editops_check_errors(len1, len2, n, ops):
-                free(ops)
-                raise ValueError("opcodes edit operation list is invalid")
-
-            bops = lev_editops_to_opcodes(n, ops, &n, len1, len2)
-            free(ops)
-
-            if not bops and n:
-                raise MemoryError
-
-            oplist = opcodes_to_tuple_list(n, bops)
-            free(bops)
-            return oplist
-
-        bops = extract_opcodes(arg1)
-        if bops:
-            if lev_opcodes_check_errors(len1, len2, n, bops):
-                free(bops)
-                raise ValueError("opcodes edit operation list is invalid")
-            
-            free(bops)
-            return arg1
-        
-        raise TypeError("opcodes first argument must be a List of edit operations")
+        return RfOpcodes(arg1, len1, len2).as_list()
 
     # find editops: we were called (s1, s2)
     arg1, arg2 = args
-    if isinstance(arg1, bytes) and isinstance(arg2, bytes):
-        len1 = len(<bytes>arg1)
-        len2 = len(<bytes>arg2)
-
-        ops = lev_editops_find(
-            len1, <lev_byte*>PyBytes_AS_STRING(arg1),
-            len2, <lev_byte*>PyBytes_AS_STRING(arg2),
-            &n)
-
-    elif isinstance(arg1, str) and isinstance(arg2, str):
-        len1 = len(<str>arg1)
-        len2 = len(<str>arg2)
-
-        ops = lev_u_editops_find(
-            len1, <wchar_t*>PyUnicode_AS_UNICODE(arg1),
-            len2, <wchar_t*>PyUnicode_AS_UNICODE(arg2),
-            &n)
-
-    else:
-        raise TypeError("opcodes expected two Strings or two Unicodes")
-
-    if not ops and n:
-        raise MemoryError
-  
-    bops = lev_editops_to_opcodes(n, ops, &nb, len1, len2)
-    free(ops)
-    if not bops and nb:
-        raise MemoryError
-
-    oplist = opcodes_to_tuple_list(nb, bops)
-    free(bops)
-    return oplist
+    return rf_opcodes(arg1, arg2).as_list()
 
 
 def matching_blocks(edit_operations, source_string, destination_string):

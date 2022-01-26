@@ -1,5 +1,8 @@
 ## Changelog
 
+### v0.18.0
+* Use a faster editops implementation provided by RapidFuzz
+
 ### v0.17.0
 * Removed support for Python 3.5
 
