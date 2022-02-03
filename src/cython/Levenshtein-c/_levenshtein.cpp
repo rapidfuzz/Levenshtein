@@ -21,67 +21,6 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  **/
 
-/**
- * TODO:
- *
- * - Implement weighted string averaging, see:
- *   H. Bunke et. al.: On the Weighted Mean of a Pair of Strings,
- *         Pattern Analysis and Applications 2002, 5(1): 23-30.
- *   X. Jiang et. al.: Dynamic Computations of Generalized Median Strings,
- *         Pattern Analysis and Applications 2002, ???.
- *   The latter also contains an interesting median-search algorithm.
- *
- * - Deal with stray symbols in greedy median() and median_improve().
- *   There are two possibilities:
- *    (i) Remember which strings contain which symbols.  This allows certain
- *        small optimizations when processing them.
- *   (ii) Use some overall heuristics to find symbols which don't worth
- *        trying.  This is very appealing, but hard to do properly
- *        (requires some inequality strong enough to allow practical exclusion
- *        of certain symbols -- at certain positions)
- *
- * - Editops should be an object that only *looks* like a list (which means
- *   it is a list in duck typing) to avoid never-ending conversions from
- *   Python lists to LevEditOp arrays and back
- *
- * - Optimize munkers_blackman(), it's pretty dumb (no memory of visited
- *   columns/rows)
- *
- * - Make it really usable as a C library (needs some wrappers, headers, ...,
- *   and maybe even documentation ;-)
- *
- * - Add interface to various interesting auxiliary results, namely
- *   set and sequence distance (only ratio is exported), the map from
- *   munkers_blackman() itself, ...
- *
- * - Generalizations:
- *   - character weight matrix/function
- *   - arbitrary edit operation costs, decomposable edit operations
- *
- * - Create a test suite
- *
- * - Add more interesting algorithms ;-)
- *
- * Postponed TODO (investigated, and a big `but' was found):
- *
- * - A linear approximate set median algorithm:
- *   P. Indyk: Sublinear time algorithms for metric space problems,
- *         STOC 1999, http://citeseer.nj.nec.com/indyk00sublinear.html.
- *   BUT: The algorithm seems to be advantageous only in the case of very
- *   large sets -- if my estimates are correct (the article itself is quite
- *   `asymptotic'), say 10^5 at least.  On smaller sets either one would get
- *   only an extermely rough median estimate, or the number of distance
- *   computations would be in fact higher than in the dumb O(n^2) algorithm.
- *
- * - Improve setmedian() speed with triangular inequality, see:
- *   Juan, A., E. Vidal: An Algorithm for Fast Median Search,
- *         1997, http://citeseer.nj.nec.com/article/juan97algorithm.html
- *   BUT: It doesn't seem to help much in spaces of high dimension (see the
- *   discussion and graphs in the article itself), a few percents at most,
- *   and strings behave like a space with a very high dimension (locally), so
- *   who knows, it probably wouldn't help much.
- *
- **/
 #include <string.h>
 #include <math.h>
 /* for debugging */
@@ -90,6 +29,9 @@
 
 #include <assert.h>
 #include "_levenshtein.hpp"
+#include <rapidfuzz/distance/Indel.hpp>
+#include <rapidfuzz/distance/Levenshtein.hpp>
+#include <numeric>
 
 #define LEV_UNUSED(x) ((void)x)
 
@@ -97,10 +39,7 @@
 #define LEV_INFINITY 1e100
 
 /* local functions */
-static size_t*
-munkers_blackman(size_t n1,
-                 size_t n2,
-                 double *dists);
+static size_t* munkers_blackman(size_t n1, size_t n2, double *dists);
 
 /****************************************************************************
  *
@@ -110,320 +49,33 @@ munkers_blackman(size_t n1,
 /* {{{ */
 
 /**
- * lev_edit_distance:
- * @len1: The length of @string1.
- * @string1: A sequence of bytes of length @len1, may contain NUL characters.
- * @len2: The length of @string2.
- * @string2: A sequence of bytes of length @len2, may contain NUL characters.
- * @xcost: If nonzero, the replace operation has weight 2, otherwise all
- *         edit operations have equal weights of 1.
- *
- * Computes Levenshtein edit distance of two strings.
- *
- * Returns: The edit distance.
- **/
-static size_t
-lev_edit_distance(size_t len1, const lev_byte *string1,
-                  size_t len2, const lev_byte *string2,
-                  int xcost)
+ * @brief Wrapper for Levenshtein distance to handle exceptions
+ */
+template <typename CharT1, typename CharT2>
+static size_t lev_levenshtein_distance(size_t len1, const CharT1* string1,
+                                size_t len2, const CharT2* string2)
 {
-  size_t i;
-  size_t *row;  /* we only need to keep one row of costs */
-  size_t *end;
-  size_t half;
-
-  /* strip common prefix */
-  while (len1 > 0 && len2 > 0 && *string1 == *string2) {
-    len1--;
-    len2--;
-    string1++;
-    string2++;
+  try {
+    return rapidfuzz::levenshtein_distance(string1, string1 + len1, string2, string2 + len2);
+  } catch (...) {
+    return (size_t)-1;
   }
-
-  /* strip common suffix */
-  while (len1 > 0 && len2 > 0 && string1[len1-1] == string2[len2-1]) {
-    len1--;
-    len2--;
-  }
-
-  /* catch trivial cases */
-  if (len1 == 0)
-    return len2;
-  if (len2 == 0)
-    return len1;
-
-  /* make the inner cycle (i.e. string2) the longer one */
-  if (len1 > len2) {
-    size_t nx = len1;
-    const lev_byte *sx = string1;
-    len1 = len2;
-    len2 = nx;
-    string1 = string2;
-    string2 = sx;
-  }
-  /* check len1 == 1 separately */
-  if (len1 == 1) {
-    if (xcost)
-      return len2 + 1 - 2 * (size_t)(memchr(string2, *string1, len2) != NULL);
-    else
-      return len2 - (memchr(string2, *string1, len2) != NULL);
-  }
-  len1++;
-  len2++;
-  half = len1 >> 1;
-
-  /* initalize first row */
-  row = (size_t*)safe_malloc(len2, sizeof(size_t));
-  if (!row)
-    return (size_t)(-1);
-  end = row + len2 - 1;
-  for (i = 0; i < len2 - (xcost ? 0 : half); i++)
-    row[i] = i;
-
-  /* go through the matrix and compute the costs.  yes, this is an extremely
-   * obfuscated version, but also extremely memory-conservative and relatively
-   * fast.  */
-  if (xcost) {
-    for (i = 1; i < len1; i++) {
-      size_t *p = row + 1;
-      const lev_byte char1 = string1[i - 1];
-      const lev_byte *char2p = string2;
-      size_t D = i;
-      size_t x = i;
-      while (p <= end) {
-        if (char1 == *(char2p++))
-          x = --D;
-        else
-          x++;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-    }
-  }
-  else {
-    /* in this case we don't have to scan two corner triangles (of size len1/2)
-     * in the matrix because no best path can go throught them. note this
-     * breaks when len1 == len2 == 2 so the memchr() special case above is
-     * necessary */
-    row[0] = len1 - half - 1;
-    for (i = 1; i < len1; i++) {
-      size_t *p;
-      const lev_byte char1 = string1[i - 1];
-      const lev_byte *char2p;
-      size_t D, x;
-      /* skip the upper triangle */
-      if (i >= len1 - half) {
-        size_t offset = i - (len1 - half);
-        size_t c3;
-
-        char2p = string2 + offset;
-        p = row + offset;
-        c3 = *(p++) + (char1 != *(char2p++));
-        x = *p;
-        x++;
-        D = x;
-        if (x > c3)
-          x = c3;
-        *(p++) = x;
-      }
-      else {
-        p = row + 1;
-        char2p = string2;
-        D = x = i;
-      }
-      /* skip the lower triangle */
-      if (i <= half + 1)
-        end = row + len2 + i - half - 2;
-      /* main */
-      while (p <= end) {
-        size_t c3 = --D + (char1 != *(char2p++));
-        x++;
-        if (x > c3)
-          x = c3;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-      /* lower triangle sentinel */
-      if (i <= half) {
-        size_t c3 = --D + (char1 != *char2p);
-        x++;
-        if (x > c3)
-          x = c3;
-        *p = x;
-      }
-    }
-  }
-
-  i = *end;
-  free(row);
-  return i;
 }
 
 /**
- * lev_u_edit_distance:
- * @len1: The length of @string1.
- * @string1: A sequence of Unicode characters of length @len1, may contain NUL
- *           characters.
- * @len2: The length of @string2.
- * @string2: A sequence of Unicode characters of length @len2, may contain NUL
- *           characters.
- * @xcost: If nonzero, the replace operation has weight 2, otherwise all
- *         edit operations have equal weights of 1.
- *
- * Computes Levenshtein edit distance of two Unicode strings.
- *
- * Returns: The edit distance.
- **/
-static size_t
-lev_u_edit_distance(size_t len1, const lev_wchar *string1,
-                    size_t len2, const lev_wchar *string2,
-                    int xcost)
+ * @brief Wrapper for Indel distance to handle exceptions
+ */
+template <typename CharT1, typename CharT2>
+static size_t lev_indel_distance(size_t len1, const CharT1* string1,
+                                size_t len2, const CharT2* string2)
 {
-  size_t i;
-  size_t *row;  /* we only need to keep one row of costs */
-  size_t *end;
-  size_t half;
-
-  /* strip common prefix */
-  while (len1 > 0 && len2 > 0 && *string1 == *string2) {
-    len1--;
-    len2--;
-    string1++;
-    string2++;
+  try {
+    return rapidfuzz::indel_distance(string1, string1 + len1, string2, string2 + len2);
+  } catch (...) {
+    return (size_t)-1;
   }
-
-  /* strip common suffix */
-  while (len1 > 0 && len2 > 0 && string1[len1-1] == string2[len2-1]) {
-    len1--;
-    len2--;
-  }
-
-  /* catch trivial cases */
-  if (len1 == 0)
-    return len2;
-  if (len2 == 0)
-    return len1;
-
-  /* make the inner cycle (i.e. string2) the longer one */
-  if (len1 > len2) {
-    size_t nx = len1;
-    const lev_wchar *sx = string1;
-    len1 = len2;
-    len2 = nx;
-    string1 = string2;
-    string2 = sx;
-  }
-  /* check len1 == 1 separately */
-  if (len1 == 1) {
-    lev_wchar z = *string1;
-    const lev_wchar *p = string2;
-    for (i = len2; i; i--) {
-      if (*(p++) == z)
-        return len2 - 1;
-    }
-    return len2 + (xcost != 0);
-  }
-  len1++;
-  len2++;
-  half = len1 >> 1;
-
-  /* initalize first row */
-  row = (size_t*)safe_malloc(len2, sizeof(size_t));
-  if (!row)
-    return (size_t)(-1);
-  end = row + len2 - 1;
-  for (i = 0; i < len2 - (xcost ? 0 : half); i++)
-    row[i] = i;
-
-  /* go through the matrix and compute the costs.  yes, this is an extremely
-   * obfuscated version, but also extremely memory-conservative and relatively
-   * fast.  */
-  if (xcost) {
-    for (i = 1; i < len1; i++) {
-      size_t *p = row + 1;
-      const lev_wchar char1 = string1[i - 1];
-      const lev_wchar *char2p = string2;
-      size_t D = i - 1;
-      size_t x = i;
-      while (p <= end) {
-        if (char1 == *(char2p++))
-          x = D;
-        else
-          x++;
-        D = *p;
-        if (x > D + 1)
-          x = D + 1;
-        *(p++) = x;
-      }
-    }
-  }
-  else {
-    /* in this case we don't have to scan two corner triangles (of size len1/2)
-     * in the matrix because no best path can go throught them. note this
-     * breaks when len1 == len2 == 2 so the memchr() special case above is
-     * necessary */
-    row[0] = len1 - half - 1;
-    for (i = 1; i < len1; i++) {
-      size_t *p;
-      const lev_wchar char1 = string1[i - 1];
-      const lev_wchar *char2p;
-      size_t D, x;
-      /* skip the upper triangle */
-      if (i >= len1 - half) {
-        size_t offset = i - (len1 - half);
-        size_t c3;
-
-        char2p = string2 + offset;
-        p = row + offset;
-        c3 = *(p++) + (char1 != *(char2p++));
-        x = *p;
-        x++;
-        D = x;
-        if (x > c3)
-          x = c3;
-        *(p++) = x;
-      }
-      else {
-        p = row + 1;
-        char2p = string2;
-        D = x = i;
-      }
-      /* skip the lower triangle */
-      if (i <= half + 1)
-        end = row + len2 + i - half - 2;
-      /* main */
-      while (p <= end) {
-        size_t c3 = --D + (char1 != *(char2p++));
-        x++;
-        if (x > c3)
-          x = c3;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-      /* lower triangle sentinel */
-      if (i <= half) {
-        size_t c3 = --D + (char1 != *char2p);
-        x++;
-        if (x > c3)
-          x = c3;
-        *p = x;
-      }
-    }
-  }
-
-  i = *end;
-  free(row);
-  return i;
 }
+
 
 /* }}} */
 
@@ -1020,9 +672,7 @@ struct _HItem {
 static void
 free_usymlist_hash(HItem *symmap)
 {
-  size_t j;
-
-  for (j = 0; j < 0x100; j++) {
+  for (size_t j = 0; j < 0x100; j++) {
     HItem *p = symmap + j;
     if (p->n == symmap || p->n == NULL)
       continue;
@@ -1044,12 +694,10 @@ make_usymlist(size_t n, const size_t *lengths,
               const lev_wchar *strings[], size_t *symlistlen)
 {
   lev_wchar *symlist;
-  size_t i, j;
+  size_t i;
   HItem *symmap;
 
-  j = 0;
-  for (i = 0; i < n; i++)
-    j += lengths[i];
+  size_t j = std::accumulate(lengths, lengths + n, 0);
 
   *symlistlen = 0;
   if (j == 0)
@@ -1230,9 +878,8 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
     free(median);
     return NULL;
   }
-  mediandist[0] = 0.0;
-  for (i = 0; i < n; i++)
-    mediandist[0] += (double)lengths[i] * weights[i];
+
+  mediandist[0] = std::inner_product(lengths, lengths + n, weights, 0.0);
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
@@ -1667,7 +1314,7 @@ make_symlistset(size_t n, const size_t *lengths,
     *symlistlen = (size_t)(-1);
     return NULL;
   }
-  memset(symset, 0, 0x100*sizeof(double));  /* XXX: needs IEEE doubles?! */
+  memset(symset, 0, 0x100*sizeof(double));
   *symlistlen = 0;
   for (i = 0; i < n; i++) {
     const lev_byte *stri = strings[i];
@@ -1711,15 +1358,12 @@ lev_quick_median(size_t n,
   lev_byte *symlist;
   lev_byte *median;  /* the resulting string */
   double *symset;
-  double ml, wl;
 
   /* first check whether the result would be an empty string 
    * and compute resulting string length */
-  ml = wl = 0.0;
-  for (i = 0; i < n; i++) {
-    ml += (double)lengths[i] * weights[i];
-    wl += weights[i];
-  }
+  double ml = std::inner_product(weights, weights + n, lengths, 0.0);
+  double wl = std::accumulate(   weights, weights + n, 0.0);
+
   if (wl == 0.0)
     return (lev_byte*)calloc(1, sizeof(lev_byte));
   ml = floor(ml/wl + 0.499999);
@@ -1801,9 +1445,7 @@ struct _HQItem {
 static void
 free_usymlistset_hash(HQItem *symmap)
 {
-  size_t j;
-
-  for (j = 0; j < 0x100; j++) {
+  for (size_t j = 0; j < 0x100; j++) {
     HQItem *p = symmap + j;
     if (p->n == symmap || p->n == NULL)
       continue;
@@ -1828,11 +1470,8 @@ make_usymlistset(size_t n, const size_t *lengths,
                  HQItem *symmap)
 {
   lev_wchar *symlist;
-  size_t i, j;
-
-  j = 0;
-  for (i = 0; i < n; i++)
-    j += lengths[i];
+  size_t i;
+  size_t j = std::accumulate(lengths, lengths + n, 0);
 
   *symlistlen = 0;
   if (j == 0)
@@ -1904,15 +1543,12 @@ lev_u_quick_median(size_t n,
   lev_wchar *symlist;
   lev_wchar *median;  /* the resulting string */
   HQItem *symmap;
-  double ml, wl;
 
   /* first check whether the result would be an empty string 
    * and compute resulting string length */
-  ml = wl = 0.0;
-  for (i = 0; i < n; i++) {
-    ml += (double)lengths[i] * weights[i];
-    wl += weights[i];
-  }
+  double ml = std::inner_product(weights, weights + n, lengths, 0.0);
+  double wl = std::accumulate(   weights, weights + n, 0.0);
+
   if (wl == 0.0)
     return (lev_wchar*)calloc(1, sizeof(lev_wchar));
   ml = floor(ml/wl + 0.499999);
@@ -2067,7 +1703,7 @@ lev_set_median_index(size_t n, const size_t *lengths,
       if (distances[dindex] >= 0)
         d = distances[dindex];
       else {
-        d = (long int)lev_edit_distance(lengths[j], strings[j], leni, stri, 0);
+        d = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
         if (d < 0) {
           free(distances);
           return (size_t)-1;
@@ -2080,8 +1716,7 @@ lev_set_median_index(size_t n, const size_t *lengths,
     /* above diagonal */
     while (j < n && dist < mindist) {
       size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = (long int)lev_edit_distance(lengths[j], strings[j],
-                                            leni, stri, 0);
+      distances[dindex] = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
       if (distances[dindex] < 0) {
         free(distances);
         return (size_t)-1;
@@ -2140,7 +1775,7 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
       if (distances[dindex] >= 0)
         d = distances[dindex];
       else {
-        d = (long int)lev_u_edit_distance(lengths[j], strings[j], leni, stri, 0);
+        d = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
         if (d < 0) {
           free(distances);
           return (size_t)-1;
@@ -2153,8 +1788,7 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
     /* above diagonal */
     while (j < n && dist < mindist) {
       size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = (long int)lev_u_edit_distance(lengths[j], strings[j],
-                                              leni, stri, 0);
+      distances[dindex] = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
       if (distances[dindex] < 0) {
         free(distances);
         return (size_t)-1;
@@ -2278,8 +1912,9 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
                       const lev_byte *strings2[])
 {
   size_t i;
-  double *row;  /* we only need to keep one row of costs */
-  double *end;
+  double* row;  /* we only need to keep one row of costs */
+  double* last;
+  double* end;
 
   /* strip common prefix */
   while (n1 > 0 && n2 > 0
@@ -2311,15 +1946,9 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
 
   /* make the inner cycle (i.e. strings2) the longer one */
   if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_byte **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
+    std::swap(n1, n2);
+    std::swap(lengths1, lengths2);
+    std::swap(strings1, strings2);
   }
   n1++;
   n2++;
@@ -2328,9 +1957,9 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   row = (double*)safe_malloc(n2, sizeof(double));
   if (!row)
     return -1.0;
-  end = row + n2 - 1;
-  for (i = 0; i < n2; i++)
-    row[i] = (double)i;
+  last = row + n2 - 1;
+  end = row + n2;
+  std::iota(row, end, 0.0);
 
   /* go through the matrix and compute the costs.  yes, this is an extremely
    * obfuscated version, but also extremely memory-conservative and relatively
@@ -2343,13 +1972,13 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
     const size_t *len2p = lengths2;
     double D = (double)i - 1.0;
     double x = (double)i;
-    while (p <= end) {
+    while (p != end) {
       size_t l = len1 + *len2p;
       double q;
       if (l == 0)
         q = D;
       else {
-        size_t d = lev_edit_distance(len1, str1, *(len2p++), *(str2p++), 1);
+        size_t d = lev_indel_distance(len1, str1, *(len2p++), *(str2p++));
         if (d == (size_t)(-1)) {
           free(row);
           return -1.0;
@@ -2367,7 +1996,7 @@ lev_edit_seq_distance(size_t n1, const size_t *lengths1,
   }
 
   {
-    double q = *end;
+    double q = *last;
     free(row);
     return q;
   }
@@ -2398,8 +2027,9 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
                         const lev_wchar *strings2[])
 {
   size_t i;
-  double *row;  /* we only need to keep one row of costs */
-  double *end;
+  double* row;  /* we only need to keep one row of costs */
+  double* last;
+  double* end;
 
   /* strip common prefix */
   while (n1 > 0 && n2 > 0
@@ -2431,15 +2061,9 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
 
   /* make the inner cycle (i.e. strings2) the longer one */
   if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_wchar **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
+    std::swap(n1, n2);
+    std::swap(lengths1, lengths2);
+    std::swap(strings1, strings2);
   }
   n1++;
   n2++;
@@ -2448,9 +2072,9 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   row = (double*)safe_malloc(n2, sizeof(double));
   if (!row)
     return -1.0;
-  end = row + n2 - 1;
-  for (i = 0; i < n2; i++)
-    row[i] = (double)i;
+  last = row + n2 - 1;
+  end = row + n2;
+  std::iota(row, end, 0.0);
 
   /* go through the matrix and compute the costs.  yes, this is an extremely
    * obfuscated version, but also extremely memory-conservative and relatively
@@ -2463,13 +2087,13 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
     const size_t *len2p = lengths2;
     double D = (double)i - 1.0;
     double x = (double)i;
-    while (p <= end) {
+    while (p != end) {
       size_t l = len1 + *len2p;
       double q;
       if (l == 0)
         q = D;
       else {
-        size_t d = lev_u_edit_distance(len1, str1, *(len2p++), *(str2p++), 1);
+        size_t d = lev_indel_distance(len1, str1, *(len2p++), *(str2p++));
         if (d == (size_t)(-1)) {
           free(row);
           return -1.0;
@@ -2487,7 +2111,7 @@ lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
   }
 
   {
-    double q = *end;
+    double q = *last;
     free(row);
     return q;
   }
@@ -2557,7 +2181,7 @@ lev_set_distance(size_t n1, const size_t *lengths1,
       if (l == 0)
         *(r++) = 0.0;
       else {
-        size_t d = lev_edit_distance(len2, str2, *(len1p++), *(str1p)++, 1);
+        size_t d = lev_indel_distance(len2, str2, *(len1p++), *(str1p)++);
         if (d == (size_t)(-1)) {
           free(r);
           return -1.0;
@@ -2579,8 +2203,7 @@ lev_set_distance(size_t n1, const size_t *lengths1,
     i = map[j];
     l = lengths1[j] + lengths2[i];
     if (l > 0) {
-      size_t d = lev_edit_distance(lengths1[j], strings1[j],
-                                   lengths2[i], strings2[i], 1);
+      size_t d = lev_indel_distance(lengths1[j], strings1[j], lengths2[i], strings2[i]);
       if (d == (size_t)(-1)) {
         free(map);
         return -1.0;
@@ -2657,7 +2280,7 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
       if (l == 0)
         *(r++) = 0.0;
       else {
-        size_t d = lev_u_edit_distance(len2, str2, *(len1p++), *(str1p)++, 1);
+        size_t d = lev_indel_distance(len2, str2, *(len1p++), *(str1p)++);
         if (d == (size_t)(-1)) {
           free(r);
           return -1.0;
@@ -2679,8 +2302,7 @@ lev_u_set_distance(size_t n1, const size_t *lengths1,
     i = map[j];
     l = lengths1[j] + lengths2[i];
     if (l > 0) {
-      size_t d = lev_u_edit_distance(lengths1[j], strings1[j],
-                                     lengths2[i], strings2[i], 1);
+      size_t d = lev_indel_distance(lengths1[j], strings1[j], lengths2[i], strings2[i]);
       if (d == (size_t)(-1)) {
         free(map);
         return -1.0;
@@ -2915,15 +2537,12 @@ int
 lev_editops_check_errors(size_t len1, size_t len2,
                          size_t n, const LevEditOp *ops)
 {
-  const LevEditOp *o;
-  size_t i;
-
   if (!n)
     return LEV_EDIT_ERR_OK;
 
   /* check bounds */
-  o = ops;
-  for (i = n; i; i--, o++) {
+  const LevEditOp* o = ops;
+  for (size_t i = n; i; i--, o++) {
     if (o->type >= LEV_EDIT_LAST)
       return LEV_EDIT_ERR_TYPE;
     if (o->spos > len1 || o->dpos > len2)
@@ -2936,7 +2555,7 @@ lev_editops_check_errors(size_t len1, size_t len2,
 
   /* check ordering */
   o = ops + 1;
-  for (i = n - 1; i; i--, o++, ops++) {
+  for (size_t i = n - 1; i; i--, o++, ops++) {
     if (o->spos < ops->spos || o->dpos < ops->dpos)
       return LEV_EDIT_ERR_ORDER;
   }
@@ -2956,13 +2575,9 @@ lev_editops_check_errors(size_t len1, size_t len2,
  *
  * Returns: Zero if @bops seems OK, a nonzero error code otherwise.
  **/
-int
-lev_opcodes_check_errors(size_t len1, size_t len2,
-                         size_t nb, const LevOpCode *bops)
+int lev_opcodes_check_errors(size_t len1, size_t len2,
+                             size_t nb, const LevOpCode *bops)
 {
-  const LevOpCode *b;
-  size_t i;
-
   if (!nb)
     return 1;
 
@@ -2972,8 +2587,8 @@ lev_opcodes_check_errors(size_t len1, size_t len2,
     return LEV_EDIT_ERR_SPAN;
 
   /* check bounds and block consistency */
-  b = bops;
-  for (i = nb; i; i--, b++) {
+  const LevOpCode* b = bops;
+  for (size_t i = nb; i; i--, b++) {
     if (b->send > len1 || b->dend > len2)
       return LEV_EDIT_ERR_OUT;
     switch (b->type) {
@@ -3001,7 +2616,7 @@ lev_opcodes_check_errors(size_t len1, size_t len2,
 
   /* check ordering */
   b = bops + 1;
-  for (i = nb - 1; i; i--, b++, bops++) {
+  for (size_t i = nb - 1; i; i--, b++, bops++) {
     if (b->sbeg != bops->send || b->dbeg != bops->dend)
       return LEV_EDIT_ERR_ORDER;
   }
@@ -3022,12 +2637,8 @@ lev_opcodes_check_errors(size_t len1, size_t len2,
 void
 lev_editops_invert(size_t n, LevEditOp *ops)
 {
-  size_t i;
-
-  for (i = n; i; i--, ops++) {
-    size_t z;
-
-    z = ops->dpos;
+  for (size_t i = n; i; i--, ops++) {
+    size_t z = ops->dpos;
     ops->dpos = ops->spos;
     ops->spos = z;
     if (ops->type & 2)
@@ -3313,15 +2924,10 @@ lev_u_opcodes_apply(size_t len1, const lev_wchar *string1,
  * In other words, @ops becomes a partial edit for the original source
  * and destination strings with their roles exchanged.
  **/
-void
-lev_opcodes_invert(size_t nb, LevOpCode *bops)
+void lev_opcodes_invert(size_t nb, LevOpCode *bops)
 {
-  size_t i;
-
-  for (i = nb; i; i--, bops++) {
-    size_t z;
-
-    z = bops->dbeg;
+  for (size_t i = nb; i; i--, bops++) {
+    size_t z = bops->dbeg;
     bops->dbeg = bops->sbeg;
     bops->sbeg = z;
     z = bops->dend;
@@ -3565,27 +3171,27 @@ lev_opcodes_matching_blocks(size_t len1,
  **/
 LevEditOp*
 lev_editops_subtract(size_t n,
-                     const LevEditOp *ops,
+                     const LevEditOp* ops,
                      size_t ns,
-                     const LevEditOp *sub,
+                     const LevEditOp* sub,
                      size_t *nrem)
 {
     static const int shifts[] = { 0, 0, 1, -1 };
     LevEditOp *rem;
-    size_t i, j, nr, nn;
+    size_t i, j;
     int shift;
 
     /* compute remainder size */
     *nrem = (size_t)-1;
-    nr = nn = 0;
-    for (i = 0; i < n; i++) {
-        if (ops[i].type != LEV_EDIT_KEEP)
-            nr++;
-    }
-    for (i = 0; i < ns; i++) {
-        if (sub[i].type != LEV_EDIT_KEEP)
-            nn++;
-    }
+
+    size_t nr = std::accumulate(ops, ops + n, 0, [](size_t a, const LevEditOp& op) {
+      return a + (op.type != LEV_EDIT_KEEP);
+    });
+  
+    size_t nn = std::accumulate(sub, sub + ns, 0, [](size_t a, const LevEditOp& op) {
+      return a + (op.type != LEV_EDIT_KEEP);
+    });
+
     if (nn > nr)
         return NULL;
     nr -= nn;
