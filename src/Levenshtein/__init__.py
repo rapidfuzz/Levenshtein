@@ -16,7 +16,7 @@ subclasses).
 
 __author__ = "Max Bachmann"
 __license__ = "GPL"
-__version__ = "0.17.0"
+__version__ = "0.18.0"
 
 from rapidfuzz.distance.Levenshtein import distance
 from rapidfuzz.distance.Indel import normalized_similarity as ratio
@@ -33,7 +33,7 @@ from Levenshtein._levenshtein import (
     setratio
 )
 
-from Levenshtein.c_levenshtein import (
+from Levenshtein.cpp_levenshtein import (
     inverse,
     editops,
     opcodes,

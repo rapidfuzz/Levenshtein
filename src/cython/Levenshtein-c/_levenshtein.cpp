@@ -89,7 +89,7 @@
 #include <stdint.h>
 
 #include <assert.h>
-#include "_levenshtein.h"
+#include "_levenshtein.hpp"
 
 #define LEV_UNUSED(x) ((void)x)
 

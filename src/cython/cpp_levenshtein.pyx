@@ -26,7 +26,7 @@ from rapidfuzz.distance.Levenshtein import (
 cdef extern from *:
     object PyUnicode_FromWideChar(const wchar_t *w, Py_ssize_t size)
 
-cdef extern from "_levenshtein.h":
+cdef extern from "_levenshtein.hpp":
     ctypedef unsigned char lev_byte
 
     void* safe_malloc(size_t nmemb, size_t size)
