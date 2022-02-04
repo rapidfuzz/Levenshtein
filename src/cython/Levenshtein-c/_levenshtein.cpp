@@ -154,18 +154,14 @@ make_symlist(size_t n, const size_t *lengths,
  * Returns: The generalized median, as a newly allocated string; its length
  *          is stored in @medlength.
  **/
-lev_byte*
-lev_greedy_median(size_t n, const size_t *lengths,
-                  const lev_byte *strings[],
-                  const double *weights,
-                  size_t *medlength)
+lev_byte* lev_greedy_median(size_t n, const size_t *lengths,
+                            const lev_byte *strings[],
+                            const double *weights,
+                            size_t *medlength)
 {
   size_t i;  /* usually iterates over strings (n) */
   size_t j;  /* usually iterates over characters */
   size_t len;  /* usually iterates over the approximate median string */
-  lev_byte *symlist;  /* list of symbols present in the strings,
-                              we iterate over it insead of set of all
-                              existing symbols */
   size_t symlistlen;  /* length of symlist */
   size_t maxlen;  /* maximum input string length */
   size_t stoplen;  /* maximum tried median string length -- this is slightly
@@ -180,10 +176,13 @@ lev_greedy_median(size_t n, const size_t *lengths,
                           given length.  warning!  mediandist[0] is total
                           distance for empty string, while median[] itself
                           is normally zero-based */
-  size_t bestlen;  /* the best approximate median string length */
 
   /* find all symbols */
-  symlist = make_symlist(n, lengths, strings, &symlistlen);
+  /** list of symbols present in the strings,
+   * we iterate over it insead of set of all
+   * existing symbols
+   */
+  lev_byte* symlist = make_symlist(n, lengths, strings, &symlistlen);
   if (!symlist) {
     *medlength = 0;
     if (symlistlen != 0)
@@ -321,11 +320,7 @@ lev_greedy_median(size_t n, const size_t *lengths,
   }
 
   /* find the string with minimum total distance */
-  bestlen = 0;
-  for (len = 1; len <= stoplen; len++) {
-    if (mediandist[len] < mediandist[bestlen])
-      bestlen = len;
-  }
+  size_t bestlen = std::distance(mediandist, std::max_element(mediandist, mediandist + stoplen));
 
   /* clean up */
   for (i = 0; i < n; i++)
@@ -692,31 +687,29 @@ make_usymlist(size_t n, const size_t *lengths,
               const lev_wchar *strings[], size_t *symlistlen)
 {
   lev_wchar *symlist;
-  size_t i;
-  HItem *symmap;
-
-  size_t j = std::accumulate(lengths, lengths + n, 0);
 
   *symlistlen = 0;
-  if (j == 0)
+  if (std::all_of(lengths, lengths + n, [](size_t x){ return x == 0; }))
+  {
     return NULL;
+  }
 
   /* find all symbols, use a kind of hash for storage */
-  symmap = (HItem*)safe_malloc(0x100, sizeof(HItem));
+  HItem* symmap = (HItem*)safe_malloc(0x100, sizeof(HItem));
   if (!symmap) {
     *symlistlen = (size_t)(-1);
     return NULL;
   }
   /* this is an ugly memory allocation avoiding hack: most hash elements
    * will probably contain none or one symbols only so, when p->n is equal
-   * to symmap, it means there're no symbols yet, afters insterting the
+   * to symmap, it means there're no symbols yet, afters inserting the
    * first one, p->n becomes normally NULL and then it behaves like an
    * usual singly linked list */
-  for (i = 0; i < 0x100; i++)
+  for (size_t i = 0; i < 0x100; i++)
     symmap[i].n = symmap;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     const lev_wchar *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
+    for (size_t j = 0; j < lengths[i]; j++) {
       lev_wchar c = stri[j];
       int key = ((int)c + ((int)c >> 7)) & 0xff;
       HItem *p = symmap + key;
@@ -752,7 +745,7 @@ make_usymlist(size_t n, const size_t *lengths,
       *symlistlen = (size_t)(-1);
       return NULL;
     }
-    for (j = 0; j < 0x100; j++) {
+    for (size_t j = 0; j < 0x100; j++) {
       HItem *p = symmap + j;
       while (p != NULL && p->n != symmap) {
         symlist[pos++] = p->c;
@@ -810,7 +803,6 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
                           given length.  warning!  mediandist[0] is total
                           distance for empty string, while median[] itself
                           is normally zero-based */
-  size_t bestlen;  /* the best approximate median string length */
 
   /* find all symbols */
   symlist = make_usymlist(n, lengths, strings, &symlistlen);
@@ -950,11 +942,7 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
   }
 
   /* find the string with minimum total distance */
-  bestlen = 0;
-  for (len = 1; len <= stoplen; len++) {
-    if (mediandist[len] < mediandist[bestlen])
-      bestlen = len;
-  }
+  size_t bestlen = std::distance(mediandist, std::max_element(mediandist, mediandist + stoplen));
 
   /* clean up */
   for (i = 0; i < n; i++)
@@ -1165,12 +1153,11 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
 
   /* sequentially try perturbations on all positions */
   for (pos = 0; pos <= medlen; ) {
-    lev_wchar orig_symbol, symbol;
-    LevEditType operation;
+    lev_wchar orig_symbol;
     double sum;
 
-    symbol = median[pos];
-    operation = LEV_EDIT_KEEP;
+    lev_wchar symbol = median[pos];
+    LevEditType operation = LEV_EDIT_KEEP;
     /* IF pos < medlength: FOREACH symbol: try to replace the symbol
      * at pos, if some lower the total distance, chooste the best */
     if (pos < medlen) {
@@ -1219,24 +1206,24 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     }
     /* actually perform the operation */
     switch (operation) {
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_REPLACE:
       median[pos] = symbol;
       break;
 
-      case LEV_EDIT_INSERT:
+    case LEV_EDIT_INSERT:
       memmove(median+pos+1, median+pos,
               (medlen - pos)*sizeof(lev_wchar));
       median[pos] = symbol;
       medlen++;
       break;
 
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       memmove(median+pos, median + pos+1,
               (medlen - pos-1)*sizeof(lev_wchar));
       medlen--;
       break;
 
-      default:
+    default:
       break;
     }
     assert(medlen <= stoplen);
@@ -1468,23 +1455,20 @@ make_usymlistset(size_t n, const size_t *lengths,
                  HQItem *symmap)
 {
   lev_wchar *symlist;
-  size_t i;
-  size_t j = std::accumulate(lengths, lengths + n, 0);
-
   *symlistlen = 0;
-  if (j == 0)
+  if (std::all_of(lengths, lengths + n, [](size_t x){ return x == 0; }))
     return NULL;
 
   /* this is an ugly memory allocation avoiding hack: most hash elements
    * will probably contain none or one symbols only so, when p->n is equal
-   * to symmap, it means there're no symbols yet, afters insterting the
+   * to symmap, it means there're no symbols yet, afters inserting the
    * first one, p->n becomes normally NULL and then it behaves like an
    * usual singly linked list */
-  for (i = 0; i < 0x100; i++)
+  for (size_t i = 0; i < 0x100; i++)
     symmap[i].n = symmap;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     const lev_wchar *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
+    for (size_t j = 0; j < lengths[i]; j++) {
       lev_wchar c = stri[j];
       int key = ((int)c + ((int)c >> 7)) & 0xff;
       HQItem *p = symmap + key;
@@ -1518,7 +1502,7 @@ make_usymlistset(size_t n, const size_t *lengths,
       *symlistlen = (size_t)(-1);
       return NULL;
     }
-    for (j = 0; j < 0x100; j++) {
+    for (size_t j = 0; j < 0x100; j++) {
       HQItem *p = symmap + j;
       while (p != NULL && p->n != symmap) {
         symlist[pos++] = p->c;

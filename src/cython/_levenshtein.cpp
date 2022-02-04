@@ -347,21 +347,32 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   }
 
   if (stringtype == 0) {
-    lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
+      if (!medstr && len)
+        // todo remove after refactoring
+        result = PyErr_NoMemory();
+      else {
+        result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else if (stringtype == 1) {
-    Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
+      if (!medstr && len)
+        result = PyErr_NoMemory();
+      else {
+        result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else
@@ -430,25 +441,35 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
 
   Py_DECREF(strseq);
   if (stringtype == 0) {
-    lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
-    size_t l = (size_t)PyBytes_GET_SIZE(arg1);
-    lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
+      size_t l = (size_t)PyBytes_GET_SIZE(arg1);
+      lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
+      if (!medstr && len)
+        result = PyErr_NoMemory();
+      else {
+        result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else if (stringtype == 1) {
-    Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
-    size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
-    Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
+      size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
+      Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
+      if (!medstr && len)
+        result = PyErr_NoMemory();
+      else {
+        result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else
