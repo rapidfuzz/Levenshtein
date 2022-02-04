@@ -7,6 +7,7 @@
 #include <vector>
 #include <unordered_set>
 #include <rapidfuzz/distance/Indel.hpp>
+#include <rapidfuzz/distance/Levenshtein.hpp>
 
 #define LEV_EPSILON 1e-14
 #define LEV_INFINITY 1e100
@@ -258,8 +259,8 @@ template <typename CharT>
 double finish_distance_computations(size_t len1, CharT* string1,
                                     size_t n, const size_t* lengths,
                                     const CharT** strings,
-                                    const double *weights, size_t **rows,
-                                    size_t *row)
+                                    const double *weights, std::vector<std::unique_ptr<size_t[]>>& rows,
+                                    std::unique_ptr<size_t[]>& row)
 {
   size_t *end;
   size_t i, j;
@@ -275,7 +276,7 @@ double finish_distance_computations(size_t len1, CharT* string1,
 
   /* iterate through the strings and sum the distances */
   for (j = 0; j < n; j++) {
-    size_t* rowi = rows[j];  /* current row */
+    size_t* rowi = rows[j].get();  /* current row */
     size_t leni = lengths[j];  /* current length */
     size_t len = len1;  /* temporary len1 for suffix stripping */
     const CharT* stringi = strings[j];  /* current string */
@@ -298,11 +299,11 @@ double finish_distance_computations(size_t len1, CharT* string1,
     }
 
     /* complete the matrix */
-    memcpy(row, rowi, (leni + 1)*sizeof(size_t));
-    end = row + leni;
+    memcpy(row.get(), rowi, (leni + 1)*sizeof(size_t));
+    end = row.get() + leni;
 
     for (i = 1; i <= len; i++) {
-      size_t *p = row + 1;
+      size_t* p = row.get() + 1;
       const CharT char1 = string1[i - 1];
       const CharT* char2p = stringi;
       size_t D, x;
@@ -350,22 +351,6 @@ template <typename CharT>
 CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* lengths,
                              const CharT** strings, const double *weights, size_t *medlength)
 {
-  size_t i;  /* usually iterates over strings (n) */
-  size_t j;  /* usually iterates over characters */
-  size_t pos;  /* the position in the approximate median string we are
-                  trying to change */
-  size_t maxlen;  /* maximum input string length */
-  size_t stoplen;  /* maximum tried median string length -- this is slightly
-                      higher than maxlen, because the median string may be
-                      longer than any of the input strings */
-  size_t **rows;  /* Levenshtein matrix rows for each string, we need to keep
-                     only one previous row to construct the current one */
-  size_t *row;  /* a scratch buffer for new Levenshtein matrix row computation,
-                   shared among all strings */
-  CharT* median;  /* the resulting approximate median string */
-  size_t medlen;  /* the current approximate median string length */
-  double minminsum;  /* the current total distance sum */
-
   /* find all symbols */
   std::vector<CharT> symlist = make_symlist(n, lengths, strings);
   if (symlist.empty()) {
@@ -374,53 +359,28 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
-  if (!rows) {
-    return NULL;
-  }
-  maxlen = 0;
-  for (i = 0; i < n; i++) {
-    size_t *ri;
+  std::vector<std::unique_ptr<size_t[]>> rows(n);
+  size_t maxlen = *std::max_element(lengths, lengths + n);
+
+  for (size_t i = 0; i < n; i++) {
     size_t leni = lengths[i];
-    if (leni > maxlen)
-      maxlen = leni;
-    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
-    if (!ri) {
-      for (j = 0; j < i; j++)
-        free(rows[j]);
-      free(rows);
-      return NULL;
-    }
-    for (j = 0; j <= leni; j++)
-      ri[j] = j;
+    rows[i] = std::make_unique<size_t[]>(leni + 1);
+    std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
-  stoplen = 2*maxlen + 1;
-  row = (size_t*)safe_malloc((stoplen + 2), sizeof(size_t));
-  if (!row) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    return NULL;
-  }
+  size_t stoplen = 2*maxlen + 1;
+  auto row = std::make_unique<size_t[]>(stoplen + 1);
 
   /* initialize median to given string */
-  median = (CharT*)safe_malloc((stoplen+1), sizeof(CharT));
-  if (!median) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(row);
-    return NULL;
-  }
-  median++;  /* we need -1st element for insertions a pos 0 */
-  medlen = len;
+  auto _median = std::make_unique<CharT[]>(stoplen + 1);
+  CharT* median = _median.get() + 1; /* we need -1st element for insertions a pos 0 */
+  size_t medlen = len;
   memcpy(median, s, (medlen)*sizeof(CharT));
-  minminsum = finish_distance_computations(medlen, median,
+  double minminsum = finish_distance_computations(medlen, median,
                                            n, lengths, strings,
                                            weights, rows, row);
 
   /* sequentially try perturbations on all positions */
-  for (pos = 0; pos <= medlen; ) {
+  for (size_t pos = 0; pos <= medlen; ) {
     CharT orig_symbol, symbol;
     LevEditType operation;
     double sum;
@@ -431,7 +391,7 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
      * at pos, if some lower the total distance, chooste the best */
     if (pos < medlen) {
       orig_symbol = median[pos];
-      for (j = 0; j < symlist.size(); j++) {
+      for (size_t j = 0; j < symlist.size(); j++) {
         if (symlist[j] == orig_symbol)
           continue;
         median[pos] = symlist[j];
@@ -450,7 +410,7 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
      * distance, chooste the best (increase medlength)
      * We simulate insertion by replacing the character at pos-1 */
     orig_symbol = *(median + pos - 1);
-    for (j = 0; j < symlist.size(); j++) {
+    for (size_t j = 0; j < symlist.size(); j++) {
       *(median + pos - 1) = symlist[j];
       sum = finish_distance_computations(medlen - pos + 1, median + pos - 1,
                                           n, lengths, strings,
@@ -500,13 +460,12 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
     if (operation != LEV_EDIT_DELETE) {
       symbol = median[pos];
       row[0] = pos + 1;
-      for (i = 0; i < n; i++) {
+      for (size_t i = 0; i < n; i++) {
         const CharT* stri = strings[i];
-        size_t *oldrow = rows[i];
+        size_t* oldrow = rows[i].get();
         size_t leni = lengths[i];
-        size_t k;
         /* compute a row of Levenshtein matrix */
-        for (k = 1; k <= leni; k++) {
+        for (size_t k = 1; k <= leni; k++) {
           size_t c1 = oldrow[k] + 1;
           size_t c2 = row[k - 1] + 1;
           size_t c3 = oldrow[k - 1] + (symbol != stri[k - 1]);
@@ -514,32 +473,20 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
           if (row[k] > c1)
             row[k] = c1;
         }
-        memcpy(oldrow, row, (leni + 1)*sizeof(size_t));
+        memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
       }
       pos++;
     }
   }
 
-  /* clean up */
-  for (i = 0; i < n; i++)
-    free(rows[i]);
-  free(rows);
-  free(row);
-
   /* return result */
-  {
-    CharT *result = (CharT*)safe_malloc(medlen, sizeof(CharT));
-    if (!result) {
-      median--;
-      free(median);
-      return NULL;
-    }
-    *medlength = medlen;
-    memcpy(result, median, medlen*sizeof(CharT));
-    median--;
-    free(median);
-    return result;
+  CharT *result = (CharT*)safe_malloc(medlen, sizeof(CharT));
+  if (!result) {
+    return NULL;
   }
+  *medlength = medlen;
+  memcpy(result, median, medlen*sizeof(CharT));
+  return result;
 }
 
 lev_byte*
@@ -556,29 +503,94 @@ lev_u_quick_median(size_t n,
                    const double *weights,
                    size_t *medlength);
 
-lev_byte*
-lev_set_median(size_t n,
-               const size_t *lengths,
-               const lev_byte *strings[],
-               const double *weights,
-               size_t *medlength);
+/**
+ * lev_set_median_index:
+ * @n: The size of @lengths, @strings, and @weights.
+ * @lengths: The lengths of @strings.
+ * @strings: An array of strings, that may contain NUL characters.
+ * @weights: The string weights (they behave exactly as multiplicities, though
+ *           any positive value is allowed, not just integers).
+ *
+ * Finds the median string of a string set @strings.
+ *
+ * Returns: An index in @strings pointing to the set median, -1 in case of
+ *          failure.
+ **/
+template <typename CharT>
+size_t lev_set_median_index(size_t n, const size_t* lengths, const CharT** strings, const double* weights)
+{
+  size_t minidx = 0;
+  double mindist = LEV_INFINITY;
+  std::vector<long int> distances(n*(n - 1)/2, 0xff);
 
-size_t
-lev_set_median_index(size_t n, const size_t *lengths,
-                     const lev_byte *strings[],
-                     const double *weights);
+  for (size_t i = 0; i < n; i++) {
+    size_t j = 0;
+    double dist = 0.0;
+    const CharT* stri = strings[i];
+    size_t leni = lengths[i];
+    /* below diagonal */
+    while (j < i && dist < mindist) {
+      size_t dindex = (i - 1)*(i - 2)/2 + j;
+      long int d;
+      if (distances[dindex] >= 0)
+        d = distances[dindex];
+      else {
+        d = rapidfuzz::levenshtein_distance(strings[j], strings[j] + lengths[j], stri, stri + leni);
+      }
+      dist += weights[j] * (double)d;
+      j++;
+    }
+    j++;  /* no need to compare item with itself */
+    /* above diagonal */
+    while (j < n && dist < mindist) {
+      size_t dindex = (j - 1)*(j - 2)/2 + i;
+      distances[dindex] = rapidfuzz::levenshtein_distance(strings[j], strings[j] + lengths[j], stri, stri + leni);
+      dist += weights[j] * (double)distances[dindex];
+      j++;
+    }
 
-lev_wchar*
-lev_u_set_median(size_t n,
-                 const size_t *lengths,
-                 const lev_wchar *strings[],
-                 const double *weights,
-                 size_t *medlength);
+    if (dist < mindist) {
+      mindist = dist;
+      minidx = i;
+    }
+  }
 
-size_t
-lev_u_set_median_index(size_t n, const size_t *lengths,
-                       const lev_wchar *strings[],
-                       const double *weights);
+  return minidx;
+}
+
+/**
+ * lev_set_median:
+ * @n: The size of @lengths, @strings, and @weights.
+ * @lengths: The lengths of @strings.
+ * @strings: An array of strings, that may contain NUL characters.
+ * @weights: The string weights (they behave exactly as multiplicities, though
+ *           any positive value is allowed, not just integers).
+ * @medlength: Where the length of the median string should be stored.
+ *
+ * Finds the median string of a string set @strings.
+ *
+ * Returns: The set median as a newly allocate string, its length is stored
+ *          in @medlength.  %NULL in the case of failure.
+ **/
+template <typename CharT>
+CharT* lev_set_median(size_t n, const size_t *lengths, const CharT** strings,
+                         const double* weights, size_t* medlength)
+{
+  size_t minidx = lev_set_median_index(n, lengths, strings, weights);
+  CharT* result;
+
+  if (minidx == (size_t)-1)
+    return NULL;
+
+  *medlength = lengths[minidx];
+  if (!lengths[minidx])
+    return (CharT*)calloc(1, sizeof(CharT));
+
+  result = (CharT*)safe_malloc(lengths[minidx], sizeof(CharT));
+  if (!result)
+    return NULL;
+  return (CharT*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(CharT));
+}
 
 /**
  * lev_u_edit_seq_distance:

@@ -29,30 +29,6 @@
 
 #include <assert.h>
 #include "_levenshtein.hpp"
-#include <rapidfuzz/distance/Levenshtein.hpp>
-
-/****************************************************************************
- *
- * Basic stuff, Levenshtein distance
- *
- ****************************************************************************/
-/* {{{ */
-
-/**
- * @brief Wrapper for Levenshtein distance to handle exceptions
- */
-template <typename CharT1, typename CharT2>
-static size_t lev_levenshtein_distance(size_t len1, const CharT1* string1,
-                                size_t len2, const CharT2* string2)
-{
-  try {
-    return rapidfuzz::levenshtein_distance(string1, string1 + len1, string2, string2 + len2);
-  } catch (...) {
-    return (size_t)-1;
-  }
-}
-
-/* }}} */
 
 /****************************************************************************
  *
@@ -419,230 +395,6 @@ lev_u_quick_median(size_t n,
 
 /****************************************************************************
  *
- * Set medians
- *
- ****************************************************************************/
-/* {{{ */
-
-/**
- * lev_set_median_index:
- * @n: The size of @lengths, @strings, and @weights.
- * @lengths: The lengths of @strings.
- * @strings: An array of strings, that may contain NUL characters.
- * @weights: The string weights (they behave exactly as multiplicities, though
- *           any positive value is allowed, not just integers).
- *
- * Finds the median string of a string set @strings.
- *
- * Returns: An index in @strings pointing to the set median, -1 in case of
- *          failure.
- **/
-size_t
-lev_set_median_index(size_t n, const size_t *lengths,
-                     const lev_byte *strings[],
-                     const double *weights)
-{
-  size_t minidx = 0;
-  double mindist = LEV_INFINITY;
-  size_t i;
-  long int *distances;
-
-  distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
-  if (!distances)
-    return (size_t)-1;
-
-  memset(distances, 0xff, (n*(n - 1)/2)*sizeof(long int)); /* XXX */
-  for (i = 0; i < n; i++) {
-    size_t j = 0;
-    double dist = 0.0;
-    const lev_byte *stri = strings[i];
-    size_t leni = lengths[i];
-    /* below diagonal */
-    while (j < i && dist < mindist) {
-      size_t dindex = (i - 1)*(i - 2)/2 + j;
-      long int d;
-      if (distances[dindex] >= 0)
-        d = distances[dindex];
-      else {
-        d = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
-        if (d < 0) {
-          free(distances);
-          return (size_t)-1;
-        }
-      }
-      dist += weights[j] * (double)d;
-      j++;
-    }
-    j++;  /* no need to compare item with itself */
-    /* above diagonal */
-    while (j < n && dist < mindist) {
-      size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
-      if (distances[dindex] < 0) {
-        free(distances);
-        return (size_t)-1;
-      }
-      dist += weights[j] * (double)distances[dindex];
-      j++;
-    }
-
-    if (dist < mindist) {
-      mindist = dist;
-      minidx = i;
-    }
-  }
-
-  free(distances);
-  return minidx;
-}
-
-/**
- * lev_u_set_median_index:
- * @n: The size of @lengths, @strings, and @weights.
- * @lengths: The lengths of @strings.
- * @strings: An array of strings, that may contain NUL characters.
- * @weights: The string weights (they behave exactly as multiplicities, though
- *           any positive value is allowed, not just integers).
- *
- * Finds the median string of a string set @strings.
- *
- * Returns: An index in @strings pointing to the set median, -1 in case of
- *          failure.
- **/
-size_t
-lev_u_set_median_index(size_t n, const size_t *lengths,
-                       const lev_wchar *strings[],
-                       const double *weights)
-{
-  size_t minidx = 0;
-  double mindist = LEV_INFINITY;
-  size_t i;
-  long int *distances;
-
-  distances = (long int*)safe_malloc((n*(n - 1)/2), sizeof(long int));
-  if (!distances)
-    return (size_t)-1;
-
-  memset(distances, 0xff, (n*(n - 1)/2)*sizeof(long int)); /* XXX */
-  for (i = 0; i < n; i++) {
-    size_t j = 0;
-    double dist = 0.0;
-    const lev_wchar *stri = strings[i];
-    size_t leni = lengths[i];
-    /* below diagonal */
-    while (j < i && dist < mindist) {
-      size_t dindex = (i - 1)*(i - 2)/2 + j;
-      long int d;
-      if (distances[dindex] >= 0)
-        d = distances[dindex];
-      else {
-        d = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
-        if (d < 0) {
-          free(distances);
-          return (size_t)-1;
-        }
-      }
-      dist += weights[j] * (double)d;
-      j++;
-    }
-    j++;  /* no need to compare item with itself */
-    /* above diagonal */
-    while (j < n && dist < mindist) {
-      size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = (long int)lev_levenshtein_distance(lengths[j], strings[j], leni, stri);
-      if (distances[dindex] < 0) {
-        free(distances);
-        return (size_t)-1;
-      }
-      dist += weights[j] * (double)distances[dindex];
-      j++;
-    }
-
-    if (dist < mindist) {
-      mindist = dist;
-      minidx = i;
-    }
-  }
-
-  free(distances);
-  return minidx;
-}
-
-/**
- * lev_set_median:
- * @n: The size of @lengths, @strings, and @weights.
- * @lengths: The lengths of @strings.
- * @strings: An array of strings, that may contain NUL characters.
- * @weights: The string weights (they behave exactly as multiplicities, though
- *           any positive value is allowed, not just integers).
- * @medlength: Where the length of the median string should be stored.
- *
- * Finds the median string of a string set @strings.
- *
- * Returns: The set median as a newly allocate string, its length is stored
- *          in @medlength.  %NULL in the case of failure.
- **/
-lev_byte*
-lev_set_median(size_t n, const size_t *lengths,
-               const lev_byte *strings[],
-               const double *weights,
-               size_t *medlength)
-{
-  size_t minidx = lev_set_median_index(n, lengths, strings, weights);
-  lev_byte *result;
-
-  if (minidx == (size_t)-1)
-    return NULL;
-
-  *medlength = lengths[minidx];
-  if (!lengths[minidx])
-    return (lev_byte*)calloc(1, sizeof(lev_byte));
-
-  result = (lev_byte*)safe_malloc(lengths[minidx], sizeof(lev_byte));
-  if (!result)
-    return NULL;
-  return (lev_byte*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_byte));
-}
-
-/**
- * lev_u_set_median:
- * @n: The size of @lengths, @strings, and @weights.
- * @lengths: The lengths of @strings.
- * @strings: An array of strings, that may contain NUL characters.
- * @weights: The string weights (they behave exactly as multiplicities, though
- *           any positive value is allowed, not just integers).
- * @medlength: Where the length of the median string should be stored.
- *
- * Finds the median string of a string set @strings.
- *
- * Returns: The set median as a newly allocate string, its length is stored
- *          in @medlength.  %NULL in the case of failure.
- **/
-lev_wchar*
-lev_u_set_median(size_t n, const size_t *lengths,
-                 const lev_wchar *strings[],
-                 const double *weights,
-                 size_t *medlength)
-{
-  size_t minidx = lev_u_set_median_index(n, lengths, strings, weights);
-  lev_wchar *result;
-
-  if (minidx == (size_t)-1)
-    return NULL;
-
-  *medlength = lengths[minidx];
-  if (!lengths[minidx])
-    return (lev_wchar*)calloc(1, sizeof(lev_wchar));
-
-  result = (lev_wchar*)safe_malloc(lengths[minidx], sizeof(lev_wchar));
-  if (!result)
-    return NULL;
-  return (lev_wchar*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(lev_wchar));
-}
-/* }}} */
-
-/****************************************************************************
- *
  * Set, sequence distances
  *
  ****************************************************************************/
@@ -845,9 +597,8 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
  *
  * Returns: Zero if @ops seems OK, a nonzero error code otherwise.
  **/
-int
-lev_editops_check_errors(size_t len1, size_t len2,
-                         size_t n, const LevEditOp *ops)
+int lev_editops_check_errors(size_t len1, size_t len2,
+                             size_t n, const LevEditOp *ops)
 {
   if (!n)
     return LEV_EDIT_ERR_OK;
@@ -946,8 +697,7 @@ int lev_opcodes_check_errors(size_t len1, size_t len2,
  * In other words, @ops becomes a valid partial edit for the original source
  * and destination strings with their roles exchanged.
  **/
-void
-lev_editops_invert(size_t n, LevEditOp *ops)
+void lev_editops_invert(size_t n, LevEditOp *ops)
 {
   for (size_t i = n; i; i--, ops++) {
     size_t z = ops->dpos;
@@ -995,12 +745,8 @@ void lev_opcodes_invert(size_t nb, LevOpCode *bops)
  * Returns: The matching blocks as a newly allocated array, it length is
  *          stored in @nmblocks.
  **/
-LevMatchingBlock*
-lev_editops_matching_blocks(size_t len1,
-                            size_t len2,
-                            size_t n,
-                            const LevEditOp *ops,
-                            size_t *nmblocks)
+LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2,
+                            size_t n, const LevEditOp *ops, size_t *nmblocks)
 {
   size_t nmb, i, spos, dpos;
   LevEditType type;
