@@ -32,6 +32,8 @@
 #include <rapidfuzz/distance/Indel.hpp>
 #include <rapidfuzz/distance/Levenshtein.hpp>
 #include <numeric>
+#include <memory>
+#include <vector>
 
 #define LEV_EPSILON 1e-14
 #define LEV_INFINITY 1e100
@@ -84,55 +86,36 @@ static size_t lev_indel_distance(size_t len1, const CharT1* string1,
  ****************************************************************************/
 /* {{{ */
 
+struct SymList
+{
+  std::array<lev_byte, 256> data;
+  size_t size;
+};
+
 /* compute the sets of symbols each string contains, and the set of symbols
  * in any of them (symset).  meanwhile, count how many different symbols
  * there are (used below for symlist). */
-static lev_byte*
-make_symlist(size_t n, const size_t *lengths,
-             const lev_byte *strings[], size_t *symlistlen)
+static SymList
+make_symlist(size_t n, const size_t *lengths, const lev_byte** strings)
 {
-  short int *symset;  /* indexed by ALL symbols, contains 1 for symbols
-                         present in the strings, zero for others */
-  size_t i, j;
-  lev_byte *symlist;
-
-  symset = (short int*)calloc(0x100, sizeof(short int));
-  if (!symset) {
-    *symlistlen = (size_t)(-1);
-    return NULL;
-  }
-  *symlistlen = 0;
-  for (i = 0; i < n; i++) {
+  SymList symlist;
+  symlist.data.fill(0);
+  for (size_t i = 0; i < n; i++) {
     const lev_byte *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
-      int c = stri[j];
-      if (!symset[c]) {
-        (*symlistlen)++;
-        symset[c] = 1;
-      }
+    for (size_t j = 0; j < lengths[i]; j++) {
+      symlist.data[stri[j]] = 1;
     }
-  }
-  if (!*symlistlen) {
-    free(symset);
-    return NULL;
   }
 
   /* create dense symbol table, so we can easily iterate over only characters
    * present in the strings */
-  {
-    size_t pos = 0;
-    symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
-    if (!symlist) {
-      *symlistlen = (size_t)(-1);
-      free(symset);
-      return NULL;
-    }
-    for (j = 0; j < 0x100; j++) {
-      if (symset[j])
-        symlist[pos++] = (lev_byte)j;
+  size_t pos = 0;
+  for (int j = 0; j < 256; j++) {
+    if (symlist.data[j]) {
+      symlist.data[pos++] = (lev_byte)j;
     }
   }
-  free(symset);
+  symlist.size = pos;
 
   return symlist;
 }
@@ -159,113 +142,54 @@ lev_byte* lev_greedy_median(size_t n, const size_t *lengths,
                             const double *weights,
                             size_t *medlength)
 {
-  size_t i;  /* usually iterates over strings (n) */
-  size_t j;  /* usually iterates over characters */
-  size_t len;  /* usually iterates over the approximate median string */
-  size_t symlistlen;  /* length of symlist */
-  size_t maxlen;  /* maximum input string length */
-  size_t stoplen;  /* maximum tried median string length -- this is slightly
-                      higher than maxlen, because the median string may be
-                      longer than any of the input strings */
-  size_t **rows;  /* Levenshtein matrix rows for each string, we need to keep
-                     only one previous row to construct the current one */
-  size_t *row;  /* a scratch buffer for new Levenshtein matrix row computation,
-                   shared among all strings */
-  lev_byte *median;  /* the resulting approximate median string */
-  double *mediandist;  /* the total distance of the best median string of
-                          given length.  warning!  mediandist[0] is total
-                          distance for empty string, while median[] itself
-                          is normally zero-based */
-
   /* find all symbols */
-  /** list of symbols present in the strings,
-   * we iterate over it insead of set of all
-   * existing symbols
-   */
-  lev_byte* symlist = make_symlist(n, lengths, strings, &symlistlen);
-  if (!symlist) {
+  SymList symlist = make_symlist(n, lengths, strings);
+  if (symlist.size == 0) {
     *medlength = 0;
-    if (symlistlen != 0)
-      return NULL;
-    else
-      return (lev_byte*)calloc(1, sizeof(lev_byte));
+    return (lev_byte*)calloc(1, sizeof(lev_byte));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  rows = (size_t**)safe_malloc(n, sizeof(size_t*));
-  if (!rows) {
-    free(symlist);
-    return NULL;
-  }
-  maxlen = 0;
-  for (i = 0; i < n; i++) {
-    size_t *ri;
+  std::vector<std::unique_ptr<size_t[]>> rows(n);
+  size_t maxlen = *std::max_element(lengths, lengths + n);
+
+  for (size_t i = 0; i < n; i++) {
     size_t leni = lengths[i];
-    if (leni > maxlen)
-      maxlen = leni;
-    ri = rows[i] = (size_t*)safe_malloc((leni + 1), sizeof(size_t));
-    if (!ri) {
-      for (j = 0; j < i; j++)
-        free(rows[j]);
-      free(rows);
-      free(symlist);
-      return NULL;
-    }
-    for (j = 0; j <= leni; j++)
-      ri[j] = j;
+    rows[i] = std::make_unique<size_t[]>(leni + 1);
+    std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
-  stoplen = 2*maxlen + 1;
-  row = (size_t*)safe_malloc((stoplen + 1), sizeof(size_t));
-  if (!row) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(symlist);
-    return NULL;
-  }
+  size_t stoplen = 2*maxlen + 1;
+  auto row = std::make_unique<size_t[]>(stoplen + 1);
 
   /* compute final cost of string of length 0 (empty string may be also
    * a valid answer) */
-  median = (lev_byte*)safe_malloc(stoplen, sizeof(lev_byte));
-  if (!median) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(row);
-    free(symlist);
-    return NULL;
-  }
-  mediandist = (double*)safe_malloc((stoplen + 1), sizeof(double));
-  if (!mediandist) {
-    for (j = 0; j < n; j++)
-      free(rows[j]);
-    free(rows);
-    free(row);
-    free(symlist);
-    free(median);
-    return NULL;
-  }
-  mediandist[0] = 0.0;
-  for (i = 0; i < n; i++)
-    mediandist[0] += (double)lengths[i]*weights[i];
+  auto median = std::make_unique<lev_byte[]>(stoplen);
+  /**
+   * the total distance of the best median string of
+   * given length.  warning!  mediandist[0] is total
+   * distance for empty string, while median[] itself
+   * is normally zero-based
+   */
+  auto mediandist = std::make_unique<double[]>(stoplen + 1);
+  mediandist[0] = std::inner_product(lengths, lengths + n, weights, 0.0);
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
-  for (len = 1; len <= stoplen; len++) {
+  for (size_t len = 1; len <= stoplen; len++) {
     lev_byte symbol;
     double minminsum = LEV_INFINITY;
     row[0] = len;
     /* iterate over all symbols we may want to add */
-    for (j = 0; j < symlistlen; j++) {
+    for (size_t j = 0; j < symlist.size; j++) {
       double totaldist = 0.0;
       double minsum = 0.0;
-      symbol = symlist[j];
+      symbol = symlist.data[j];
       /* sum Levenshtein distances from all the strings, with given weights */
-      for (i = 0; i < n; i++) {
+      for (size_t i = 0; i < n; i++) {
         const lev_byte *stri = strings[i];
-        size_t *p = rows[i];
+        size_t *p = rows[i].get();
         size_t leni = lengths[i];
-        size_t *end = rows[i] + leni;
+        size_t *end = rows[i].get() + leni;
         size_t min = len;
         size_t x = len; /* == row[0] */
         /* compute how another row of Levenshtein matrix would look for median
@@ -301,13 +225,12 @@ lev_byte* lev_greedy_median(size_t n, const size_t *lengths,
     /* now the best symbol is known, so recompute all matrix rows for this
      * one */
     symbol = median[len - 1];
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
       const lev_byte *stri = strings[i];
-      size_t *oldrow = rows[i];
+      size_t *oldrow = rows[i].get();
       size_t leni = lengths[i];
-      size_t k;
       /* compute a row of Levenshtein matrix */
-      for (k = 1; k <= leni; k++) {
+      for (size_t k = 1; k <= leni; k++) {
         size_t c1 = oldrow[k] + 1;
         size_t c2 = row[k - 1] + 1;
         size_t c3 = oldrow[k - 1] + (symbol != stri[k - 1]);
@@ -315,30 +238,20 @@ lev_byte* lev_greedy_median(size_t n, const size_t *lengths,
         if (row[k] > c1)
           row[k] = c1;
       }
-      memcpy(oldrow, row, (leni + 1)*sizeof(size_t));
+      memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
     }
   }
 
   /* find the string with minimum total distance */
-  size_t bestlen = std::distance(mediandist, std::max_element(mediandist, mediandist + stoplen));
-
-  /* clean up */
-  for (i = 0; i < n; i++)
-    free(rows[i]);
-  free(rows);
-  free(row);
-  free(symlist);
-  free(mediandist);
+  size_t bestlen = std::distance(mediandist.get(), std::max_element(mediandist.get(), mediandist.get() + stoplen));
 
   /* return result */
   {
     lev_byte *result = (lev_byte*)safe_malloc(bestlen, sizeof(lev_byte));
     if (!result) {
-      free(median);
       return NULL;
     }
-    memcpy(result, median, bestlen*sizeof(lev_byte));
-    free(median);
+    memcpy(result, median.get(), bestlen*sizeof(lev_byte));
     *medlength = bestlen;
     return result;
   }
@@ -350,10 +263,11 @@ lev_byte* lev_greedy_median(size_t n, const size_t *lengths,
  *
  * string1, len1 are already shortened.
  */
-static double
-finish_distance_computations(size_t len1, lev_byte *string1,
-                             size_t n, const size_t *lengths,
-                             const lev_byte **strings,
+template <typename CharT>
+double
+finish_distance_computations(size_t len1, CharT* string1,
+                             size_t n, const size_t* lengths,
+                             const CharT** strings,
                              const double *weights, size_t **rows,
                              size_t *row)
 {
@@ -371,10 +285,10 @@ finish_distance_computations(size_t len1, lev_byte *string1,
 
   /* iterate through the strings and sum the distances */
   for (j = 0; j < n; j++) {
-    size_t *rowi = rows[j];  /* current row */
+    size_t* rowi = rows[j];  /* current row */
     size_t leni = lengths[j];  /* current length */
     size_t len = len1;  /* temporary len1 for suffix stripping */
-    const lev_byte *stringi = strings[j];  /* current string */
+    const CharT* stringi = strings[j];  /* current string */
 
     /* strip common suffix (prefix CAN'T be stripped) */
     while (len && leni && stringi[leni-1] == string1[len-1]) {
@@ -399,8 +313,8 @@ finish_distance_computations(size_t len1, lev_byte *string1,
 
     for (i = 1; i <= len; i++) {
       size_t *p = row + 1;
-      const lev_byte char1 = string1[i - 1];
-      const lev_byte *char2p = stringi;
+      const CharT char1 = string1[i - 1];
+      const CharT* char2p = stringi;
       size_t D, x;
 
       D = x = i + offset;
@@ -453,10 +367,6 @@ lev_median_improve(size_t len, const lev_byte *s,
   size_t j;  /* usually iterates over characters */
   size_t pos;  /* the position in the approximate median string we are
                   trying to change */
-  lev_byte *symlist;  /* list of symbols present in the strings,
-                              we iterate over it insead of set of all
-                              existing symbols */
-  size_t symlistlen;  /* length of symlist */
   size_t maxlen;  /* maximum input string length */
   size_t stoplen;  /* maximum tried median string length -- this is slightly
                       higher than maxlen, because the median string may be
@@ -470,19 +380,15 @@ lev_median_improve(size_t len, const lev_byte *s,
   double minminsum;  /* the current total distance sum */
 
   /* find all symbols */
-  symlist = make_symlist(n, lengths, strings, &symlistlen);
-  if (!symlist) {
+  SymList symlist = make_symlist(n, lengths, strings);
+  if (symlist.size == 0) {
     *medlength = 0;
-    if (symlistlen != 0)
-      return NULL;
-    else
-      return (lev_byte*)calloc(1, sizeof(lev_byte));
+    return (lev_byte*)calloc(1, sizeof(lev_byte));
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
   rows = (size_t**)safe_malloc(n, sizeof(size_t*));
   if (!rows) {
-    free(symlist);
     return NULL;
   }
   maxlen = 0;
@@ -496,7 +402,6 @@ lev_median_improve(size_t len, const lev_byte *s,
       for (j = 0; j < i; j++)
         free(rows[j]);
       free(rows);
-      free(symlist);
       return NULL;
     }
     for (j = 0; j <= leni; j++)
@@ -508,7 +413,6 @@ lev_median_improve(size_t len, const lev_byte *s,
     for (j = 0; j < n; j++)
       free(rows[j]);
     free(rows);
-    free(symlist);
     return NULL;
   }
 
@@ -519,7 +423,6 @@ lev_median_improve(size_t len, const lev_byte *s,
       free(rows[j]);
     free(rows);
     free(row);
-    free(symlist);
     return NULL;
   }
   median++;  /* we need -1st element for insertions a pos 0 */
@@ -541,16 +444,16 @@ lev_median_improve(size_t len, const lev_byte *s,
      * at pos, if some lower the total distance, chooste the best */
     if (pos < medlen) {
       orig_symbol = median[pos];
-      for (j = 0; j < symlistlen; j++) {
-        if (symlist[j] == orig_symbol)
+      for (j = 0; j < symlist.size; j++) {
+        if (symlist.data[j] == orig_symbol)
           continue;
-        median[pos] = symlist[j];
+        median[pos] = symlist.data[j];
         sum = finish_distance_computations(medlen - pos, median + pos,
                                            n, lengths, strings,
                                            weights, rows, row);
         if (sum < minminsum) {
           minminsum = sum;
-          symbol = symlist[j];
+          symbol = symlist.data[j];
           operation = LEV_EDIT_REPLACE;
         }
       }
@@ -560,14 +463,14 @@ lev_median_improve(size_t len, const lev_byte *s,
      * distance, chooste the best (increase medlength)
      * We simulate insertion by replacing the character at pos-1 */
     orig_symbol = *(median + pos - 1);
-    for (j = 0; j < symlistlen; j++) {
-      *(median + pos - 1) = symlist[j];
+    for (j = 0; j < symlist.size; j++) {
+      *(median + pos - 1) = symlist.data[j];
       sum = finish_distance_computations(medlen - pos + 1, median + pos - 1,
                                           n, lengths, strings,
                                          weights, rows, row);
       if (sum < minminsum) {
         minminsum = sum;
-        symbol = symlist[j];
+        symbol = symlist.data[j];
         operation = LEV_EDIT_INSERT;
       }
     }
@@ -635,7 +538,6 @@ lev_median_improve(size_t len, const lev_byte *s,
     free(rows[i]);
   free(rows);
   free(row);
-  free(symlist);
 
   /* return result */
   {
@@ -966,84 +868,6 @@ lev_u_greedy_median(size_t n, const size_t *lengths,
   }
 }
 
-/*
- * Knowing the distance matrices up to some row, finish the distance
- * computations.
- *
- * string1, len1 are already shortened.
- */
-static double
-finish_udistance_computations(size_t len1, lev_wchar *string1,
-                             size_t n, const size_t *lengths,
-                             const lev_wchar **strings,
-                             const double *weights, size_t **rows,
-                             size_t *row)
-{
-  size_t *end;
-  size_t i, j;
-  size_t offset;  /* row[0]; offset + len1 give together real len of string1 */
-  double distsum = 0.0;  /* sum of distances */
-
-  /* catch trivia case */
-  if (len1 == 0) {
-    for (j = 0; j < n; j++)
-      distsum += (double)rows[j][lengths[j]] * weights[j];
-    return distsum;
-  }
-
-  /* iterate through the strings and sum the distances */
-  for (j = 0; j < n; j++) {
-    size_t *rowi = rows[j];  /* current row */
-    size_t leni = lengths[j];  /* current length */
-    size_t len = len1;  /* temporary len1 for suffix stripping */
-    const lev_wchar *stringi = strings[j];  /* current string */
-
-    /* strip common suffix (prefix CAN'T be stripped) */
-    while (len && leni && stringi[leni-1] == string1[len-1]) {
-      len--;
-      leni--;
-    }
-
-    /* catch trivial cases */
-    if (len == 0) {
-      distsum += (double)rowi[leni] * weights[j];
-      continue;
-    }
-    offset = rowi[0];
-    if (leni == 0) {
-      distsum += (double)(offset + len) * weights[j];
-      continue;
-    }
-
-    /* complete the matrix */
-    memcpy(row, rowi, (leni + 1) * sizeof(size_t));
-    end = row + leni;
-
-    for (i = 1; i <= len; i++) {
-      size_t *p = row + 1;
-      const lev_wchar char1 = string1[i - 1];
-      const lev_wchar *char2p = stringi;
-      size_t D, x;
-
-      D = x = i + offset;
-      while (p <= end) {
-        size_t c3 = --D + (char1 != *(char2p++));
-        x++;
-        if (x > c3)
-          x = c3;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
-      }
-    }
-    distsum += weights[j] * (double)(*end);
-  }
-
-  return distsum;
-}
-
 /**
  * lev_u_median_improve:
  * @len: The length of @s.
@@ -1147,7 +971,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
   median++;  /* we need -1st element for insertions a pos 0 */
   medlen = len;
   memcpy(median, s, (medlen)*sizeof(lev_wchar));
-  minminsum = finish_udistance_computations(medlen, median,
+  minminsum = finish_distance_computations(medlen, median,
                                             n, lengths, strings,
                                             weights, rows, row);
 
@@ -1166,7 +990,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
         if (symlist[j] == orig_symbol)
           continue;
         median[pos] = symlist[j];
-        sum = finish_udistance_computations(medlen - pos, median + pos,
+        sum = finish_distance_computations(medlen - pos, median + pos,
                                             n, lengths, strings,
                                             weights, rows, row);
         if (sum < minminsum) {
@@ -1183,7 +1007,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     orig_symbol = *(median + pos - 1);
     for (j = 0; j < symlistlen; j++) {
       *(median + pos - 1) = symlist[j];
-      sum = finish_udistance_computations(medlen - pos + 1, median + pos - 1,
+      sum = finish_distance_computations(medlen - pos + 1, median + pos - 1,
                                           n, lengths, strings,
                                           weights, rows, row);
       if (sum < minminsum) {
@@ -1196,7 +1020,7 @@ lev_u_median_improve(size_t len, const lev_wchar *s,
     /* IF pos < medlength: try to delete the symbol at pos, if it lowers
      * the total distance remember it (decrease medlength) */
     if (pos < medlen) {
-      sum = finish_udistance_computations(medlen - pos - 1, median + pos + 1,
+      sum = finish_distance_computations(medlen - pos - 1, median + pos + 1,
                                           n, lengths, strings,
                                           weights, rows, row);
       if (sum < minminsum) {
