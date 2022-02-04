@@ -267,7 +267,7 @@ median_improve_common(PyObject *args,
 static PyObject*
 median_py(PyObject *self, PyObject *args)
 {
-  MedianFuncs engines = { lev_greedy_median, lev_u_greedy_median };
+  MedianFuncs engines = { lev_greedy_median<lev_byte>, lev_greedy_median<lev_wchar> };
   LEV_UNUSED(self);
   return median_common(args, "median", engines);
 }
@@ -275,7 +275,7 @@ median_py(PyObject *self, PyObject *args)
 static PyObject*
 median_improve_py(PyObject *self, PyObject *args)
 {
-  MedianImproveFuncs engines = { lev_median_improve, lev_u_median_improve };
+  MedianImproveFuncs engines = { lev_median_improve<lev_byte>, lev_median_improve<lev_wchar> };
   LEV_UNUSED(self);
   return median_improve_common(args, "median_improve", engines);
 }
