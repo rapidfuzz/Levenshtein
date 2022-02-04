@@ -55,22 +55,19 @@ cdef extern from "_levenshtein.hpp":
         size_t dpos
         size_t len
 
-    void lev_editops_invert(size_t n, LevEditOp *ops)
-    void lev_opcodes_invert(size_t nb, LevOpCode *bops)
+    cdef void lev_editops_invert(size_t n, LevEditOp *ops)
+    cdef void lev_opcodes_invert(size_t nb, LevOpCode *bops)
 
-    int lev_editops_check_errors(size_t len1, size_t len2, size_t n, const LevEditOp *ops)
-    int lev_opcodes_check_errors(size_t len1, size_t len2, size_t nb, const LevOpCode *bops)
+    cdef int lev_editops_check_errors(size_t len1, size_t len2, size_t n, const LevEditOp *ops)
+    cdef int lev_opcodes_check_errors(size_t len1, size_t len2, size_t nb, const LevOpCode *bops)
 
-    lev_byte* lev_editops_apply(size_t len1, const lev_byte* string1, size_t len2,const lev_byte* string2, size_t n, const LevEditOp *ops, size_t *len)
-    wchar_t*  lev_u_editops_apply(size_t len1, const wchar_t* string1, size_t len2, const wchar_t* string2, size_t n, const LevEditOp *ops, size_t *len)
+    cdef T* lev_editops_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t n, const LevEditOp *ops, size_t *len)
+    cdef T* lev_opcodes_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t nb, const LevOpCode *bops, size_t *len)
 
-    lev_byte* lev_opcodes_apply(size_t len1, const lev_byte* string1, size_t len2, const lev_byte* string2, size_t nb, const LevOpCode *bops, size_t *len)
-    wchar_t* lev_u_opcodes_apply(size_t len1, const wchar_t* string1, size_t len2, const wchar_t* string2, size_t nb, const LevOpCode *bops, size_t *len)
+    cdef LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2, size_t n, const LevEditOp *ops, size_t *nmblocks)
+    cdef LevMatchingBlock* lev_opcodes_matching_blocks(size_t len1, size_t len2, size_t nb, const LevOpCode *bops, size_t *nmblocks)
 
-    LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2, size_t n, const LevEditOp *ops, size_t *nmblocks)
-    LevMatchingBlock* lev_opcodes_matching_blocks(size_t len1, size_t len2, size_t nb, const LevOpCode *bops, size_t *nmblocks)
-
-    LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem)
+    cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem)
 
 ctypedef struct OpcodeName:
     PyObject* pystring
@@ -566,7 +563,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
-            s = lev_editops_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
+            s = <void*>lev_editops_apply[lev_byte](len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
                             n, ops, &len3)
             free(ops)
             if not s and len3:
@@ -582,7 +579,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             
-            s = lev_opcodes_apply(len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
+            s = <void*>lev_opcodes_apply[lev_byte](len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
                             n, bops, &len3)
             free(bops)
             if not s and len3:
@@ -610,7 +607,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
-            s = lev_u_editops_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
+            s = <void*>lev_editops_apply[wchar_t](len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
                             n, ops, &len3)
             free(ops)
             if not s and len3:
@@ -626,7 +623,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             
-            s = lev_u_opcodes_apply(len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
+            s = <void*>lev_opcodes_apply[wchar_t](len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
                             n, bops, &len3)
             free(bops)
             if not s and len3:
