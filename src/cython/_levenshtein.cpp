@@ -255,12 +255,6 @@ median_improve_common(PyObject *args,
                       const char *name,
                       MedianImproveFuncs foo);
 
-static double
-setseq_common(PyObject *args,
-              const char *name,
-              SetSeqFuncs foo,
-              size_t *lensum);
-
 /* }}} */
 
 /****************************************************************************
@@ -643,34 +637,6 @@ extract_stringlist(PyObject *list, const char *name,
   return -1;
 }
 
-static PyObject*
-seqratio_py(PyObject *self, PyObject *args)
-{
-  SetSeqFuncs engines = { lev_edit_seq_distance, lev_u_edit_seq_distance };
-  size_t lensum;
-  double r = setseq_common(args, "seqratio", engines, &lensum);
-  LEV_UNUSED(self);
-  if (r < 0)
-    return NULL;
-  if (lensum == 0)
-    return PyFloat_FromDouble(1.0);
-  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
-}
-
-static PyObject*
-setratio_py(PyObject *self, PyObject *args)
-{
-  SetSeqFuncs engines = { lev_set_distance, lev_u_set_distance };
-  size_t lensum;
-  double r = setseq_common(args, "setratio", engines, &lensum);
-  LEV_UNUSED(self);
-  if (r < 0)
-    return NULL;
-  if (lensum == 0)
-    return PyFloat_FromDouble(1.0);
-  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
-}
-
 static double
 setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
               size_t *lensum)
@@ -738,14 +704,20 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
                   name);
   }
   else if (stringtype1 == 0) {
-    r = foo.s(n1, sizes1, (const lev_byte**)strings1, n2, sizes2, (const lev_byte**)strings2);
-    if (r < 0.0)
+    try {
+      r = foo.s(n1, sizes1, (const lev_byte**)strings1, n2, sizes2, (const lev_byte**)strings2);
+    } catch (...)
+    {
       PyErr_NoMemory();
+    }
   }
   else if (stringtype1 == 1) {
-    r = foo.u(n1, sizes1, (const Py_UNICODE**)strings1, n2, sizes2, (const Py_UNICODE**)strings2);
-    if (r < 0.0)
+    try {
+      r = foo.u(n1, sizes1, (const Py_UNICODE**)strings1, n2, sizes2, (const Py_UNICODE**)strings2);
+    } catch (...)
+    {
       PyErr_NoMemory();
+    }
   }
   else
     PyErr_Format(PyExc_SystemError, "%s internal error", name);
@@ -755,6 +727,34 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
   free(sizes1);
   free(sizes2);
   return r;
+}
+
+static PyObject*
+seqratio_py(PyObject *self, PyObject *args)
+{
+  SetSeqFuncs engines = { lev_edit_seq_distance<lev_byte>, lev_edit_seq_distance<lev_wchar> };
+  size_t lensum;
+  double r = setseq_common(args, "seqratio", engines, &lensum);
+  LEV_UNUSED(self);
+  if (r < 0)
+    return NULL;
+  if (lensum == 0)
+    return PyFloat_FromDouble(1.0);
+  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
+}
+
+static PyObject*
+setratio_py(PyObject *self, PyObject *args)
+{
+  SetSeqFuncs engines = { lev_set_distance<lev_byte>, lev_set_distance<lev_wchar> };
+  size_t lensum;
+  double r = setseq_common(args, "setratio", engines, &lensum);
+  LEV_UNUSED(self);
+  if (r < 0)
+    return NULL;
+  if (lensum == 0)
+    return PyFloat_FromDouble(1.0);
+  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
 }
 
 static PyModuleDef moduledef = {

@@ -2,6 +2,11 @@
 #ifndef LEVENSHTEIN_H
 #define LEVENSHTEIN_H
 
+#include <numeric>
+#include <memory>
+#include <vector>
+#include <rapidfuzz/distance/Indel.hpp>
+
 #ifndef size_t
 #  include <stdlib.h>
 #endif
@@ -77,15 +82,6 @@ safe_malloc(size_t nmemb, size_t size) {
   return malloc(nmemb * size);
 }
 
-static void *
-safe_malloc_3(size_t nmemb1, size_t nmemb2, size_t size) {
-  /* extra-conservative overflow check */
-  if (SIZE_MAX / size <= nmemb2) {
-    return NULL;
-  }
-  return safe_malloc(nmemb1, nmemb2 * size);
-}
-
 lev_byte*
 lev_greedy_median(size_t n,
                   const size_t *lengths,
@@ -152,37 +148,188 @@ lev_u_set_median_index(size_t n, const size_t *lengths,
                        const lev_wchar *strings[],
                        const double *weights);
 
-double
-lev_edit_seq_distance(size_t n1,
-                      const size_t *lengths1,
-                      const lev_byte *strings1[],
-                      size_t n2,
-                      const size_t *lengths2,
-                      const lev_byte *strings2[]);
+/**
+ * lev_u_edit_seq_distance:
+ * @n1: The length of @lengths1 and @strings1.
+ * @lengths1: The lengths of strings in @strings1.
+ * @strings1: An array of strings that may contain NUL characters.
+ * @n2: The length of @lengths2 and @strings2.
+ * @lengths2: The lengths of strings in @strings2.
+ * @strings2: An array of strings that may contain NUL characters.
+ *
+ * Finds the distance between string sequences @strings1 and @strings2.
+ *
+ * In other words, this is a double-Levenshtein algorithm.
+ *
+ * The cost of string replace operation is based on string similarity: it's
+ * zero for identical strings and 2 for completely unsimilar strings.
+ *
+ * Returns: The distance of the two sequences.
+ **/
+template <typename CharT>
+double lev_edit_seq_distance(size_t n1, const size_t* lengths1, const CharT** strings1,
+                             size_t n2, const size_t* lengths2, const CharT** strings2)
+{
+  /* strip common prefix */
+  while (n1 > 0 && n2 > 0
+         && *lengths1 == *lengths2
+         && memcmp(*strings1, *strings2,
+                   *lengths1*sizeof(CharT)) == 0) {
+    n1--;
+    n2--;
+    strings1++;
+    strings2++;
+    lengths1++;
+    lengths2++;
+  }
 
-double
-lev_u_edit_seq_distance(size_t n1,
-                        const size_t *lengths1,
-                        const lev_wchar *strings1[],
-                        size_t n2,
-                        const size_t *lengths2,
-                        const lev_wchar *strings2[]);
+  /* strip common suffix */
+  while (n1 > 0 && n2 > 0
+         && lengths1[n1-1] == lengths2[n2-1]
+         && memcmp(strings1[n1-1], strings2[n2-1],
+                   lengths1[n1-1]*sizeof(CharT)) == 0) {
+    n1--;
+    n2--;
+  }
 
-double
-lev_set_distance(size_t n1,
-                 const size_t *lengths1,
-                 const lev_byte *strings1[],
-                 size_t n2,
-                 const size_t *lengths2,
-                 const lev_byte *strings2[]);
+  /* catch trivial cases */
+  if (n1 == 0)
+    return (double)n2;
+  if (n2 == 0)
+    return (double)n1;
 
-double
-lev_u_set_distance(size_t n1,
-                   const size_t *lengths1,
-                   const lev_wchar *strings1[],
-                   size_t n2,
-                   const size_t *lengths2,
-                   const lev_wchar *strings2[]);
+  /* make the inner cycle (i.e. strings2) the longer one */
+  if (n1 > n2) {
+    std::swap(n1, n2);
+    std::swap(lengths1, lengths2);
+    std::swap(strings1, strings2);
+  }
+  n1++;
+  n2++;
+
+  /* initalize first row */
+  auto row = std::make_unique<double[]>(n2);
+  double* last = row.get() + n2 - 1;
+  double* end = row.get() + n2;
+  std::iota(row.get(), end, 0.0);
+
+  /* go through the matrix and compute the costs.  yes, this is an extremely
+   * obfuscated version, but also extremely memory-conservative and relatively
+   * fast.  */
+  for (size_t i = 1; i < n1; i++) {
+    double* p = row.get() + 1;
+    const CharT* str1 = strings1[i - 1];
+    const size_t len1 = lengths1[i - 1];
+    const CharT** str2p = strings2;
+    const size_t *len2p = lengths2;
+    double D = (double)i - 1.0;
+    double x = (double)i;
+    while (p != end) {
+      size_t l = len1 + *len2p;
+      double q;
+      if (l == 0)
+        q = D;
+      else {
+        size_t d = rapidfuzz::indel_distance(str1, str1 + len1, *str2p, *str2p + *len2p);
+        len2p++;
+        str2p++;
+        q = D + 2.0 / (double)l * (double)d;
+      }
+      x += 1.0;
+      if (x > q)
+        x = q;
+      D = *p;
+      if (x > D + 1.0)
+        x = D + 1.0;
+      *(p++) = x;
+    }
+  }
+
+  return *last;
+}
+
+std::unique_ptr<size_t[]> munkers_blackman(size_t n1, size_t n2, double *dists);
+
+/**
+ * lev_set_distance:
+ * @n1: The length of @lengths1 and @strings1.
+ * @lengths1: The lengths of strings in @strings1.
+ * @strings1: An array of strings that may contain NUL characters.
+ * @n2: The length of @lengths2 and @strings2.
+ * @lengths2: The lengths of strings in @strings2.
+ * @strings2: An array of strings that may contain NUL characters.
+ *
+ * Finds the distance between string sets @strings1 and @strings2.
+ *
+ * The difference from lev_edit_seq_distance() is that order doesn't matter.
+ * The optimal association of @strings1 and @strings2 is found first and
+ * the similarity is computed for that.
+ *
+ * Uses sequential Munkers-Blackman algorithm.
+ *
+ * Returns: The distance of the two sets.
+ **/
+template <typename CharT>
+double lev_set_distance(size_t n1, const size_t* lengths1, const CharT** strings1,
+                        size_t n2, const size_t *lengths2, const CharT** strings2)
+{
+  /* catch trivial cases */
+  if (n1 == 0)
+    return (double)n2;
+  if (n2 == 0)
+    return (double)n1;
+
+  /* make the number of columns (n1) smaller than the number of rows */
+  if (n1 > n2) {
+    std::swap(n1, n2);
+    std::swap(lengths1, lengths2);
+    std::swap(strings1, strings2);
+  }
+
+  /* compute distances from each to each */
+  if (SIZE_MAX / n1 <= n2)
+  {
+    throw std::bad_alloc();
+  }
+  auto dists = std::make_unique<double[]>(n1 * n2);
+  double* r = dists.get();
+
+  for (size_t i = 0; i < n2; i++) {
+    size_t len2 = lengths2[i];
+    const CharT *str2 = strings2[i];
+    const size_t *len1p = lengths1;
+    const CharT **str1p = strings1;
+    for (size_t j = 0; j < n1; j++) {
+      size_t l = len2 + *len1p;
+      if (l == 0)
+        *(r++) = 0.0;
+      else {
+        size_t d = rapidfuzz::indel_distance(str2, str2 + len2, *str1p, *str1p + *len1p);
+        len1p++;
+        str1p++;
+        *(r++) = (double)d / (double)l;
+      }
+    }
+  }
+
+  /* find the optimal mapping between the two sets */
+  auto map = munkers_blackman(n1, n2, dists.get());
+
+  /* sum the set distance */
+  double sum = (double)(n2 - n1);
+  for (size_t j = 0; j < n1; j++) {
+    size_t l;
+    size_t i = map[j];
+    l = lengths1[j] + lengths2[i];
+    if (l > 0) {
+      size_t d = rapidfuzz::indel_distance(strings1[j], strings1[j] + lengths1[j],
+                                           strings2[i], strings2[i] + lengths2[i]);
+      sum += 2.0 * (double)d / (double)l;
+    }
+  }
+
+  return sum;
+}
 
 int
 lev_editops_check_errors(size_t len1,

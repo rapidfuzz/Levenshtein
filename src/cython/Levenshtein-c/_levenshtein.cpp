@@ -29,17 +29,10 @@
 
 #include <assert.h>
 #include "_levenshtein.hpp"
-#include <rapidfuzz/distance/Indel.hpp>
 #include <rapidfuzz/distance/Levenshtein.hpp>
-#include <numeric>
-#include <memory>
-#include <vector>
 
 #define LEV_EPSILON 1e-14
 #define LEV_INFINITY 1e100
-
-/* local functions */
-static size_t* munkers_blackman(size_t n1, size_t n2, double *dists);
 
 /****************************************************************************
  *
@@ -61,21 +54,6 @@ static size_t lev_levenshtein_distance(size_t len1, const CharT1* string1,
     return (size_t)-1;
   }
 }
-
-/**
- * @brief Wrapper for Indel distance to handle exceptions
- */
-template <typename CharT1, typename CharT2>
-static size_t lev_indel_distance(size_t len1, const CharT1* string1,
-                                size_t len2, const CharT2* string2)
-{
-  try {
-    return rapidfuzz::indel_distance(string1, string1 + len1, string2, string2 + len2);
-  } catch (...) {
-    return (size_t)-1;
-  }
-}
-
 
 /* }}} */
 
@@ -1693,478 +1671,34 @@ lev_u_set_median(size_t n, const size_t *lengths,
  ****************************************************************************/
 /* {{{ */
 
-/**
- * lev_edit_seq_distance:
- * @n1: The length of @lengths1 and @strings1.
- * @lengths1: The lengths of strings in @strings1.
- * @strings1: An array of strings that may contain NUL characters.
- * @n2: The length of @lengths2 and @strings2.
- * @lengths2: The lengths of strings in @strings2.
- * @strings2: An array of strings that may contain NUL characters.
- *
- * Finds the distance between string sequences @strings1 and @strings2.
- *
- * In other words, this is a double-Levenshtein algorithm.
- *
- * The cost of string replace operation is based on string similarity: it's
- * zero for identical strings and 2 for completely unsimilar strings.
- *
- * Returns: The distance of the two sequences.
- **/
-double
-lev_edit_seq_distance(size_t n1, const size_t *lengths1,
-                      const lev_byte *strings1[],
-                      size_t n2, const size_t *lengths2,
-                      const lev_byte *strings2[])
-{
-  size_t i;
-  double* row;  /* we only need to keep one row of costs */
-  double* last;
-  double* end;
-
-  /* strip common prefix */
-  while (n1 > 0 && n2 > 0
-         && *lengths1 == *lengths2
-         && memcmp(*strings1, *strings2,
-                   *lengths1*sizeof(lev_byte)) == 0) {
-    n1--;
-    n2--;
-    strings1++;
-    strings2++;
-    lengths1++;
-    lengths2++;
-  }
-
-  /* strip common suffix */
-  while (n1 > 0 && n2 > 0
-         && lengths1[n1-1] == lengths2[n2-1]
-         && memcmp(strings1[n1-1], strings2[n2-1],
-                   lengths1[n1-1]*sizeof(lev_byte)) == 0) {
-    n1--;
-    n2--;
-  }
-
-  /* catch trivial cases */
-  if (n1 == 0)
-    return (double)n2;
-  if (n2 == 0)
-    return (double)n1;
-
-  /* make the inner cycle (i.e. strings2) the longer one */
-  if (n1 > n2) {
-    std::swap(n1, n2);
-    std::swap(lengths1, lengths2);
-    std::swap(strings1, strings2);
-  }
-  n1++;
-  n2++;
-
-  /* initalize first row */
-  row = (double*)safe_malloc(n2, sizeof(double));
-  if (!row)
-    return -1.0;
-  last = row + n2 - 1;
-  end = row + n2;
-  std::iota(row, end, 0.0);
-
-  /* go through the matrix and compute the costs.  yes, this is an extremely
-   * obfuscated version, but also extremely memory-conservative and relatively
-   * fast.  */
-  for (i = 1; i < n1; i++) {
-    double *p = row + 1;
-    const lev_byte *str1 = strings1[i - 1];
-    const size_t len1 = lengths1[i - 1];
-    const lev_byte **str2p = strings2;
-    const size_t *len2p = lengths2;
-    double D = (double)i - 1.0;
-    double x = (double)i;
-    while (p != end) {
-      size_t l = len1 + *len2p;
-      double q;
-      if (l == 0)
-        q = D;
-      else {
-        size_t d = lev_indel_distance(len1, str1, *(len2p++), *(str2p++));
-        if (d == (size_t)(-1)) {
-          free(row);
-          return -1.0;
-        }
-        q = D + 2.0 / (double)l * (double)d;
-      }
-      x += 1.0;
-      if (x > q)
-        x = q;
-      D = *p;
-      if (x > D + 1.0)
-        x = D + 1.0;
-      *(p++) = x;
-    }
-  }
-
-  {
-    double q = *last;
-    free(row);
-    return q;
-  }
-}
-
-/**
- * lev_u_edit_seq_distance:
- * @n1: The length of @lengths1 and @strings1.
- * @lengths1: The lengths of strings in @strings1.
- * @strings1: An array of strings that may contain NUL characters.
- * @n2: The length of @lengths2 and @strings2.
- * @lengths2: The lengths of strings in @strings2.
- * @strings2: An array of strings that may contain NUL characters.
- *
- * Finds the distance between string sequences @strings1 and @strings2.
- *
- * In other words, this is a double-Levenshtein algorithm.
- *
- * The cost of string replace operation is based on string similarity: it's
- * zero for identical strings and 2 for completely unsimilar strings.
- *
- * Returns: The distance of the two sequences.
- **/
-double
-lev_u_edit_seq_distance(size_t n1, const size_t *lengths1,
-                        const lev_wchar *strings1[],
-                        size_t n2, const size_t *lengths2,
-                        const lev_wchar *strings2[])
-{
-  size_t i;
-  double* row;  /* we only need to keep one row of costs */
-  double* last;
-  double* end;
-
-  /* strip common prefix */
-  while (n1 > 0 && n2 > 0
-         && *lengths1 == *lengths2
-         && memcmp(*strings1, *strings2,
-                   *lengths1*sizeof(lev_wchar)) == 0) {
-    n1--;
-    n2--;
-    strings1++;
-    strings2++;
-    lengths1++;
-    lengths2++;
-  }
-
-  /* strip common suffix */
-  while (n1 > 0 && n2 > 0
-         && lengths1[n1-1] == lengths2[n2-1]
-         && memcmp(strings1[n1-1], strings2[n2-1],
-                   lengths1[n1-1]*sizeof(lev_wchar)) == 0) {
-    n1--;
-    n2--;
-  }
-
-  /* catch trivial cases */
-  if (n1 == 0)
-    return (double)n2;
-  if (n2 == 0)
-    return (double)n1;
-
-  /* make the inner cycle (i.e. strings2) the longer one */
-  if (n1 > n2) {
-    std::swap(n1, n2);
-    std::swap(lengths1, lengths2);
-    std::swap(strings1, strings2);
-  }
-  n1++;
-  n2++;
-
-  /* initalize first row */
-  row = (double*)safe_malloc(n2, sizeof(double));
-  if (!row)
-    return -1.0;
-  last = row + n2 - 1;
-  end = row + n2;
-  std::iota(row, end, 0.0);
-
-  /* go through the matrix and compute the costs.  yes, this is an extremely
-   * obfuscated version, but also extremely memory-conservative and relatively
-   * fast.  */
-  for (i = 1; i < n1; i++) {
-    double *p = row + 1;
-    const lev_wchar *str1 = strings1[i - 1];
-    const size_t len1 = lengths1[i - 1];
-    const lev_wchar **str2p = strings2;
-    const size_t *len2p = lengths2;
-    double D = (double)i - 1.0;
-    double x = (double)i;
-    while (p != end) {
-      size_t l = len1 + *len2p;
-      double q;
-      if (l == 0)
-        q = D;
-      else {
-        size_t d = lev_indel_distance(len1, str1, *(len2p++), *(str2p++));
-        if (d == (size_t)(-1)) {
-          free(row);
-          return -1.0;
-        }
-        q = D + 2.0 / (double)l * (double)d;
-      }
-      x += 1.0;
-      if (x > q)
-        x = q;
-      D = *p;
-      if (x > D + 1.0)
-        x = D + 1.0;
-      *(p++) = x;
-    }
-  }
-
-  {
-    double q = *last;
-    free(row);
-    return q;
-  }
-}
-
-/**
- * lev_set_distance:
- * @n1: The length of @lengths1 and @strings1.
- * @lengths1: The lengths of strings in @strings1.
- * @strings1: An array of strings that may contain NUL characters.
- * @n2: The length of @lengths2 and @strings2.
- * @lengths2: The lengths of strings in @strings2.
- * @strings2: An array of strings that may contain NUL characters.
- *
- * Finds the distance between string sets @strings1 and @strings2.
- *
- * The difference from lev_edit_seq_distance() is that order doesn't matter.
- * The optimal association of @strings1 and @strings2 is found first and
- * the similarity is computed for that.
- *
- * Uses sequential Munkers-Blackman algorithm.
- *
- * Returns: The distance of the two sets.
- **/
-double
-lev_set_distance(size_t n1, const size_t *lengths1,
-                 const lev_byte *strings1[],
-                 size_t n2, const size_t *lengths2,
-                 const lev_byte *strings2[])
-{
-  double *dists;  /* the (modified) distance matrix, indexed [row*n1 + col] */
-  double *r;
-  size_t i, j;
-  size_t *map;
-  double sum;
-
-  /* catch trivial cases */
-  if (n1 == 0)
-    return (double)n2;
-  if (n2 == 0)
-    return (double)n1;
-
-  /* make the number of columns (n1) smaller than the number of rows */
-  if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_byte **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
-  }
-
-  /* compute distances from each to each */
-  r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
-  if (!r)
-    return -1.0;
-  for (i = 0; i < n2; i++) {
-    size_t len2 = lengths2[i];
-    const lev_byte *str2 = strings2[i];
-    const size_t *len1p = lengths1;
-    const lev_byte **str1p = strings1;
-    for (j = 0; j < n1; j++) {
-      size_t l = len2 + *len1p;
-      if (l == 0)
-        *(r++) = 0.0;
-      else {
-        size_t d = lev_indel_distance(len2, str2, *(len1p++), *(str1p)++);
-        if (d == (size_t)(-1)) {
-          free(r);
-          return -1.0;
-        }
-        *(r++) = (double)d / (double)l;
-      }
-    }
-  }
-
-  /* find the optimal mapping between the two sets */
-  map = munkers_blackman(n1, n2, dists);
-  if (!map)
-    return -1.0;
-
-  /* sum the set distance */
-  sum = (double)(n2 - n1);
-  for (j = 0; j < n1; j++) {
-    size_t l;
-    i = map[j];
-    l = lengths1[j] + lengths2[i];
-    if (l > 0) {
-      size_t d = lev_indel_distance(lengths1[j], strings1[j], lengths2[i], strings2[i]);
-      if (d == (size_t)(-1)) {
-        free(map);
-        return -1.0;
-      }
-      sum += 2.0 * (double)d / (double)l;
-    }
-  }
-  free(map);
-
-  return sum;
-}
-
-/**
- * lev_u_set_distance:
- * @n1: The length of @lengths1 and @strings1.
- * @lengths1: The lengths of strings in @strings1.
- * @strings1: An array of strings that may contain NUL characters.
- * @n2: The length of @lengths2 and @strings2.
- * @lengths2: The lengths of strings in @strings2.
- * @strings2: An array of strings that may contain NUL characters.
- *
- * Finds the distance between string sets @strings1 and @strings2.
- *
- * The difference from lev_u_edit_seq_distance() is that order doesn't matter.
- * The optimal association of @strings1 and @strings2 is found first and
- * the similarity is computed for that.
- *
- * Uses sequential Munkers-Blackman algorithm.
- *
- * Returns: The distance of the two sets.
- **/
-double
-lev_u_set_distance(size_t n1, const size_t *lengths1,
-                   const lev_wchar *strings1[],
-                   size_t n2, const size_t *lengths2,
-                   const lev_wchar *strings2[])
-{
-  double *dists;  /* the (modified) distance matrix, indexed [row*n1 + col] */
-  double *r;
-  size_t i, j;
-  size_t *map;
-  double sum;
-
-  /* catch trivial cases */
-  if (n1 == 0)
-    return (double)n2;
-  if (n2 == 0)
-    return (double)n1;
-
-  /* make the number of columns (n1) smaller than the number of rows */
-  if (n1 > n2) {
-    size_t nx = n1;
-    const size_t *lx = lengths1;
-    const lev_wchar **sx = strings1;
-    n1 = n2;
-    n2 = nx;
-    lengths1 = lengths2;
-    lengths2 = lx;
-    strings1 = strings2;
-    strings2 = sx;
-  }
-
-  /* compute distances from each to each */
-  r = dists = (double*)safe_malloc_3(n1, n2, sizeof(double));
-  if (!r)
-    return -1.0;
-  for (i = 0; i < n2; i++) {
-    size_t len2 = lengths2[i];
-    const lev_wchar *str2 = strings2[i];
-    const size_t *len1p = lengths1;
-    const lev_wchar **str1p = strings1;
-    for (j = 0; j < n1; j++) {
-      size_t l = len2 + *len1p;
-      if (l == 0)
-        *(r++) = 0.0;
-      else {
-        size_t d = lev_indel_distance(len2, str2, *(len1p++), *(str1p)++);
-        if (d == (size_t)(-1)) {
-          free(r);
-          return -1.0;
-        }
-        *(r++) = (double)d / (double)l;
-      }
-    }
-  }
-
-  /* find the optimal mapping between the two sets */
-  map = munkers_blackman(n1, n2, dists);
-  if (!map)
-    return -1.0;
-
-  /* sum the set distance */
-  sum = (double)(n2 - n1);
-  for (j = 0; j < n1; j++) {
-    size_t l;
-    i = map[j];
-    l = lengths1[j] + lengths2[i];
-    if (l > 0) {
-      size_t d = lev_indel_distance(lengths1[j], strings1[j], lengths2[i], strings2[i]);
-      if (d == (size_t)(-1)) {
-        free(map);
-        return -1.0;
-      }
-      sum += 2.0 * (double)d / (double)l;
-    }
-  }
-  free(map);
-
-  return sum;
-}
-
 /*
  * Munkers-Blackman algorithm.
  */
-static size_t*
+std::unique_ptr<size_t[]>
 munkers_blackman(size_t n1, size_t n2, double *dists)
 {
   size_t i, j;
-  size_t *covc, *covr;  /* 1 if column/row is covered */
-  /* these contain 1-based indices, so we can use zero as `none'
-   * zstarr: column of a z* in given row
-   * zstarc: row of a z* in given column
-   * zprimer: column of a z' in given row */
-  size_t *zstarr, *zstarc, *zprimer;
 
   /* allocate memory */
-  covc = (size_t*)calloc(n1, sizeof(size_t));
-  if (!covc)
-    return NULL;
-  zstarc = (size_t*)calloc(n1, sizeof(size_t));
-  if (!zstarc) {
-    free(covc);
-    return NULL;
-  }
-  covr = (size_t*)calloc(n2, sizeof(size_t));
-  if (!covr) {
-    free(zstarc);
-    free(covc);
-    return NULL;
-  }
-  zstarr = (size_t*)calloc(n2, sizeof(size_t));
-  if (!zstarr) {
-    free(covr);
-    free(zstarc);
-    free(covc);
-    return NULL;
-  }
-  zprimer = (size_t*)calloc(n2, sizeof(size_t));
-  if (!zprimer) {
-    free(zstarr);
-    free(covr);
-    free(zstarc);
-    free(covc);
-    return NULL;
-  }
+  /* 1 if column is covered */
+  auto covc = std::make_unique<size_t[]>(n1);
+  std::fill(covc.get(), covc.get() + n1, 0);
+
+  /* row of a z* in given column (1-base indices, so we can use zero as `none')*/
+  auto zstarc = std::make_unique<size_t[]>(n1);
+  std::fill(zstarc.get(), zstarc.get() + n1, 0);
+
+  /* 1 if row is covered */
+  auto covr = std::make_unique<size_t[]>(n2);
+  std::fill(covr.get(), covr.get() + n2, 0);
+
+  /* column of a z* in given row (1-base indices, so we can use zero as `none')*/
+  auto zstarr = std::make_unique<size_t[]>(n2);
+  std::fill(zstarr.get(), zstarr.get() + n2, 0);
+
+  /* column of a z' in given row (1-base indices, so we can use zero as `none')*/
+  auto zprimer = std::make_unique<size_t[]>(n2);
+  std::fill(zprimer.get(), zprimer.get() + n2, 0);
 
   /* step 0 (subtract minimal distance) and step 1 (find zeroes) */
   for (j = 0; j < n1; j++) {
@@ -2302,22 +1836,17 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
       i = zstarc[j];       /* move to z* in the same column */
       zstarc[j] = x;       /* mark the z' as being new z* */
     } while (i);
-    memset(zprimer, 0, n2*sizeof(size_t));
-    memset(covr, 0, n2*sizeof(size_t));
-    memset(covc, 0, n1*sizeof(size_t));
-  }
 
-  free(dists);
-  free(covc);
-  free(covr);
-  /*free(zstarc);  this is the result */
-  free(zstarr);
-  free(zprimer);
+    std::fill(zprimer.get(), zprimer.get() + n2, 0);
+    std::fill(covr.get(), covr.get() + n2, 0);
+    std::fill(covc.get(), covc.get() + n1, 0);
+  }
 
   for (j = 0; j < n1; j++)
     zstarc[j]--;
   return zstarc;
 }
+
 /* }}} */
 
 /****************************************************************************

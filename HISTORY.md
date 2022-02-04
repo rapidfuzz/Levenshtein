@@ -2,6 +2,7 @@
 
 ### v0.18.0
 * Use a faster editops implementation provided by RapidFuzz
+* Fixed memory leak in error path of setratio
 
 ### v0.17.0
 * Removed support for Python 3.5
