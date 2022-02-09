@@ -1,8 +1,15 @@
-recursive-include src/ *.cpp *.hpp *.py
+include setup.py
+include CMakeLists.txt
 include README.md
-include HISTORY.md
 include COPYING
-global-exclude *pyc
-global-exclude *so
-global-exclude .project
-global-exclude .pydevproject
+include HISTORY.md
+include pyproject.toml
+include src/rapidfuzz/**/*.pyi
+include src/rapidfuzz/py.typed
+
+recursive-include src/cython CMakeLists.txt
+recursive-include src/cython *.hpp *.h *.cpp *.pyx *.pxd
+
+include extern/rapidfuzz-cpp/LICENSE
+include extern/rapidfuzz-cpp/CMakeLists.txt
+recursive-include extern/rapidfuzz-cpp/rapidfuzz *.hpp *.impl
