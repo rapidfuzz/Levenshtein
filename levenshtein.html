@@ -95,13 +95,24 @@
 <h2>distance<a class="headerlink" href="#distance" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.distance">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.distance" title="Permalink to this definition"></a></dt>
-<dd><p>Compute absolute Levenshtein distance of two strings.</p>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.distance" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the minimum number of insertions, deletions, and substitutions
+required to change one sequence into the other according to Levenshtein with custom
+costs for insertion, deletion and substitution</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
-<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+<li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
+<li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
+<li><p><strong>weights</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] or </em><em>None</em><em>, </em><em>optional</em>) – The weights for the three operations in the form
+(insertion, deletion, substitution). Default is (1, 1, 1),
+which gives all three operations a weight of 1.</p></li>
+<li><p><strong>processor</strong> (<em>callable</em><em>, </em><em>optional</em>) – Optional callable that is used to preprocess the strings before
+comparing them. Default is None, which deactivates this behaviour.</p></li>
+<li><p><strong>score_cutoff</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum distance between s1 and s2, that is
+considered as a result. If the distance is bigger than score_cutoff,
+score_cutoff + 1 is returned instead. Default is None, which deactivates
+this behaviour.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -110,20 +121,29 @@
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>int</p>
 </dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If unsupported weights are provided a ValueError is thrown</p>
+</dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>it’s hard to spell Levenshtein correctly</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span><span class="p">(</span><span class="s1">&#39;Levenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenvinsten&#39;</span><span class="p">)</span>
-<span class="go">4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span><span class="p">(</span><span class="s1">&#39;Levenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Levensthein&#39;</span><span class="p">)</span>
+<p>Find the Levenshtein distance between two strings:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rapidfuzz.algorithm.edit_based</span> <span class="kn">import</span> <span class="n">Levenshtein</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Levenshtein</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">)</span>
 <span class="go">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span><span class="p">(</span><span class="s1">&#39;Levenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Levenshten&#39;</span><span class="p">)</span>
-<span class="go">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">distance</span><span class="p">(</span><span class="s1">&#39;Levenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Levenshtein&#39;</span><span class="p">)</span>
-<span class="go">0</span>
 </pre></div>
 </div>
-<p>Yeah, we’ve managed it at last.</p>
+<p>Setting a maximum distance allows the implementation to select
+a more efficient implementation:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Levenshtein</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">,</span> <span class="n">score_cutoff</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>It is possible to select different weights by passing a <cite>weight</cite>
+tuple.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Levenshtein</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">3</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -131,39 +151,46 @@
 <h2>ratio<a class="headerlink" href="#ratio" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.ratio">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.ratio" title="Permalink to this definition"></a></dt>
-<dd><p>Compute similarity of two strings using the InDel distance.
-The InDel distance is similar to the Levenshtein distance with the following
-weights:
-- Insertion: 1
-- Deletion: 1
-- Substitution: 2</p>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.ratio" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a normalized indel similarity in the range [0, 1].</p>
+<p>This is calculated as <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">normalized_distance</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
-<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+<li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
+<li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
+<li><p><strong>processor</strong> (<em>callable</em><em>, </em><em>optional</em>) – Optional callable that is used to preprocess the strings before
+comparing them. Default is None, which deactivates this behaviour.</p></li>
+<li><p><strong>score_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Optional argument for a score threshold as a float between 0 and 1.0.
+For norm_sim &lt; score_cutoff 0 is returned instead. Default is 0,
+which deactivates this behaviour.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1</p>
+<dd class="field-even"><p><strong>norm_sim</strong> – normalized similarity between s1 and s2 as a float between 0 and 1.0</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>The similarity is usually equal or somewhat higher than
-difflib.SequenceMatcher.ratio(), because it’s
-based on the real minimal edit distance.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ratio</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">,</span> <span class="s1">&#39;Holly grail!&#39;</span><span class="p">)</span>
-<span class="go">0.583333</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ratio</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
+<p>Find the normalized Indel similarity between two strings:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rapidfuzz.algorithm.edit_based</span> <span class="kn">import</span> <span class="n">Indel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Indel</span><span class="o">.</span><span class="n">normalized_similarity</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">)</span>
+<span class="go">0.85714285714285</span>
+</pre></div>
+</div>
+<p>Setting a score_cutoff allows the implementation to select
+a more efficient implementation:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Indel</span><span class="o">.</span><span class="n">normalized_similarity</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">,</span> <span class="n">score_cutoff</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 <span class="go">0.0</span>
 </pre></div>
 </div>
-<p>Really?  I thought there was some similarity.</p>
+<p>When a different processor is used s1 and s2 do not have to be strings</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Indel</span><span class="o">.</span><span class="n">normalized_similarity</span><span class="p">([</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;levenshtein&quot;</span><span class="p">],</span> <span class="n">processor</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">0.81818181818181</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -171,15 +198,22 @@ based on the real minimal edit distance.</p>
 <h2>hamming<a class="headerlink" href="#hamming" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.hamming">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.hamming" title="Permalink to this definition"></a></dt>
-<dd><p>Compute Hamming distance of two strings.
-The Hamming distance is simply the number of differing characters.
-That means the length of the strings must be the same.</p>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.hamming" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the Hamming distance between two strings.
+The hamming distance is defined as the number of positions
+where the two strings differ. It describes the minimum
+amount of substitutions required to transform s1 into s2.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
-<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+<li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
+<li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
+<li><p><strong>processor</strong> (<em>callable</em><em>, </em><em>optional</em>) – Optional callable that is used to preprocess the strings before
+comparing them. Default is None, which deactivates this behaviour.</p></li>
+<li><p><strong>score_cutoff</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Maximum distance between s1 and s2, that is
+considered as a result. If the distance is bigger than score_cutoff,
+score_cutoff + 1 is returned instead. Default is None, which deactivates
+this behaviour.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -192,13 +226,6 @@ That means the length of the strings must be the same.</p>
 <dd class="field-even"><p><strong>ValueError</strong> – If s1 and s2 have a different length</p>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hamming</span><span class="p">(</span><span class="s1">&#39;Hello world!&#39;</span><span class="p">,</span> <span class="s1">&#39;Holly grail!&#39;</span><span class="p">)</span>
-<span class="go">7</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">hamming</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
-<span class="go">5</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </section>
@@ -206,33 +233,27 @@ That means the length of the strings must be the same.</p>
 <h2>jaro<a class="headerlink" href="#jaro" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.jaro">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro" title="Permalink to this definition"></a></dt>
-<dd><p>Compute Jaro string similarity metric of two strings.
-The Jaro string similarity metric is intended for short strings like
-personal last names.</p>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the jaro similarity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
-<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
+<li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
+<li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
+<li><p><strong>processor</strong> (<em>callable</em><em>, </em><em>optional</em>) – Optional callable that is used to preprocess the strings before
+comparing them. Default is None, which deactivates this behaviour.</p></li>
+<li><p><strong>score_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Optional argument for a score threshold as a float between 0 and 1.0.
+For ratio &lt; score_cutoff 0 is returned instead. Default is 0,
+which deactivates this behaviour.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.</p>
+<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.0</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jaro</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
-<span class="go">0.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">)</span>  
-<span class="go">0.779761...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro</span><span class="p">(</span><span class="s1">&#39;Dinsdale&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>  
-<span class="go">0.708333...</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </section>
@@ -240,25 +261,24 @@ personal last names.</p>
 <h2>jaro_winkler<a class="headerlink" href="#jaro-winkler" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.jaro_winkler">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro_winkler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro_winkler" title="Permalink to this definition"></a></dt>
-<dd><p>Compute Jaro string similarity metric of two strings.
-The Jaro-Winkler string similarity metric is a modification of Jaro
-metric giving more weight to common prefix, as spelling mistakes are
-more likely to occur near ends of words.</p>
-<p>The prefix weight is inverse value of common prefix length sufficient
-to consider the strings <em>identical</em>.  If no prefix weight is
-specified, 1/10 is used.</p>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro_winkler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.jaro_winkler" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the jaro winkler similarity</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string1</strong> (<em>str</em>) – First string to compare.</p></li>
-<li><p><strong>string2</strong> (<em>str</em>) – Second string to compare.</p></li>
-<li><p><strong>prefix_weight</strong> (<em>float</em><em>, </em><em>optional</em>) – weight used for the common prefix of the two strings.
+<li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
+<li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
+<li><p><strong>prefix_weight</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight used for the common prefix of the two strings.
 Has to be between 0 and 0.25. Default is 0.1.</p></li>
+<li><p><strong>processor</strong> (<em>callable</em><em>, </em><em>optional</em>) – Optional callable that is used to preprocess the strings before
+comparing them. Default is None, which deactivates this behaviour.</p></li>
+<li><p><strong>score_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Optional argument for a score threshold as a float between 0 and 1.0.
+For ratio &lt; score_cutoff 0 is returned instead. Default is 0,
+which deactivates this behaviour.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.</p>
+<dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.0</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
@@ -267,21 +287,6 @@ Has to be between 0 and 0.25. Default is 0.1.</p></li>
 <dd class="field-even"><p><strong>ValueError</strong> – If prefix_weight is invalid</p>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Brian&#39;</span><span class="p">,</span> <span class="s1">&#39;Jesus&#39;</span><span class="p">)</span>
-<span class="go">0.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">)</span>
-<span class="go">0.867857</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Dinsdale&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)</span>
-<span class="go">0.7375</span>
-</pre></div>
-</div>
-<p>When using a prefix_weight of 0.25 any all strings with a common prefix of 4
-will have a similarity of 1.0</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jaro_winkler</span><span class="p">(</span><span class="s1">&#39;Thorkel&#39;</span><span class="p">,</span> <span class="s1">&#39;Thorgier&#39;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
-<span class="go">1.0</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </section>
