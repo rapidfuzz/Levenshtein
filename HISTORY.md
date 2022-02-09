@@ -1,5 +1,12 @@
 ## Changelog
 
+### v0.18.0
+* Use a faster editops implementation provided by RapidFuzz
+* Fixed memory leak in error path of setratio
+* Reduce code duplication
+* reuse implementations from rapidfuzz-cpp
+* Transition to scikit-build 
+
 ### v0.17.0
 * Removed support for Python 3.5
 

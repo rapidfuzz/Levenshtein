@@ -1,0 +1,15 @@
+
+add_cython_target(cpp_levenshtein CXX)
+add_library(cpp_levenshtein MODULE ${cpp_levenshtein} ${LEV_BASE_DIR}/src/cython/Levenshtein-c/_levenshtein.cpp)
+target_compile_features(cpp_levenshtein PUBLIC cxx_std_14)
+target_include_directories(cpp_levenshtein PRIVATE ${LEV_BASE_DIR}/src/cython/Levenshtein-c)
+target_link_libraries(cpp_levenshtein PRIVATE rapidfuzz::rapidfuzz)
+python_extension_module(cpp_levenshtein)
+install(TARGETS cpp_levenshtein LIBRARY DESTINATION src/Levenshtein)
+
+add_library(_levenshtein MODULE _levenshtein.cpp Levenshtein-c/_levenshtein.cpp)
+target_compile_features(_levenshtein PUBLIC cxx_std_14)
+target_include_directories(_levenshtein PRIVATE ${LEV_BASE_DIR}/src/cython/Levenshtein-c)
+target_link_libraries(_levenshtein PRIVATE rapidfuzz::rapidfuzz)
+python_extension_module(_levenshtein)
+install(TARGETS _levenshtein LIBRARY DESTINATION src/Levenshtein)

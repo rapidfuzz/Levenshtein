@@ -22,7 +22,7 @@
  **/
 #define lev_wchar Py_UNICODE
 #include <Python.h>
-#include "_levenshtein.h"
+#include "_levenshtein.hpp"
 
 #define LEV_UNUSED(x) ((void)x)
 
@@ -255,12 +255,6 @@ median_improve_common(PyObject *args,
                       const char *name,
                       MedianImproveFuncs foo);
 
-static double
-setseq_common(PyObject *args,
-              const char *name,
-              SetSeqFuncs foo,
-              size_t *lensum);
-
 /* }}} */
 
 /****************************************************************************
@@ -273,7 +267,7 @@ setseq_common(PyObject *args,
 static PyObject*
 median_py(PyObject *self, PyObject *args)
 {
-  MedianFuncs engines = { lev_greedy_median, lev_u_greedy_median };
+  MedianFuncs engines = { lev_greedy_median<lev_byte>, lev_greedy_median<lev_wchar> };
   LEV_UNUSED(self);
   return median_common(args, "median", engines);
 }
@@ -281,7 +275,7 @@ median_py(PyObject *self, PyObject *args)
 static PyObject*
 median_improve_py(PyObject *self, PyObject *args)
 {
-  MedianImproveFuncs engines = { lev_median_improve, lev_u_median_improve };
+  MedianImproveFuncs engines = { lev_median_improve<lev_byte>, lev_median_improve<lev_wchar> };
   LEV_UNUSED(self);
   return median_improve_common(args, "median_improve", engines);
 }
@@ -297,7 +291,7 @@ quickmedian_py(PyObject *self, PyObject *args)
 static PyObject*
 setmedian_py(PyObject *self, PyObject *args)
 {
-  MedianFuncs engines = { lev_set_median, lev_u_set_median };
+  MedianFuncs engines = { lev_set_median<lev_byte>, lev_set_median<lev_wchar> };
   LEV_UNUSED(self);
   return median_common(args, "setmedian", engines);
 }
@@ -347,21 +341,32 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   }
 
   if (stringtype == 0) {
-    lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
+      if (!medstr && len)
+        // todo remove after refactoring
+        result = PyErr_NoMemory();
+      else {
+        result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else if (stringtype == 1) {
-    Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
+      if (!medstr && len)
+        result = PyErr_NoMemory();
+      else {
+        result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else
@@ -430,25 +435,35 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
 
   Py_DECREF(strseq);
   if (stringtype == 0) {
-    lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
-    size_t l = (size_t)PyBytes_GET_SIZE(arg1);
-    lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
+      size_t l = (size_t)PyBytes_GET_SIZE(arg1);
+      lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
+      if (!medstr && len)
+        result = PyErr_NoMemory();
+      else {
+        result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else if (stringtype == 1) {
-    Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
-    size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
-    Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
-    if (!medstr && len)
+    try {
+      Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
+      size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
+      Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
+      if (!medstr && len)
+        result = PyErr_NoMemory();
+      else {
+        result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
+        free(medstr);
+      }
+    } catch (...)
+    {
       result = PyErr_NoMemory();
-    else {
-      result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
-      free(medstr);
     }
   }
   else
@@ -622,34 +637,6 @@ extract_stringlist(PyObject *list, const char *name,
   return -1;
 }
 
-static PyObject*
-seqratio_py(PyObject *self, PyObject *args)
-{
-  SetSeqFuncs engines = { lev_edit_seq_distance, lev_u_edit_seq_distance };
-  size_t lensum;
-  double r = setseq_common(args, "seqratio", engines, &lensum);
-  LEV_UNUSED(self);
-  if (r < 0)
-    return NULL;
-  if (lensum == 0)
-    return PyFloat_FromDouble(1.0);
-  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
-}
-
-static PyObject*
-setratio_py(PyObject *self, PyObject *args)
-{
-  SetSeqFuncs engines = { lev_set_distance, lev_u_set_distance };
-  size_t lensum;
-  double r = setseq_common(args, "setratio", engines, &lensum);
-  LEV_UNUSED(self);
-  if (r < 0)
-    return NULL;
-  if (lensum == 0)
-    return PyFloat_FromDouble(1.0);
-  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
-}
-
 static double
 setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
               size_t *lensum)
@@ -717,14 +704,20 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
                   name);
   }
   else if (stringtype1 == 0) {
-    r = foo.s(n1, sizes1, (const lev_byte**)strings1, n2, sizes2, (const lev_byte**)strings2);
-    if (r < 0.0)
+    try {
+      r = foo.s(n1, sizes1, (const lev_byte**)strings1, n2, sizes2, (const lev_byte**)strings2);
+    } catch (...)
+    {
       PyErr_NoMemory();
+    }
   }
   else if (stringtype1 == 1) {
-    r = foo.u(n1, sizes1, (const Py_UNICODE**)strings1, n2, sizes2, (const Py_UNICODE**)strings2);
-    if (r < 0.0)
+    try {
+      r = foo.u(n1, sizes1, (const Py_UNICODE**)strings1, n2, sizes2, (const Py_UNICODE**)strings2);
+    } catch (...)
+    {
       PyErr_NoMemory();
+    }
   }
   else
     PyErr_Format(PyExc_SystemError, "%s internal error", name);
@@ -734,6 +727,34 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
   free(sizes1);
   free(sizes2);
   return r;
+}
+
+static PyObject*
+seqratio_py(PyObject *self, PyObject *args)
+{
+  SetSeqFuncs engines = { lev_edit_seq_distance<lev_byte>, lev_edit_seq_distance<lev_wchar> };
+  size_t lensum;
+  double r = setseq_common(args, "seqratio", engines, &lensum);
+  LEV_UNUSED(self);
+  if (r < 0)
+    return NULL;
+  if (lensum == 0)
+    return PyFloat_FromDouble(1.0);
+  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
+}
+
+static PyObject*
+setratio_py(PyObject *self, PyObject *args)
+{
+  SetSeqFuncs engines = { lev_set_distance<lev_byte>, lev_set_distance<lev_wchar> };
+  size_t lensum;
+  double r = setseq_common(args, "setratio", engines, &lensum);
+  LEV_UNUSED(self);
+  if (r < 0)
+    return NULL;
+  if (lensum == 0)
+    return PyFloat_FromDouble(1.0);
+  return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
 }
 
 static PyModuleDef moduledef = {
