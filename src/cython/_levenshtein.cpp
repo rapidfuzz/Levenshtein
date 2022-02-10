@@ -24,9 +24,7 @@
 #include <Python.h>
 #include "_levenshtein.hpp"
 
-#include <iostream>
-
-#define LEV_UNUSED(x) ((void)x)
+#include <algorithm>
 
 /* Me thinks the second argument of PyArg_UnpackTuple() should be const.
  * Anyway I habitually pass a constant string.
@@ -35,12 +33,12 @@
 
 /* python interface and wrappers */
 /* declarations and docstrings {{{ */
-static PyObject* median_py(PyObject *self, PyObject *args);
-static PyObject* median_improve_py(PyObject *self, PyObject *args);
-static PyObject* quickmedian_py(PyObject *self, PyObject *args);
-static PyObject* setmedian_py(PyObject *self, PyObject *args);
-static PyObject* seqratio_py(PyObject *self, PyObject *args);
-static PyObject* setratio_py(PyObject *self, PyObject *args);
+static PyObject* median_py(PyObject* self, PyObject* args);
+static PyObject* median_improve_py(PyObject* self, PyObject* args);
+static PyObject* quickmedian_py(PyObject* self, PyObject* args);
+static PyObject* setmedian_py(PyObject* self, PyObject* args);
+static PyObject* seqratio_py(PyObject* self, PyObject* args);
+static PyObject* setratio_py(PyObject* self, PyObject* args);
 
 #define Levenshtein_DESC \
   "A C extension module for fast computation of:\n" \
@@ -185,50 +183,50 @@ static PyMethodDef methods[] = {
   { NULL, NULL, 0, NULL },
 };
 
-typedef lev_byte *(*MedianFuncString)(size_t n,
-                                      const size_t *lengths,
-                                      const lev_byte *strings[],
-                                      const double *weights,
-                                      size_t *medlength);
-typedef Py_UNICODE *(*MedianFuncUnicode)(size_t n,
-                                         const size_t *lengths,
-                                         const Py_UNICODE *strings[],
-                                         const double *weights,
-                                         size_t *medlength);
+typedef lev_byte* (*MedianFuncString)(size_t n,
+                                      const size_t* lengths,
+                                      const lev_byte** strings,
+                                      const double* weights,
+                                      size_t* medlength);
+typedef Py_UNICODE* (*MedianFuncUnicode)(size_t n,
+                                         const size_t* lengths,
+                                         const Py_UNICODE** strings,
+                                         const double* weights,
+                                         size_t* medlength);
 typedef struct {
   MedianFuncString s;
   MedianFuncUnicode u;
 } MedianFuncs;
 
-typedef lev_byte *(*MedianImproveFuncString)(size_t len, const lev_byte *s,
+typedef lev_byte* (*MedianImproveFuncString)(size_t len, const lev_byte* s,
                                              size_t n,
-                                             const size_t *lengths,
-                                             const lev_byte *strings[],
-                                             const double *weights,
-                                             size_t *medlength);
-typedef Py_UNICODE *(*MedianImproveFuncUnicode)(size_t len, const Py_UNICODE *s,
+                                             const size_t* lengths,
+                                             const lev_byte** strings,
+                                             const double* weights,
+                                             size_t* medlength);
+typedef Py_UNICODE* (*MedianImproveFuncUnicode)(size_t len, const Py_UNICODE* s,
                                                 size_t n,
-                                                const size_t *lengths,
-                                                const Py_UNICODE *strings[],
-                                                const double *weights,
-                                                size_t *medlength);
+                                                const size_t* lengths,
+                                                const Py_UNICODE** strings,
+                                                const double* weights,
+                                                size_t* medlength);
 typedef struct {
   MedianImproveFuncString s;
   MedianImproveFuncUnicode u;
 } MedianImproveFuncs;
 
 typedef double (*SetSeqFuncString)(size_t n1,
-                                   const size_t *lengths1,
-                                   const lev_byte *strings1[],
+                                   const size_t* lengths1,
+                                   const lev_byte** strings1,
                                    size_t n2,
-                                   const size_t *lengths2,
-                                   const lev_byte *strings2[]);
+                                   const size_t* lengths2,
+                                   const lev_byte** strings2);
 typedef double (*SetSeqFuncUnicode)(size_t n1,
-                                    const size_t *lengths1,
-                                    const Py_UNICODE *strings1[],
+                                    const size_t* lengths1,
+                                    const Py_UNICODE** strings1,
                                     size_t n2,
-                                    const size_t *lengths2,
-                                    const Py_UNICODE *strings2[]);
+                                    const size_t* lengths2,
+                                    const Py_UNICODE** strings2);
 
 typedef struct {
   SetSeqFuncString s;
@@ -236,25 +234,25 @@ typedef struct {
 } SetSeqFuncs;
 
 static int
-extract_stringlist(PyObject *list,
-                   const char *name,
+extract_stringlist(PyObject* list,
+                   const char* name,
                    size_t n,
-                   size_t **sizelist,
-                   void *strlist);
+                   size_t** sizelist,
+                   void* strlist);
 
 static double*
-extract_weightlist(PyObject *wlist,
-                   const char *name,
+extract_weightlist(PyObject* wlist,
+                   const char* name,
                    size_t n);
 
 static PyObject*
-median_common(PyObject *args,
-              const char *name,
+median_common(PyObject* args,
+              const char* name,
               MedianFuncs foo);
 
 static PyObject*
-median_improve_common(PyObject *args,
-                      const char *name,
+median_improve_common(PyObject* args,
+                      const char* name,
                       MedianImproveFuncs foo);
 
 /* }}} */
@@ -266,50 +264,41 @@ median_improve_common(PyObject *args,
  ****************************************************************************/
 /* {{{ */
 
-static PyObject*
-median_py(PyObject *self, PyObject *args)
+static PyObject* median_py(PyObject*, PyObject* args)
 {
   MedianFuncs engines = { lev_greedy_median<lev_byte>, lev_greedy_median<lev_wchar> };
-  LEV_UNUSED(self);
   return median_common(args, "median", engines);
 }
 
-static PyObject*
-median_improve_py(PyObject *self, PyObject *args)
+static PyObject* median_improve_py(PyObject*, PyObject* args)
 {
   MedianImproveFuncs engines = { lev_median_improve<lev_byte>, lev_median_improve<lev_wchar> };
-  LEV_UNUSED(self);
   return median_improve_common(args, "median_improve", engines);
 }
 
-static PyObject*
-quickmedian_py(PyObject *self, PyObject *args)
+static PyObject* quickmedian_py(PyObject*, PyObject* args)
 {
   MedianFuncs engines = { lev_quick_median, lev_u_quick_median };
-  LEV_UNUSED(self);
   return median_common(args, "quickmedian", engines);
 }
 
-static PyObject*
-setmedian_py(PyObject *self, PyObject *args)
+static PyObject* setmedian_py(PyObject*, PyObject* args)
 {
   MedianFuncs engines = { lev_set_median<lev_byte>, lev_set_median<lev_wchar> };
-  LEV_UNUSED(self);
   return median_common(args, "setmedian", engines);
 }
 
-static PyObject*
-median_common(PyObject *args, const char *name, MedianFuncs foo)
+static PyObject* median_common(PyObject* args, const char* name, MedianFuncs foo)
 {
   size_t n;
-  void *strings = NULL;
-  size_t *sizes = NULL;
-  PyObject *strlist = NULL;
-  PyObject *wlist = NULL;
-  PyObject *strseq = NULL;
-  double *weights;
+  void* strings = NULL;
+  size_t* sizes = NULL;
+  PyObject* strlist = NULL;
+  PyObject* wlist = NULL;
+  PyObject* strseq = NULL;
+  double* weights;
   int stringtype;
-  PyObject *result = NULL;
+  PyObject* result = NULL;
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 1, 2, &strlist, &wlist))
     return NULL;
@@ -345,7 +334,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   if (stringtype == 0) {
     try {
       size_t len = 0;
-      lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
+      lev_byte* medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
       if (!medstr && len)
         // todo remove after refactoring
         result = PyErr_NoMemory();
@@ -361,7 +350,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   else if (stringtype == 1) {
     try {
       size_t len = 0;
-      Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
+      Py_UNICODE* medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
       if (!medstr && len)
         result = PyErr_NoMemory();
       else {
@@ -382,19 +371,18 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   return result;
 }
 
-static PyObject*
-median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
+static PyObject* median_improve_common(PyObject* args, const char* name, MedianImproveFuncs foo)
 {
   size_t n;
-  void *strings = NULL;
-  size_t *sizes = NULL;
-  PyObject *arg1 = NULL;
-  PyObject *strlist = NULL;
-  PyObject *wlist = NULL;
-  PyObject *strseq = NULL;
-  double *weights;
+  void* strings = NULL;
+  size_t* sizes = NULL;
+  PyObject* arg1 = NULL;
+  PyObject* strlist = NULL;
+  PyObject* wlist = NULL;
+  PyObject* strseq = NULL;
+  double* weights;
   int stringtype;
-  PyObject *result = NULL;
+  PyObject* result = NULL;
 
   if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 3, &arg1, &strlist, &wlist))
     return NULL;
@@ -441,9 +429,9 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   if (stringtype == 0) {
     try {
       size_t len = 0;
-      lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
+      lev_byte* s = (lev_byte*)PyBytes_AS_STRING(arg1);
       size_t l = (size_t)PyBytes_GET_SIZE(arg1);
-      lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
+      lev_byte* medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
       if (!medstr && len)
         result = PyErr_NoMemory();
       else {
@@ -458,9 +446,9 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   else if (stringtype == 1) {
     try {
       size_t len = 0;
-      Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
+      Py_UNICODE* s = PyUnicode_AS_UNICODE(arg1);
       size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
-      Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
+      Py_UNICODE* medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
       if (!medstr && len)
         result = PyErr_NoMemory();
       else {
@@ -481,12 +469,10 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   return result;
 }
 
-static double*
-extract_weightlist(PyObject *wlist, const char *name, size_t n)
+static double* extract_weightlist(PyObject* wlist, const char* name, size_t n)
 {
-  size_t i;
-  double *weights = NULL;
-  PyObject *seq;
+  double* weights = NULL;
+  PyObject* seq;
 
   if (wlist) {
     if (!PySequence_Check(wlist)) {
@@ -505,9 +491,9 @@ extract_weightlist(PyObject *wlist, const char *name, size_t n)
     weights = (double*)safe_malloc(n, sizeof(double));
     if (!weights)
       return (double*)PyErr_NoMemory();
-    for (i = 0; i < n; i++) {
-      PyObject *item = PySequence_Fast_GET_ITEM(wlist, i);
-      PyObject *number = PyNumber_Float(item);
+    for (size_t i = 0; i < n; i++) {
+      PyObject* item = PySequence_Fast_GET_ITEM(wlist, i);
+      PyObject* number = PyNumber_Float(item);
 
       if (!number) {
         free(weights);
@@ -532,8 +518,8 @@ extract_weightlist(PyObject *wlist, const char *name, size_t n)
     weights = (double*)safe_malloc(n, sizeof(double));
     if (!weights)
       return (double*)PyErr_NoMemory();
-    for (i = 0; i < n; i++)
-      weights[i] = 1.0;
+    
+    std::fill(weights, weights + n, 1.0);
   }
 
   return weights;
@@ -544,17 +530,13 @@ extract_weightlist(PyObject *wlist, const char *name, size_t n)
  * 1 -- unicode strings
  * <0 -- failure
  */
-static int
-extract_stringlist(PyObject *list, const char *name,
-                   size_t n, size_t **sizelist, void *strlist)
+static int extract_stringlist(PyObject* list, const char* name,
+                              size_t n, size_t** sizelist, void* strlist)
 {
-  size_t i;
-  PyObject *first;
-
   /* check first object type.  when it's a string then all others must be
    * strings too; when it's a unicode string then all others must be unicode
    * strings too. */
-  first = PySequence_Fast_GET_ITEM(list, 0);
+  PyObject* first = PySequence_Fast_GET_ITEM(list, 0);
   /* i don't exactly understand why the problem doesn't exhibit itself earlier
    * but a queer error message is better than a segfault :o) */
   if (first == (PyObject*)-1) {
@@ -564,16 +546,13 @@ extract_stringlist(PyObject *list, const char *name,
   }
 
   if (PyObject_TypeCheck(first, &PyBytes_Type)) {
-    lev_byte **strings;
-    size_t *sizes;
-
-    strings = (lev_byte**)safe_malloc(n, sizeof(lev_byte*));
+    lev_byte** strings = (lev_byte**)safe_malloc(n, sizeof(lev_byte*));
     if (!strings) {
       PyErr_Format(PyExc_MemoryError,
                    "%s cannot allocate memory", name);
       return -1;
     }
-    sizes = (size_t*)safe_malloc(n, sizeof(size_t));
+    size_t* sizes = (size_t*)safe_malloc(n, sizeof(size_t));
     if (!sizes) {
       free(strings);
       PyErr_Format(PyExc_MemoryError,
@@ -583,8 +562,8 @@ extract_stringlist(PyObject *list, const char *name,
 
     strings[0] = (lev_byte*)PyBytes_AS_STRING(first);
     sizes[0] = (size_t)PyBytes_GET_SIZE(first);
-    for (i = 1; i < n; i++) {
-      PyObject *item = PySequence_Fast_GET_ITEM(list, i);
+    for (size_t i = 1; i < n; i++) {
+      PyObject* item = PySequence_Fast_GET_ITEM(list, i);
 
       if (!PyObject_TypeCheck(item, &PyBytes_Type)) {
         free(strings);
@@ -602,15 +581,12 @@ extract_stringlist(PyObject *list, const char *name,
     return 0;
   }
   if (PyObject_TypeCheck(first, &PyUnicode_Type)) {
-    Py_UNICODE **strings;
-    size_t *sizes;
-
-    strings = (Py_UNICODE**)safe_malloc(n, sizeof(Py_UNICODE*));
+    Py_UNICODE** strings = (Py_UNICODE**)safe_malloc(n, sizeof(Py_UNICODE*));
     if (!strings) {
       PyErr_NoMemory();
       return -1;
     }
-    sizes = (size_t*)safe_malloc(n, sizeof(size_t));
+    size_t* sizes = (size_t*)safe_malloc(n, sizeof(size_t));
     if (!sizes) {
       free(strings);
       PyErr_NoMemory();
@@ -619,8 +595,8 @@ extract_stringlist(PyObject *list, const char *name,
 
     strings[0] = PyUnicode_AS_UNICODE(first);
     sizes[0] = (size_t)PyUnicode_GET_SIZE(first);
-    for (i = 1; i < n; i++) {
-      PyObject *item = PySequence_Fast_GET_ITEM(list, i);
+    for (size_t i = 1; i < n; i++) {
+      PyObject* item = PySequence_Fast_GET_ITEM(list, i);
 
       if (!PyObject_TypeCheck(item, &PyUnicode_Type)) {
         free(strings);
@@ -643,19 +619,17 @@ extract_stringlist(PyObject *list, const char *name,
   return -1;
 }
 
-static double
-setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
-              size_t *lensum)
+static double setseq_common(PyObject* args, const char* name, SetSeqFuncs foo, size_t* lensum)
 {
   size_t n1, n2;
-  void *strings1 = NULL;
-  void *strings2 = NULL;
-  size_t *sizes1 = NULL;
-  size_t *sizes2 = NULL;
-  PyObject *strlist1;
-  PyObject *strlist2;
-  PyObject *strseq1;
-  PyObject *strseq2;
+  void* strings1 = NULL;
+  void* strings2 = NULL;
+  size_t* sizes1 = NULL;
+  size_t* sizes2 = NULL;
+  PyObject* strlist1;
+  PyObject* strlist2;
+  PyObject* strseq1;
+  PyObject* strseq2;
   int stringtype1, stringtype2;
   double r = -1.0;
 
@@ -735,13 +709,11 @@ setseq_common(PyObject *args, const char *name, SetSeqFuncs foo,
   return r;
 }
 
-static PyObject*
-seqratio_py(PyObject *self, PyObject *args)
+static PyObject* seqratio_py(PyObject*, PyObject* args)
 {
   SetSeqFuncs engines = { lev_edit_seq_distance<lev_byte>, lev_edit_seq_distance<lev_wchar> };
   size_t lensum;
   double r = setseq_common(args, "seqratio", engines, &lensum);
-  LEV_UNUSED(self);
   if (r < 0)
     return NULL;
   if (lensum == 0)
@@ -749,13 +721,11 @@ seqratio_py(PyObject *self, PyObject *args)
   return PyFloat_FromDouble(((double)lensum - r) / (double)lensum);
 }
 
-static PyObject*
-setratio_py(PyObject *self, PyObject *args)
+static PyObject* setratio_py(PyObject*, PyObject* args)
 {
   SetSeqFuncs engines = { lev_set_distance<lev_byte>, lev_set_distance<lev_wchar> };
   size_t lensum;
   double r = setseq_common(args, "setratio", engines, &lensum);
-  LEV_UNUSED(self);
   if (r < 0)
     return NULL;
   if (lensum == 0)
