@@ -113,6 +113,27 @@ std::vector<CharT> make_symlist(size_t n, const size_t *lengths,
   return symlist;
 }
 
+template <typename CharT>
+std::vector<CharT> make_symlist(const std::vector<std::basic_string<CharT>>& strings)
+{
+  std::vector<CharT> symlist;
+  if (std::all_of(std::begin(strings), std::end(strings), [](const auto& x){ return x.size() == 0; }))
+  {
+    return symlist;
+  }
+
+  std::unordered_set<CharT> symmap;
+  for (const auto& string : strings) {
+    for (auto ch : string) {
+      symmap.insert(ch);
+    }
+  }
+  /* create dense symbol table, so we can easily iterate over only characters
+   * present in the strings */
+  symlist.insert(std::end(symlist), std::begin(symmap), std::end(symmap));
+  return symlist;
+}
+
 /**
  * lev_greedy_median:
  * @n: The size of @lengths, @strings, and @weights.
@@ -131,22 +152,25 @@ std::vector<CharT> make_symlist(size_t n, const size_t *lengths,
  *          is stored in @medlength.
  **/
 template <typename CharT>
-CharT* lev_greedy_median(size_t n, const size_t* lengths, const CharT** strings,
-                         const double* weights, size_t* medlength)
+std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<CharT>>& strings,
+                         const std::vector<double>& weights)
 {
+  std::basic_string<CharT> result_median;
+
   /* find all symbols */
-  std::vector<CharT> symlist = make_symlist(n, lengths, strings);
+  std::vector<CharT> symlist = make_symlist(strings);
   if (symlist.empty()) {
-    *medlength = 0;
-    return (CharT*)calloc(1, sizeof(CharT));
+    return result_median;
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  std::vector<std::unique_ptr<size_t[]>> rows(n);
-  size_t maxlen = *std::max_element(lengths, lengths + n);
+  std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
+  size_t maxlen = std::max_element(std::begin(strings), std::end(strings), [](const auto& a, const auto& b){
+    return a.size() < b.size();
+  })->size();
 
-  for (size_t i = 0; i < n; i++) {
-    size_t leni = lengths[i];
+  for (size_t i = 0; i < strings.size(); i++) {
+    size_t leni = strings[i].size();
     rows[i] = std::make_unique<size_t[]>(leni + 1);
     std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
@@ -163,7 +187,10 @@ CharT* lev_greedy_median(size_t n, const size_t* lengths, const CharT** strings,
    * is normally zero-based
    */
   auto mediandist = std::make_unique<double[]>(stoplen + 1);
-  mediandist[0] = std::inner_product(lengths, lengths + n, weights, 0.0);
+  mediandist[0] = 0;
+  for (size_t i = 0; i < strings.size(); i++) {
+    mediandist[0] += strings[i].size() + weights[i];
+  }
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
@@ -177,10 +204,10 @@ CharT* lev_greedy_median(size_t n, const size_t* lengths, const CharT** strings,
       double minsum = 0.0;
       symbol = symlist[j];
       /* sum Levenshtein distances from all the strings, with given weights */
-      for (size_t i = 0; i < n; i++) {
-        const CharT* stri = strings[i];
+      for (size_t i = 0; i < strings.size(); i++) {
+        const CharT* stri = strings[i].data();
         size_t *p = rows[i].get();
-        size_t leni = lengths[i];
+        size_t leni = strings[i].size();
         size_t *end = rows[i].get() + leni;
         size_t min = len;
         size_t x = len; /* == row[0] */
@@ -217,10 +244,10 @@ CharT* lev_greedy_median(size_t n, const size_t* lengths, const CharT** strings,
     /* now the best symbol is known, so recompute all matrix rows for this
      * one */
     symbol = median[len - 1];
-    for (size_t i = 0; i < n; i++) {
-      const CharT* stri = strings[i];
+    for (size_t i = 0; i < strings.size(); i++) {
+      const std::basic_string<CharT>& stri = strings[i];
       size_t* oldrow = rows[i].get();
-      size_t leni = lengths[i];
+      size_t leni = strings[i].size();
       /* compute a row of Levenshtein matrix */
       for (size_t k = 1; k <= leni; k++) {
         size_t c1 = oldrow[k] + 1;
@@ -238,16 +265,10 @@ CharT* lev_greedy_median(size_t n, const size_t* lengths, const CharT** strings,
   size_t bestlen = std::distance(mediandist.get(), std::min_element(mediandist.get(), mediandist.get() + stoplen));
 
   /* return result */
-  {
-    CharT* result = (CharT*)safe_malloc(bestlen, sizeof(CharT));
-    if (!result) {
-      return NULL;
-    }
-    memcpy(result, median.get(), bestlen*sizeof(CharT));
-    *medlength = bestlen;
-    return result;
-  }
+  result_median.insert(std::begin(result_median), median.get(), median.get() + bestlen);
+  return result_median;
 }
+
 
 /*
  * Knowing the distance matrices up to some row, finish the distance

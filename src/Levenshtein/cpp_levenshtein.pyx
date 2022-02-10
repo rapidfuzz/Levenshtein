@@ -2,6 +2,7 @@
 # cython: language_level=3
 # cython: binding=True
 
+from libc.stdint cimport uint32_t
 from libc.stdlib cimport free
 from libc.string cimport strlen
 from cpython.list cimport PyList_New, PyList_SET_ITEM
@@ -13,6 +14,9 @@ from cpython.unicode cimport (
 from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_FromStringAndSize
 from cpython.sequence cimport PySequence_Check, PySequence_Length
 from libc.stddef cimport wchar_t
+from libcpp.vector cimport vector
+
+from libcpp.algorithm cimport copy
 
 from rapidfuzz.distance import (
     Editops as RfEditops,
@@ -24,7 +28,27 @@ from rapidfuzz.distance.Levenshtein import (
 )
 
 cdef extern from *:
+    int PyUnicode_4BYTE_KIND
+
     object PyUnicode_FromWideChar(const wchar_t *w, Py_ssize_t size)
+    unsigned int PyUnicode_KIND(object o)
+    void* PyUnicode_DATA(object o)
+    Py_UCS4 PyUnicode_READ(int kind, void *data, Py_ssize_t index)
+
+    object PyUnicode_FromKindAndData(int kind, const void *buffer, Py_ssize_t size)
+
+cdef extern from "<string>" namespace "std" nogil:
+    cdef cppclass basic_string[T]:
+        ctypedef size_t size_type
+
+        basic_string() except +
+
+        void resize(size_type) except +
+
+        T& operator[](size_type)
+
+        const T* data()
+        size_type size()
 
 cdef extern from "_levenshtein.hpp":
     ctypedef unsigned char lev_byte
@@ -55,19 +79,21 @@ cdef extern from "_levenshtein.hpp":
         size_t dpos
         size_t len
 
-    cdef void lev_editops_invert(size_t n, LevEditOp *ops)
-    cdef void lev_opcodes_invert(size_t nb, LevOpCode *bops)
+    cdef void lev_editops_invert(size_t n, LevEditOp *ops) except +
+    cdef void lev_opcodes_invert(size_t nb, LevOpCode *bops) except +
 
-    cdef int lev_editops_check_errors(size_t len1, size_t len2, size_t n, const LevEditOp *ops)
-    cdef int lev_opcodes_check_errors(size_t len1, size_t len2, size_t nb, const LevOpCode *bops)
+    cdef int lev_editops_check_errors(size_t len1, size_t len2, size_t n, const LevEditOp *ops) except +
+    cdef int lev_opcodes_check_errors(size_t len1, size_t len2, size_t nb, const LevOpCode *bops) except +
 
-    cdef T* lev_editops_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t n, const LevEditOp *ops, size_t *len)
-    cdef T* lev_opcodes_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t nb, const LevOpCode *bops, size_t *len)
+    cdef T* lev_editops_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t n, const LevEditOp *ops, size_t *len) except +
+    cdef T* lev_opcodes_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t nb, const LevOpCode *bops, size_t *len) except +
 
-    cdef LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2, size_t n, const LevEditOp *ops, size_t *nmblocks)
-    cdef LevMatchingBlock* lev_opcodes_matching_blocks(size_t len1, size_t len2, size_t nb, const LevOpCode *bops, size_t *nmblocks)
+    cdef LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2, size_t n, const LevEditOp *ops, size_t *nmblocks) except +
+    cdef LevMatchingBlock* lev_opcodes_matching_blocks(size_t len1, size_t len2, size_t nb, const LevOpCode *bops, size_t *nmblocks) except +
 
-    cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem)
+    cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem) except +
+
+    cdef basic_string[CharT] lev_greedy_median[CharT](const vector[basic_string[CharT]]& strings, const vector[double]& weights) except +
 
 ctypedef struct OpcodeName:
     PyObject* pystring
@@ -636,3 +662,81 @@ def apply_edit(edit_operations, source_string, destination_string):
         raise TypeError("apply_edit first argument must be a list of edit operations")
     
     raise TypeError("apply_edit expected two Strings or two Unicodes")
+
+
+cdef vector[double] extract_weightlist(wlist, size_t n) except *:
+    cdef size_t i
+    cdef double weight
+    cdef vector[double] weights
+
+    if wlist is None:
+        weights.resize(n, 1.0)
+    else:
+        weights.resize(n)
+        for i, w in enumerate(wlist):
+            weight = w
+            if w < 0:
+                raise ValueError(f"weight {weight} is negative")
+            weights[i] = w
+    return weights
+
+cdef basic_string[uint32_t] to_string(string) except *:
+    cdef basic_string[uint32_t] c_string
+    cdef Py_ssize_t i
+    cdef Py_ssize_t str_len = len(string)
+    c_string.resize(str_len)
+
+    if isinstance(string, str):
+        kind = PyUnicode_KIND(string)
+        data = PyUnicode_DATA(string)
+
+        for i in range(str_len):
+            c_string[i] = PyUnicode_READ(kind, data, i)
+    elif isinstance(string, bytes):
+        b = PyBytes_AS_STRING(string)
+        for i in range(str_len):
+            c_string[i] = b[i]
+    else:
+        raise TypeError("expected bytes or string")
+
+    return c_string
+
+cdef vector[basic_string[uint32_t]] extract_stringlist(strings) except *:
+    cdef vector[basic_string[uint32_t]] strlist
+
+    for string in strings:
+        strlist.push_back(to_string(string))
+    
+    return strlist
+
+
+def median(strlist, wlist = None, *):
+    """
+    Find an approximate generalized median string using greedy algorithm.
+
+    You can optionally pass a weight for each string as the second
+    argument.  The weights are interpreted as item multiplicities,
+    although any non-negative real numbers are accepted.  Use them to
+    improve computation speed when strings often appear multiple times
+    in the sequence.
+    
+    Examples
+    --------
+    
+    >>> median(['SpSm', 'mpamm', 'Spam', 'Spa', 'Sua', 'hSam'])
+    'Spam'
+    >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
+                 'Leveshtei', 'Lenshtein', 'Lvenstein',
+                 'Levenhtin', 'evenshtei']
+    >>> median(fixme)
+    'Levenshtein'
+    
+    Hm.  Even a computer program can spell Levenshtein better than me.
+    """
+    if wlist is not None and len(strlist) != len(wlist):
+        raise ValueError("strlist has a different length than wlist")
+
+    weights = extract_weightlist(wlist, len(strlist))
+    strings = extract_stringlist(strlist)
+    median = lev_greedy_median(strings, weights)
+    return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
