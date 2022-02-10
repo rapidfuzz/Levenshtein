@@ -33,7 +33,6 @@
 
 /* python interface and wrappers */
 /* declarations and docstrings {{{ */
-static PyObject* median_py(PyObject* self, PyObject* args);
 static PyObject* median_improve_py(PyObject* self, PyObject* args);
 static PyObject* quickmedian_py(PyObject* self, PyObject* args);
 static PyObject* setmedian_py(PyObject* self, PyObject* args);
@@ -54,29 +53,6 @@ static PyObject* setratio_py(PyObject* self, PyObject* args);
   "It supports both normal and Unicode strings, but can't mix them, all\n" \
   "arguments to a function (method) have to be of the same type (or its\n" \
   "subclasses).\n"
-
-#define median_DESC \
-  "Find an approximate generalized median string using greedy algorithm.\n" \
-  "\n" \
-  "median(string_sequence[, weight_sequence])\n" \
-  "\n" \
-  "You can optionally pass a weight for each string as the second\n" \
-  "argument.  The weights are interpreted as item multiplicities,\n" \
-  "although any non-negative real numbers are accepted.  Use them to\n" \
-  "improve computation speed when strings often appear multiple times\n" \
-  "in the sequence.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> median(['SpSm', 'mpamm', 'Spam', 'Spa', 'Sua', 'hSam'])\n" \
-  "'Spam'\n" \
-  ">>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',\n" \
-  "...          'Leveshtei', 'Lenshtein', 'Lvenstein',\n" \
-  "...          'Levenhtin', 'evenshtei']\n" \
-  ">>> median(fixme)\n" \
-  "'Levenshtein'\n" \
-  "\n" \
-  "Hm.  Even a computer program can spell Levenshtein better than me.\n"
 
 #define median_improve_DESC \
   "Improve an approximate generalized median string by perturbations.\n" \
@@ -174,7 +150,6 @@ static PyObject* setratio_py(PyObject* self, PyObject* args);
 
 #define METHODS_ITEM(x) { #x, x##_py, METH_VARARGS, x##_DESC }
 static PyMethodDef methods[] = {
-  METHODS_ITEM(median),
   METHODS_ITEM(median_improve),
   METHODS_ITEM(quickmedian),
   METHODS_ITEM(setmedian),
@@ -263,12 +238,6 @@ median_improve_common(PyObject* args,
  *
  ****************************************************************************/
 /* {{{ */
-
-static PyObject* median_py(PyObject*, PyObject* args)
-{
-  MedianFuncs engines = { lev_greedy_median<lev_byte>, lev_greedy_median<lev_wchar> };
-  return median_common(args, "median", engines);
-}
 
 static PyObject* median_improve_py(PyObject*, PyObject* args)
 {
