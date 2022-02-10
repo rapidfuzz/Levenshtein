@@ -1,8 +1,13 @@
 ## Changelog
 
 ### v0.18.0
-* Use a faster editops implementation provided by RapidFuzz
+#### Fixed
 * Fixed memory leak in error path of setratio
+* Fixed out of bound reads due to uninitialized variable in median
+  * e.g. quickmedian(["test", "teste"], [0, 0]) caused out of bound reads
+
+#### Changed
+* Use a faster editops implementation provided by RapidFuzz
 * Reduce code duplication
 * reuse implementations from rapidfuzz-cpp
 * Transition to scikit-build 

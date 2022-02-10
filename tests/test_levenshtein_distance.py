@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import Levenshtein
-import unittest
 
 def test_empty_string():
     """

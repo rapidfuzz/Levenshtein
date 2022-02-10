@@ -24,6 +24,8 @@
 #include <Python.h>
 #include "_levenshtein.hpp"
 
+#include <iostream>
+
 #define LEV_UNUSED(x) ((void)x)
 
 /* Me thinks the second argument of PyArg_UnpackTuple() should be const.
@@ -299,7 +301,7 @@ setmedian_py(PyObject *self, PyObject *args)
 static PyObject*
 median_common(PyObject *args, const char *name, MedianFuncs foo)
 {
-  size_t n, len;
+  size_t n;
   void *strings = NULL;
   size_t *sizes = NULL;
   PyObject *strlist = NULL;
@@ -342,6 +344,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
 
   if (stringtype == 0) {
     try {
+      size_t len = 0;
       lev_byte *medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
       if (!medstr && len)
         // todo remove after refactoring
@@ -357,6 +360,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
   }
   else if (stringtype == 1) {
     try {
+      size_t len = 0;
       Py_UNICODE *medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
       if (!medstr && len)
         result = PyErr_NoMemory();
@@ -381,7 +385,7 @@ median_common(PyObject *args, const char *name, MedianFuncs foo)
 static PyObject*
 median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
 {
-  size_t n, len;
+  size_t n;
   void *strings = NULL;
   size_t *sizes = NULL;
   PyObject *arg1 = NULL;
@@ -436,6 +440,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   Py_DECREF(strseq);
   if (stringtype == 0) {
     try {
+      size_t len = 0;
       lev_byte *s = (lev_byte*)PyBytes_AS_STRING(arg1);
       size_t l = (size_t)PyBytes_GET_SIZE(arg1);
       lev_byte *medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
@@ -452,6 +457,7 @@ median_improve_common(PyObject *args, const char *name, MedianImproveFuncs foo)
   }
   else if (stringtype == 1) {
     try {
+      size_t len = 0;
       Py_UNICODE *s = PyUnicode_AS_UNICODE(arg1);
       size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
       Py_UNICODE *medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
