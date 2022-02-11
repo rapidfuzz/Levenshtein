@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Levenshtein module &mdash; Levenshtein 0.18.0 documentation</title>
+  <title>Levenshtein module &mdash; Levenshtein 0.18.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -127,7 +127,7 @@ this behaviour.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <p>Find the Levenshtein distance between two strings:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rapidfuzz.algorithm.edit_based</span> <span class="kn">import</span> <span class="n">Levenshtein</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rapidfuzz.distance</span> <span class="kn">import</span> <span class="n">Levenshtein</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Levenshtein</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">)</span>
 <span class="go">2</span>
 </pre></div>
@@ -175,7 +175,7 @@ which deactivates this behaviour.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <p>Find the normalized Indel similarity between two strings:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rapidfuzz.algorithm.edit_based</span> <span class="kn">import</span> <span class="n">Indel</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">rapidfuzz.distance</span> <span class="kn">import</span> <span class="n">Indel</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Indel</span><span class="o">.</span><span class="n">normalized_similarity</span><span class="p">(</span><span class="s2">&quot;lewenstein&quot;</span><span class="p">,</span> <span class="s2">&quot;levenshtein&quot;</span><span class="p">)</span>
 <span class="go">0.85714285714285</span>
 </pre></div>
