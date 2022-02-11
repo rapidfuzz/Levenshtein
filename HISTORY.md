@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.18.1
+#### Fixed
+- Indel.normalized_similarity was broken in RapidFuzz v2.0.0 (see #20)
+
 ### v0.18.0
 #### Fixed
 * Fixed memory leak in error path of setratio

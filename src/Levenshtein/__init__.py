@@ -16,7 +16,7 @@ subclasses).
 
 __author__ = "Max Bachmann"
 __license__ = "GPL"
-__version__ = "0.18.0"
+__version__ = "0.18.1"
 
 from rapidfuzz.distance.Levenshtein import distance
 from rapidfuzz.distance.Indel import normalized_similarity as ratio
