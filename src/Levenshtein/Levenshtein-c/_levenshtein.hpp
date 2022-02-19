@@ -2,6 +2,7 @@
 #ifndef LEVENSHTEIN_H
 #define LEVENSHTEIN_H
 
+#include "Python.h"
 #include <numeric>
 #include <memory>
 #include <vector>
@@ -11,6 +12,8 @@
 
 #define LEV_EPSILON 1e-14
 #define LEV_INFINITY 1e100
+
+#define PYTHON_VERSION(major, minor, micro) ((major << 24) | (minor << 16) | (micro << 8))
 
 #ifndef size_t
 #  include <stdlib.h>
@@ -24,8 +27,107 @@
 #endif
 typedef unsigned char lev_byte;
 
-/* Edit opration type
- * DON'T CHANGE! used ad arrays indices and the bits are occasionally used
+enum RF_StringType {
+    RF_UINT8,  /* uint8_t */
+    RF_UINT16, /* uint16_t */
+    RF_UINT32  /* uint32_t */
+};
+
+typedef struct _RF_String {
+/* members */
+    RF_StringType kind;
+    void* data;
+    int64_t length;
+} RF_String;
+
+#define LIST_OF_CASES()   \
+    X_ENUM(RF_UINT8,  uint8_t ) \
+    X_ENUM(RF_UINT16, uint16_t) \
+    X_ENUM(RF_UINT32, uint32_t)
+
+template <typename Func, typename... Args>
+auto visit(const RF_String& str, Func&& f, Args&&... args)
+{
+    switch(str.kind) {
+# define X_ENUM(kind, type) case kind: return f((type*)str.data, (type*)str.data + str.length, std::forward<Args>(args)...);
+    LIST_OF_CASES()
+# undef X_ENUM
+    default:
+        throw std::logic_error("Invalid string type");
+    }
+}
+
+template <typename Func, typename... Args>
+auto visitor(const RF_String& str1, const RF_String& str2, Func&& f, Args&&... args)
+{
+    return visit(str2,
+        [&](auto first, auto last) {
+            return visit(str1, std::forward<Func>(f), first, last, std::forward<Args>(args)...);
+        }
+    );
+}
+
+static inline int64_t levenshtein_distance_func(const RF_String& s1, const RF_String& s2)
+{
+    return visitor(s1, s2, [&](auto first1, auto last1, auto first2, auto last2) {
+        return rapidfuzz::levenshtein_distance(first1, last1, first2, last2);
+    });
+}
+
+static inline bool is_valid_string(PyObject* py_str)
+{
+    bool is_string = false;
+
+    if (PyBytes_Check(py_str)) {
+        is_string = true;
+    }
+    else if (PyUnicode_Check(py_str)) {
+        // PEP 623 deprecates legacy strings and therefor
+        // deprecates e.g. PyUnicode_READY in Python 3.10
+#if PY_VERSION_HEX < PYTHON_VERSION(3, 10, 0)
+        if (PyUnicode_READY(py_str)) {
+          // cython will use the exception set by PyUnicode_READY
+          throw std::runtime_error("");
+        }
+#endif
+        is_string = true;
+    }
+
+    return is_string;
+}
+
+static inline RF_String convert_string(PyObject* py_str)
+{
+    if (PyBytes_Check(py_str)) {
+        return {
+            RF_UINT8,
+            PyBytes_AS_STRING(py_str),
+            static_cast<int64_t>(PyBytes_GET_SIZE(py_str))
+        };
+    } else {
+        RF_StringType kind;
+        switch(PyUnicode_KIND(py_str)) {
+        case PyUnicode_1BYTE_KIND:
+           kind = RF_UINT8;
+           break;
+        case PyUnicode_2BYTE_KIND:
+           kind = RF_UINT16;
+           break;
+        default:
+           kind = RF_UINT32;
+           break;
+        }
+
+        return {
+            kind,
+            PyUnicode_DATA(py_str),
+            static_cast<int64_t>(PyUnicode_GET_LENGTH(py_str))
+        };
+    }
+}
+
+/* Edit operation type
+ * DON'T CHANGE! used as array indices and the bits are occasionally used
  * as flags */
 typedef enum {
   LEV_EDIT_KEEP = 0,
@@ -134,6 +236,28 @@ std::vector<CharT> make_symlist(const std::vector<std::basic_string<CharT>>& str
   return symlist;
 }
 
+static inline std::vector<uint32_t> make_symlist(const std::vector<RF_String>& strings)
+{
+  std::vector<uint32_t> symlist;
+  if (std::all_of(std::begin(strings), std::end(strings), [](const auto& x){ return x.length == 0; }))
+  {
+    return symlist;
+  }
+
+  std::unordered_set<uint32_t> symmap;
+  for (const auto& string : strings) {
+    visit(string, [&](auto first1, auto last1){
+      for (; first1 != last1; ++first1) {
+        symmap.insert(*first1);
+      }
+    });
+  }
+  /* create dense symbol table, so we can easily iterate over only characters
+   * present in the strings */
+  symlist.insert(std::end(symlist), std::begin(symmap), std::end(symmap));
+  return symlist;
+}
+
 /**
  * lev_greedy_median:
  * @n: The size of @lengths, @strings, and @weights.
@@ -151,14 +275,13 @@ std::vector<CharT> make_symlist(const std::vector<std::basic_string<CharT>>& str
  * Returns: The generalized median, as a newly allocated string; its length
  *          is stored in @medlength.
  **/
-template <typename CharT>
-std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<CharT>>& strings,
+static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF_String>& strings,
                          const std::vector<double>& weights)
 {
-  std::basic_string<CharT> result_median;
+  std::basic_string<uint32_t> result_median;
 
   /* find all symbols */
-  std::vector<CharT> symlist = make_symlist(strings);
+  std::vector<uint32_t> symlist = make_symlist(strings);
   if (symlist.empty()) {
     return result_median;
   }
@@ -166,11 +289,11 @@ std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<C
   /* allocate and initialize per-string matrix rows and a common work buffer */
   std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
   size_t maxlen = std::max_element(std::begin(strings), std::end(strings), [](const auto& a, const auto& b){
-    return a.size() < b.size();
-  })->size();
+    return a.length < b.length;
+  })->length;
 
   for (size_t i = 0; i < strings.size(); i++) {
-    size_t leni = strings[i].size();
+    size_t leni = strings[i].length;
     rows[i] = std::make_unique<size_t[]>(leni + 1);
     std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
@@ -179,7 +302,7 @@ std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<C
 
   /* compute final cost of string of length 0 (empty string may be also
    * a valid answer) */
-  auto median = std::make_unique<CharT[]>(stoplen);
+  auto median = std::make_unique<uint32_t[]>(stoplen);
   /**
    * the total distance of the best median string of
    * given length.  warning!  mediandist[0] is total
@@ -189,13 +312,13 @@ std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<C
   auto mediandist = std::make_unique<double[]>(stoplen + 1);
   mediandist[0] = 0;
   for (size_t i = 0; i < strings.size(); i++) {
-    mediandist[0] += strings[i].size() + weights[i];
+    mediandist[0] += strings[i].length + weights[i];
   }
 
   /* build up the approximate median string symbol by symbol
    * XXX: we actually exit on break below, but on the same condition */
   for (size_t len = 1; len <= stoplen; len++) {
-    CharT symbol;
+    uint32_t symbol = 0;
     double minminsum = LEV_INFINITY;
     row[0] = len;
     /* iterate over all symbols we may want to add */
@@ -205,26 +328,26 @@ std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<C
       symbol = symlist[j];
       /* sum Levenshtein distances from all the strings, with given weights */
       for (size_t i = 0; i < strings.size(); i++) {
-        const CharT* stri = strings[i].data();
-        size_t *p = rows[i].get();
-        size_t leni = strings[i].size();
-        size_t *end = rows[i].get() + leni;
-        size_t min = len;
-        size_t x = len; /* == row[0] */
-        /* compute how another row of Levenshtein matrix would look for median
-         * string with this symbol added */
-        while (p < end) {
-          size_t D = *(p++) + (symbol != *(stri++));
-          x++;
-          if (x > D)
-            x = D;
-          if (x > *p + 1)
-            x = *p + 1;
-          if (x < min)
-            min = x;
-        }
-        minsum += (double)min*weights[i];
-        totaldist += (double)x*weights[i];
+        visit(strings[i], [&](auto first1, auto last1){
+          size_t *p = rows[i].get();
+          size_t *end = rows[i].get() + std::distance(first1, last1);
+          size_t min = len;
+          size_t x = len; /* == row[0] */
+          /* compute how another row of Levenshtein matrix would look for median
+          * string with this symbol added */
+          while (p != end) {
+            size_t D = *(p++) + (symbol != *(first1++));
+            x++;
+            if (x > D)
+              x = D;
+            if (x > *p + 1)
+              x = *p + 1;
+            if (x < min)
+              min = x;
+          }
+          minsum += (double)min*weights[i];
+          totaldist += (double)x*weights[i];
+        });
       }
       /* is this symbol better than all the others? */
       if (minsum < minminsum) {
@@ -245,19 +368,20 @@ std::basic_string<CharT> lev_greedy_median(const std::vector<std::basic_string<C
      * one */
     symbol = median[len - 1];
     for (size_t i = 0; i < strings.size(); i++) {
-      const std::basic_string<CharT>& stri = strings[i];
-      size_t* oldrow = rows[i].get();
-      size_t leni = strings[i].size();
-      /* compute a row of Levenshtein matrix */
-      for (size_t k = 1; k <= leni; k++) {
-        size_t c1 = oldrow[k] + 1;
-        size_t c2 = row[k - 1] + 1;
-        size_t c3 = oldrow[k - 1] + (symbol != stri[k - 1]);
-        row[k] = c2 > c3 ? c3 : c2;
-        if (row[k] > c1)
-          row[k] = c1;
-      }
-      memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
+      visit(strings[i], [&](auto first1, auto last1){
+        size_t* oldrow = rows[i].get();
+        size_t leni = std::distance(first1, last1);
+        /* compute a row of Levenshtein matrix */
+        for (size_t k = 1; k <= leni; k++) {
+          size_t c1 = oldrow[k] + 1;
+          size_t c2 = row[k - 1] + 1;
+          size_t c3 = oldrow[k - 1] + (symbol != first1[k - 1]);
+          row[k] = c2 > c3 ? c3 : c2;
+          if (row[k] > c1)
+            row[k] = c1;
+        }
+        memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
+      });
     }
   }
 
@@ -525,61 +649,6 @@ lev_u_quick_median(size_t n,
                    size_t *medlength);
 
 /**
- * lev_set_median_index:
- * @n: The size of @lengths, @strings, and @weights.
- * @lengths: The lengths of @strings.
- * @strings: An array of strings, that may contain NUL characters.
- * @weights: The string weights (they behave exactly as multiplicities, though
- *           any positive value is allowed, not just integers).
- *
- * Finds the median string of a string set @strings.
- *
- * Returns: An index in @strings pointing to the set median, -1 in case of
- *          failure.
- **/
-template <typename CharT>
-size_t lev_set_median_index(size_t n, const size_t* lengths, const CharT** strings, const double* weights)
-{
-  size_t minidx = 0;
-  double mindist = LEV_INFINITY;
-  std::vector<long int> distances(n*(n - 1)/2, 0xff);
-
-  for (size_t i = 0; i < n; i++) {
-    size_t j = 0;
-    double dist = 0.0;
-    const CharT* stri = strings[i];
-    size_t leni = lengths[i];
-    /* below diagonal */
-    while (j < i && dist < mindist) {
-      size_t dindex = (i - 1)*(i - 2)/2 + j;
-      long int d;
-      if (distances[dindex] >= 0)
-        d = distances[dindex];
-      else {
-        d = rapidfuzz::levenshtein_distance(strings[j], strings[j] + lengths[j], stri, stri + leni);
-      }
-      dist += weights[j] * (double)d;
-      j++;
-    }
-    j++;  /* no need to compare item with itself */
-    /* above diagonal */
-    while (j < n && dist < mindist) {
-      size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = rapidfuzz::levenshtein_distance(strings[j], strings[j] + lengths[j], stri, stri + leni);
-      dist += weights[j] * (double)distances[dindex];
-      j++;
-    }
-
-    if (dist < mindist) {
-      mindist = dist;
-      minidx = i;
-    }
-  }
-
-  return minidx;
-}
-
-/**
  * lev_set_median:
  * @n: The size of @lengths, @strings, and @weights.
  * @lengths: The lengths of @strings.
@@ -593,28 +662,59 @@ size_t lev_set_median_index(size_t n, const size_t* lengths, const CharT** strin
  * Returns: The set median as a newly allocate string, its length is stored
  *          in @medlength.  %NULL in the case of failure.
  **/
-template <typename CharT>
-CharT* lev_set_median(size_t n, const size_t *lengths, const CharT** strings,
-                         const double* weights, size_t* medlength)
+static inline std::basic_string<uint32_t> lev_set_median(const std::vector<RF_String>& strings,
+                         const std::vector<double>& weights)
 {
-  size_t minidx = lev_set_median_index(n, lengths, strings, weights);
-  CharT* result;
+  size_t minidx = 0;
+  double mindist = LEV_INFINITY;
+  std::vector<long int> distances(strings.size()*(strings.size() - 1)/2, 0xff);
 
-  if (minidx == (size_t)-1)
-    return NULL;
+  for (size_t i = 0; i < strings.size(); i++) {
+    size_t j = 0;
+    double dist = 0.0;
 
-  *medlength = lengths[minidx];
-  if (!lengths[minidx])
-    return (CharT*)calloc(1, sizeof(CharT));
+    /* below diagonal */
+    while (j < i && dist < mindist) {
+      size_t dindex = (i - 1)*(i - 2)/2 + j;
+      long int d;
+      if (distances[dindex] >= 0)
+        d = distances[dindex];
+      else {
+        d = levenshtein_distance_func(strings[j], strings[i]);
+      }
+      dist += weights[j] * (double)d;
+      j++;
+    }
+    j++;  /* no need to compare item with itself */
+    /* above diagonal */
+    while (j < strings.size() && dist < mindist) {
+      size_t dindex = (j - 1)*(j - 2)/2 + i;
+      distances[dindex] = levenshtein_distance_func(strings[j], strings[i]);
+      dist += weights[j] * (double)distances[dindex];
+      j++;
+    }
 
-  result = (CharT*)safe_malloc(lengths[minidx], sizeof(CharT));
-  if (!result)
-    return NULL;
-  return (CharT*)memcpy(result, strings[minidx], lengths[minidx]*sizeof(CharT));
+    if (dist < mindist) {
+      mindist = dist;
+      minidx = i;
+    }
+  }
+
+  return visit(strings[minidx], [&](auto first1, auto last1) {
+      return std::basic_string<uint32_t>(first1, last1);
+  });
+}
+
+
+static inline bool is_equal(const RF_String& a, const RF_String& b)
+{
+  return visitor(a, b, [](auto first1, auto last1, auto first2, auto last2){
+    return std::equal(first1, last1, first2, last2);
+  });
 }
 
 /**
- * lev_u_edit_seq_distance:
+ * lev_edit_seq_distance:
  * @n1: The length of @lengths1 and @strings1.
  * @lengths1: The lengths of strings in @strings1.
  * @strings1: An array of strings that may contain NUL characters.
@@ -631,83 +731,84 @@ CharT* lev_set_median(size_t n, const size_t *lengths, const CharT** strings,
  *
  * Returns: The distance of the two sequences.
  **/
-template <typename CharT>
-double lev_edit_seq_distance(size_t n1, const size_t* lengths1, const CharT** strings1,
-                             size_t n2, const size_t* lengths2, const CharT** strings2)
+static inline double lev_edit_seq_distance(const std::vector<RF_String>& strings1, const std::vector<RF_String>& strings2)
 {
+  if (strings1.size() > strings2.size())
+  {
+    return lev_edit_seq_distance(strings2, strings1);
+  }
+
+  auto strings1_start = std::begin(strings1);
+  auto strings1_end = std::end(strings1);
+  auto strings2_start = std::begin(strings2);
+  auto strings2_end = std::end(strings2);
+
   /* strip common prefix */
-  while (n1 > 0 && n2 > 0
-         && *lengths1 == *lengths2
-         && memcmp(*strings1, *strings2,
-                   *lengths1*sizeof(CharT)) == 0) {
-    n1--;
-    n2--;
-    strings1++;
-    strings2++;
-    lengths1++;
-    lengths2++;
+  while (strings1_start != strings1_end
+      && strings2_start != strings2_end
+      && is_equal(*strings1_start, *strings2_start))
+  {
+    strings1_start++;
+    strings2_start++;
   }
 
   /* strip common suffix */
-  while (n1 > 0 && n2 > 0
-         && lengths1[n1-1] == lengths2[n2-1]
-         && memcmp(strings1[n1-1], strings2[n2-1],
-                   lengths1[n1-1]*sizeof(CharT)) == 0) {
-    n1--;
-    n2--;
+  while (strings1_start != strings1_end
+      && strings2_start != strings2_end
+      && is_equal(*(strings1_end-1), *(strings2_end - 1)))
+  {
+    strings1_end--;
+    strings2_end--;
   }
 
   /* catch trivial cases */
-  if (n1 == 0)
-    return (double)n2;
-  if (n2 == 0)
-    return (double)n1;
-
-  /* make the inner cycle (i.e. strings2) the longer one */
-  if (n1 > n2) {
-    std::swap(n1, n2);
-    std::swap(lengths1, lengths2);
-    std::swap(strings1, strings2);
-  }
-  n1++;
-  n2++;
+  if (strings1_start == strings1_end)
+    return (double)std::distance(strings2_start, strings2_end);
+  if (strings2_start == strings2_end)
+    return (double)std::distance(strings1_start, strings1_end);
 
   /* initalize first row */
-  auto row = std::make_unique<double[]>(n2);
-  double* last = row.get() + n2 - 1;
-  double* end = row.get() + n2;
+  size_t n1 = std::distance(strings1_start, strings1_end);
+  size_t n2 = std::distance(strings2_start, strings2_end);
+  auto row = std::make_unique<double[]>(n2 + 1);
+  double* last = row.get() + n2;
+  double* end = row.get() + n2 + 1;
   std::iota(row.get(), end, 0.0);
 
   /* go through the matrix and compute the costs.  yes, this is an extremely
    * obfuscated version, but also extremely memory-conservative and relatively
    * fast.  */
-  for (size_t i = 1; i < n1; i++) {
+  for (size_t i = 0; i < n1; i++) {
     double* p = row.get() + 1;
-    const CharT* str1 = strings1[i - 1];
-    const size_t len1 = lengths1[i - 1];
-    const CharT** str2p = strings2;
-    const size_t *len2p = lengths2;
-    double D = (double)i - 1.0;
-    double x = (double)i;
-    while (p != end) {
-      size_t l = len1 + *len2p;
-      double q;
-      if (l == 0)
-        q = D;
-      else {
-        size_t d = rapidfuzz::indel_distance(str1, str1 + len1, *str2p, *str2p + *len2p);
-        len2p++;
-        str2p++;
-        q = D + 2.0 / (double)l * (double)d;
+    auto strings2_it = strings2_start;
+    double D = (double)i;
+    double x = (double)i + 1.0;
+
+    visit(strings1[i], [&](auto first1, auto last1){
+      using CharT1 = typename std::iterator_traits<decltype(first1)>::value_type;
+      rapidfuzz::CachedIndel<CharT1> scorer(first1, last1);
+
+      while (p != end) {
+        size_t l = strings1[i].length + strings2_it->length;
+        double q;
+        if (l == 0)
+          q = D;
+        else {
+          size_t d = visit(*strings2_it, [&](auto first2, auto last2){
+            return scorer.distance(first2, last2);
+          });
+          strings2_it++;
+          q = D + 2.0 / (double)l * (double)d;
+        }
+        x += 1.0;
+        if (x > q)
+          x = q;
+        D = *p;
+        if (x > D + 1.0)
+          x = D + 1.0;
+        *(p++) = x;
       }
-      x += 1.0;
-      if (x > q)
-        x = q;
-      D = *p;
-      if (x > D + 1.0)
-        x = D + 1.0;
-      *(p++) = x;
-    }
+    });
   }
 
   return *last;
@@ -734,61 +835,54 @@ std::unique_ptr<size_t[]> munkers_blackman(size_t n1, size_t n2, double *dists);
  *
  * Returns: The distance of the two sets.
  **/
-template <typename CharT>
-double lev_set_distance(size_t n1, const size_t* lengths1, const CharT** strings1,
-                        size_t n2, const size_t *lengths2, const CharT** strings2)
+static inline double lev_set_distance(const std::vector<RF_String>& strings1, const std::vector<RF_String>& strings2)
 {
   /* catch trivial cases */
-  if (n1 == 0)
-    return (double)n2;
-  if (n2 == 0)
-    return (double)n1;
+  if (strings1.empty())
+    return (double)strings2.size();
+  if (strings2.empty())
+    return (double)strings1.size();
 
   /* make the number of columns (n1) smaller than the number of rows */
-  if (n1 > n2) {
-    std::swap(n1, n2);
-    std::swap(lengths1, lengths2);
-    std::swap(strings1, strings2);
+  if (strings1.size() > strings2.size()) {
+    return lev_set_distance(strings2, strings1);
   }
 
   /* compute distances from each to each */
-  if (SIZE_MAX / n1 <= n2)
+  if (SIZE_MAX / strings1.size() <= strings2.size())
   {
     throw std::bad_alloc();
   }
-  auto dists = std::make_unique<double[]>(n1 * n2);
+  auto dists = std::make_unique<double[]>(strings1.size() * strings2.size());
   double* r = dists.get();
 
-  for (size_t i = 0; i < n2; i++) {
-    size_t len2 = lengths2[i];
-    const CharT *str2 = strings2[i];
-    const size_t *len1p = lengths1;
-    const CharT **str1p = strings1;
-    for (size_t j = 0; j < n1; j++) {
-      size_t l = len2 + *len1p;
+  for (size_t i = 0; i < strings2.size(); i++) {
+    for (size_t j = 0; j < strings1.size(); j++) {
+      size_t l = strings2[i].length + strings1[j].length;
       if (l == 0)
         *(r++) = 0.0;
       else {
-        size_t d = rapidfuzz::indel_distance(str2, str2 + len2, *str1p, *str1p + *len1p);
-        len1p++;
-        str1p++;
+        size_t d = visitor(strings1[j], strings2[i], [&](auto first1, auto last1, auto first2, auto last2){
+          return rapidfuzz::indel_distance(first1, last1, first2, last2);
+        });
         *(r++) = (double)d / (double)l;
       }
     }
   }
 
   /* find the optimal mapping between the two sets */
-  auto map = munkers_blackman(n1, n2, dists.get());
+  auto map = munkers_blackman(strings1.size(), strings2.size(), dists.get());
 
   /* sum the set distance */
-  double sum = (double)(n2 - n1);
-  for (size_t j = 0; j < n1; j++) {
+  double sum = (double)(strings2.size() - strings1.size());
+  for (size_t j = 0; j < strings1.size(); j++) {
     size_t l;
     size_t i = map[j];
-    l = lengths1[j] + lengths2[i];
+    l = strings1[j].length + strings2[i].length;
     if (l > 0) {
-      size_t d = rapidfuzz::indel_distance(strings1[j], strings1[j] + lengths1[j],
-                                           strings2[i], strings2[i] + lengths2[i]);
+      size_t d = visitor(strings1[j], strings2[i], [&](auto first1, auto last1, auto first2, auto last2){
+        return rapidfuzz::indel_distance(first1, last1, first2, last2);
+      });
       sum += 2.0 * (double)d / (double)l;
     }
   }
