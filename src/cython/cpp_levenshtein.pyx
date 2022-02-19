@@ -15,6 +15,8 @@ from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_FromStringAndSize
 from cpython.sequence cimport PySequence_Check, PySequence_Length
 from libc.stddef cimport wchar_t
 from libcpp.vector cimport vector
+from libcpp cimport bool
+from libcpp.utility cimport move
 
 from libcpp.algorithm cimport copy
 
@@ -93,7 +95,17 @@ cdef extern from "_levenshtein.hpp":
 
     cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem) except +
 
-    cdef basic_string[CharT] lev_greedy_median[CharT](const vector[basic_string[CharT]]& strings, const vector[double]& weights) except +
+    cdef basic_string[uint32_t] lev_greedy_median(const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef basic_string[uint32_t] lev_set_median(const vector[RF_String]& strings, const vector[double]& weights) except +
+
+    cdef double lev_set_distance(const vector[RF_String]& strings1, const vector[RF_String]& strings2) except +
+    cdef double lev_edit_seq_distance(const vector[RF_String]& strings1, const vector[RF_String]& strings2) except +
+
+    ctypedef struct RF_String:
+        pass
+
+    cdef bool is_valid_string(object)
+    cdef RF_String convert_string(object)
 
 ctypedef struct OpcodeName:
     PyObject* pystring
@@ -106,6 +118,11 @@ opcode_names[1] = OpcodeName(<PyObject*>"replace", "replace", strlen("replace"))
 opcode_names[2] = OpcodeName(<PyObject*>"insert",  "insert",  strlen("insert"))
 opcode_names[3] = OpcodeName(<PyObject*>"delete",  "delete",  strlen("delete"))
 cdef size_t N_OPCODE_NAMES = 4
+
+cdef inline RF_String conv_sequence(seq) except *:
+    if is_valid_string(seq):
+        return convert_string(seq)
+    raise TypeError("Expected string or bytes")
 
 cdef size_t get_length_of_anything(o):
     cdef Py_ssize_t length
@@ -680,35 +697,13 @@ cdef vector[double] extract_weightlist(wlist, size_t n) except *:
             weights[i] = w
     return weights
 
-cdef basic_string[uint32_t] to_string(string) except *:
-    cdef basic_string[uint32_t] c_string
-    cdef Py_ssize_t i
-    cdef Py_ssize_t str_len = len(string)
-    c_string.resize(str_len)
-
-    if isinstance(string, str):
-        kind = PyUnicode_KIND(string)
-        data = PyUnicode_DATA(string)
-
-        for i in range(str_len):
-            c_string[i] = PyUnicode_READ(kind, data, i)
-    elif isinstance(string, bytes):
-        b = PyBytes_AS_STRING(string)
-        for i in range(str_len):
-            c_string[i] = b[i]
-    else:
-        raise TypeError("expected bytes or string")
-
-    return c_string
-
-cdef vector[basic_string[uint32_t]] extract_stringlist(strings) except *:
-    cdef vector[basic_string[uint32_t]] strlist
+cdef vector[RF_String] extract_stringlist(strings) except *:
+    cdef vector[RF_String] strlist
 
     for string in strings:
-        strlist.push_back(to_string(string))
+        strlist.push_back(move(conv_sequence(string)))
     
-    return strlist
-
+    return move(strlist)
 
 def median(strlist, wlist = None, *):
     """
@@ -740,3 +735,96 @@ def median(strlist, wlist = None, *):
     strings = extract_stringlist(strlist)
     median = lev_greedy_median(strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
+
+def setmedian(strlist, wlist = None, *):
+    """
+    Find set median of a string set (passed as a sequence).
+
+    See median() for argument description.
+    
+    The returned string is always one of the strings in the sequence.
+    
+    Examples
+    --------
+    
+    >>> setmedian(['ehee', 'cceaes', 'chees', 'chreesc',
+                   'chees', 'cheesee', 'cseese', 'chetese'])
+    'chees'
+    
+    You haven't asked me about Limburger, sir.
+    """
+
+    if wlist is not None and len(strlist) != len(wlist):
+        raise ValueError("strlist has a different length than wlist")
+
+    weights = extract_weightlist(wlist, len(strlist))
+    strings = extract_stringlist(strlist)
+    median = lev_set_median(strings, weights)
+    return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
+
+def setratio(strlist1, strlist2, *):
+    """
+    Compute similarity ratio of two strings sets (passed as sequences).
+
+    The best match between any strings in the first set and the second
+    set (passed as sequences) is attempted.  I.e., the order doesn't
+    matter here.
+    
+    Examples
+    --------
+    
+    >>> setratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
+                 ['caribou', 'sausage', 'gorn', 'woody'])  # doctest: +ELLIPSIS
+    0.281845...
+    
+    No, even reordering doesn't help the tinny words to match the
+    woody ones.
+    """
+
+    strings1 = extract_stringlist(strlist1)
+    strings2 = extract_stringlist(strlist2)
+    lensum = strings1.size() + strings2.size()
+
+    if lensum == 0:
+        return 1.0
+
+    if strings1.empty():
+        dist = <double>strings2.size()
+    elif strings2.empty():
+        dist = <double>strings1.size()
+    else:
+        dist = lev_set_distance(strings1, strings2)
+
+    return <double>lensum - dist / <double>lensum
+
+def seqratio(strlist1, strlist2, *):
+    """
+    Compute similarity ratio of two sequences of strings.
+    
+    This is like ratio(), but for string sequences.  A kind of ratio()
+    is used to to measure the cost of item change operation for the
+    strings.
+    
+    Examples
+    --------
+    
+    >>> seqratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
+    ...          ['caribou', 'sausage', 'gorn', 'woody'])
+    0.21517857142857144
+    """
+
+    strings1 = extract_stringlist(strlist1)
+    strings2 = extract_stringlist(strlist2)
+    lensum = strings1.size() + strings2.size()
+
+    if lensum == 0:
+        return 1.0
+
+    if strings1.empty():
+        dist = <double>strings2.size()
+    elif strings2.empty():
+        dist = <double>strings1.size()
+    else:
+        dist = lev_edit_seq_distance(strings1, strings2)
+
+    return <double>lensum - dist / <double>lensum
