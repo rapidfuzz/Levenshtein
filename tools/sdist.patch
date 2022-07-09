@@ -1,0 +1,13 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 13a4e16..edb35af 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -3,7 +3,6 @@ requires = [
+     "setuptools",
+     "scikit-build>=0.13.0",
+     "cmake",
+-    "ninja; platform_system!='Windows'",
+-    "Cython==3.0.0a10"
++    "ninja; platform_system!='Windows'"
+ ]
+ build-backend = "setuptools.build_meta"

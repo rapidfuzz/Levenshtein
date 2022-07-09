@@ -20,7 +20,6 @@ endif()
 
 find_package(PythonExtensions REQUIRED)
 find_package(Python COMPONENTS Interpreter Development)
-find_package(Cython REQUIRED)
 
 find_package(rapidfuzz 1.0.4 QUIET)
 if (rapidfuzz_FOUND)

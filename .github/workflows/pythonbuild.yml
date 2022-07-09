@@ -157,18 +157,30 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'true'
-
       - uses: actions/setup-python@v2
-        name: Install Python
-        with:
-          python-version: '3.7'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest hypothesis mypy Cython==3.0.0a10
+
+      # The cythonized files allow installation from the sdist without cython
+      - name: Generate cython
+        run: |
+          chmod +x ./src/Levenshtein/generate.sh
+          ./src/Levenshtein/generate.sh
 
       - name: Build sdist
         run: |
-          pip3 install build; python3 -m build --sdist
+          git apply ./tools/sdist.patch
+          pip install build
+          python -m build --sdist
           # test whether tarball contains all files required for compiling
-          pip3 install dist/Levenshtein-*.tar.gz
-          pip3 uninstall Levenshtein --yes
+          pip install dist/Levenshtein-*.tar.gz
+
+      - name: Test with pytest and backtrace in case of SegFault
+        run: |
+          tools/seg_wrapper.sh pytest tests
 
       - uses: actions/upload-artifact@v2
         with:

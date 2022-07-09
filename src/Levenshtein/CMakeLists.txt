@@ -1,5 +1,15 @@
 
-add_cython_target(levenshtein_cpp CXX)
+function(create_cython_target _name)
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/${_name}.cxx)
+    set(${_name} ${CMAKE_CURRENT_LIST_DIR}/${_name}.cxx PARENT_SCOPE)
+else()
+    find_package(Cython REQUIRED)
+    add_cython_target(${_name} CXX)
+    set(${_name} ${_name} PARENT_SCOPE)
+endif()
+endfunction(create_cython_target)
+
+create_cython_target(levenshtein_cpp)
 add_library(levenshtein_cpp MODULE ${levenshtein_cpp} ${LEV_BASE_DIR}/Levenshtein-c/_levenshtein.cpp)
 target_compile_features(levenshtein_cpp PUBLIC cxx_std_14)
 target_include_directories(levenshtein_cpp PRIVATE ${LEV_BASE_DIR}/Levenshtein-c)
