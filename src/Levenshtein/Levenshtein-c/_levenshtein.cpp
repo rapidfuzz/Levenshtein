@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include <assert.h>
+#include <iostream>
 #include "_levenshtein.hpp"
 
 /****************************************************************************
@@ -36,337 +37,174 @@
  *
  ****************************************************************************/
 /* {{{ */
-
-/* compute the sets of symbols each string contains, and the set of symbols
- * in any of them (symset).  meanwhile, count how many different symbols
- * there are (used below for symlist).
- * the symset is passed as an argument to avoid its allocation and
- * deallocation when it's used in the caller too */
-static lev_byte*
-make_symlistset(size_t n, const size_t *lengths,
-                const lev_byte *strings[], size_t *symlistlen,
-                double *symset)
-{
-  size_t i, j;
-  lev_byte *symlist;
-
-  if (!symset) {
-    *symlistlen = (size_t)(-1);
-    return NULL;
-  }
-  memset(symset, 0, 0x100*sizeof(double));
-  *symlistlen = 0;
-  for (i = 0; i < n; i++) {
-    const lev_byte *stri = strings[i];
-    for (j = 0; j < lengths[i]; j++) {
-      int c = stri[j];
-      if (!symset[c]) {
-        (*symlistlen)++;
-        symset[c] = 1.0;
-      }
-    }
-  }
-  if (!*symlistlen)
-    return NULL;
-
-  /* create dense symbol table, so we can easily iterate over only characters
-   * present in the strings */
-  {
-    size_t pos = 0;
-    symlist = (lev_byte*)safe_malloc((*symlistlen), sizeof(lev_byte));
-    if (!symlist) {
-      *symlistlen = (size_t)(-1);
-      return NULL;
-    }
-    for (j = 0; j < 0x100; j++) {
-      if (symset[j])
-        symlist[pos++] = (lev_byte)j;
-    }
-  }
-
-  return symlist;
-}
-
-std::basic_string<lev_byte>
-lev_quick_median(size_t n,
-                 const size_t *lengths,
-                 const lev_byte *strings[],
-                 const double *weights)
-{
-  size_t symlistlen, len, i, j, k;
-  lev_byte *symlist;
-  std::basic_string<lev_byte> median;  /* the resulting string */
-  double *symset;
-
-  /* first check whether the result would be an empty string 
-   * and compute resulting string length */
-  double ml = std::inner_product(weights, weights + n, lengths, 0.0);
-  double wl = std::accumulate(   weights, weights + n, 0.0);
-
-  if (wl == 0.0)
-    return std::basic_string<lev_byte>();
-
-  ml = floor(ml/wl + 0.499999);
-  len = (size_t)ml;
-  if (!len)
-    return std::basic_string<lev_byte>();
-
-  median.resize(len);
-
-  /* find the symbol set;
-   * now an empty symbol set is really a failure */
-  symset = (double*)calloc(0x100, sizeof(double));
-  if (!symset)
-    throw std::bad_alloc();
-
-  symlist = make_symlistset(n, lengths, strings, &symlistlen, symset);
-  if (!symlist) {
-    free(symset);
-    throw std::bad_alloc();
-  }
-
-  for (j = 0; j < len; j++) {
-    /* clear the symbol probabilities */
-    if (symlistlen < 32) {
-      for (i = 0; i < symlistlen; i++)
-        symset[symlist[i]] = 0.0;
-    }
-    else
-      memset(symset, 0, 0x100*sizeof(double));
-
-    /* let all strings vote */
-    for (i = 0; i < n; i++) {
-      const lev_byte *stri = strings[i];
-      double weighti = weights[i];
-      size_t lengthi = lengths[i];
-      double start = (double)lengthi / ml * (double)j;
-      double end = start + (double)lengthi / ml;
-      size_t istart = (size_t)floor(start);
-      size_t iend = (size_t)ceil(end);
-
-      /* rounding errors can overflow the buffer */
-      if (iend > lengthi)
-        iend = lengthi;
-
-      for (k = istart+1; k < iend; k++)
-        symset[stri[k]] += weighti;
-      symset[stri[istart]] += weighti * ((double)(1 + istart) - start);
-      symset[stri[iend-1]] -= weighti * ((double)iend - end);
-    }
-
-    /* find the elected symbol */
-    k = symlist[0];
-    for (i = 1; i < symlistlen; i++) {
-      if (symset[symlist[i]] > symset[k])
-        k = symlist[i];
-    }
-    median[j] = (lev_byte)k;
-  }
-
-  free(symset);
-  free(symlist);
-
-  return median;
-}
-
-/* used internally in make_usymlistset */
-typedef struct _HQItem HQItem;
-struct _HQItem {
-  lev_wchar c;
+struct HQItem {
+  uint32_t c;
   double s;
   HQItem *n;
 };
 
-/* free usmylistset hash
- * this is a separate function because we need it in more than one place */
-static void
-free_usymlistset_hash(HQItem *symmap)
-{
-  for (size_t j = 0; j < 0x100; j++) {
-    HQItem *p = symmap + j;
-    if (p->n == symmap || p->n == NULL)
-      continue;
-    p = p->n;
-    while (p) {
-      HQItem *q = p;
-      p = p->n;
-      free(q);
-    }
-  }
-  free(symmap);
-}
-
 /* compute the sets of symbols each string contains, and the set of symbols
  * in any of them (symset).  meanwhile, count how many different symbols
  * there are (used below for symlist).
  * the symset is passed as an argument to avoid its allocation and
  * deallocation when it's used in the caller too */
-static lev_wchar*
-make_usymlistset(size_t n, const size_t *lengths,
-                 const lev_wchar *strings[], size_t *symlistlen,
-                 HQItem *symmap)
-{
-  lev_wchar *symlist;
-  *symlistlen = 0;
-  if (std::all_of(lengths, lengths + n, [](size_t x){ return x == 0; }))
-    return NULL;
-
-  /* this is an ugly memory allocation avoiding hack: most hash elements
-   * will probably contain none or one symbols only so, when p->n is equal
-   * to symmap, it means there're no symbols yet, afters inserting the
-   * first one, p->n becomes normally NULL and then it behaves like an
-   * usual singly linked list */
-  for (size_t i = 0; i < 0x100; i++)
-    symmap[i].n = symmap;
-  for (size_t i = 0; i < n; i++) {
-    const lev_wchar *stri = strings[i];
-    for (size_t j = 0; j < lengths[i]; j++) {
-      lev_wchar c = stri[j];
-      int key = ((int)c + ((int)c >> 7)) & 0xff;
-      HQItem *p = symmap + key;
-      if (p->n == symmap) {
-        p->c = c;
-        p->n = NULL;
-        (*symlistlen)++;
-        continue;
-      }
-      while (p->c != c && p->n != NULL)
-        p = p->n;
-      if (p->c != c) {
-        p->n = (HQItem*)malloc(sizeof(HQItem));
-        if (!p->n) {
-          *symlistlen = (size_t)(-1);
-          return NULL;
-        }
-        p = p->n;
-        p->n = NULL;
-        p->c = c;
-        (*symlistlen)++;
-      }
-    }
-  }
-  /* create dense symbol table, so we can easily iterate over only characters
-   * present in the strings */
+class SymMap {
+  std::unique_ptr<HQItem[]> symmap;
+public:
+  SymMap(const std::vector<RF_String>& strings)
   {
-    size_t pos = 0;
-    symlist = (lev_wchar*)safe_malloc((*symlistlen), sizeof(lev_wchar));
-    if (!symlist) {
-      *symlistlen = (size_t)(-1);
-      return NULL;
+    symmap = std::make_unique<HQItem[]>(0x100);
+  
+    /* this is an ugly memory allocation avoiding hack: most hash elements
+    * will probably contain none or one symbols only so, when p->n is equal
+    * to symmap, it means there're no symbols yet, afters inserting the
+    * first one, p->n becomes normally NULL and then it behaves like an
+    * usual singly linked list */
+    for (size_t i = 0; i < 0x100; i++)
+      symmap[i].n = &symmap[0];
+    for (size_t i = 0; i < strings.size(); i++) {
+      visit(strings[i], [&](auto first1, auto last1) {
+        size_t len1 = (size_t)std::distance(first1, last1);
+        for (auto iter = first1; iter != last1; ++iter) {
+          uint32_t c = *iter;
+          int key = ((int)c + ((int)c >> 7)) & 0xff;
+          HQItem *p = symmap.get();
+          if (p->n == symmap.get()) {
+            p->c = c;
+            p->n = NULL;
+            continue;
+          }
+          while (p->c != c && p->n != NULL)
+            p = p->n;
+          if (p->c != c) {
+            p->n = new HQItem;
+            p = p->n;
+            p->n = NULL;
+            p->c = c;
+          }
+        }
+      });
     }
+  }
+
+  ~SymMap()
+  {
     for (size_t j = 0; j < 0x100; j++) {
-      HQItem *p = symmap + j;
-      while (p != NULL && p->n != symmap) {
-        symlist[pos++] = p->c;
+      HQItem *p = &symmap[j];
+      if (p->n == symmap.get() || p->n == NULL)
+        continue;
+      p = p->n;
+      while (p) {
+        HQItem *q = p;
         p = p->n;
+        delete q;
       }
     }
   }
 
-  return symlist;
-}
-
-std::basic_string<lev_wchar>
-lev_u_quick_median(size_t n,
-                   const size_t *lengths,
-                   const lev_wchar *strings[],
-                   const double *weights)
-{
-  size_t symlistlen, len, i, j, k;
-  lev_wchar *symlist;
-  std::basic_string<lev_wchar> median;  /* the resulting string */
-  HQItem *symmap;
-
-  /* first check whether the result would be an empty string 
-   * and compute resulting string length */
-  double ml = std::inner_product(weights, weights + n, lengths, 0.0);
-  double wl = std::accumulate(   weights, weights + n, 0.0);
-
-  if (wl == 0.0)
-    return std::basic_string<lev_wchar>();
-  ml = floor(ml/wl + 0.499999);
-  len = (size_t)ml;
-  if (!len)
-    return std::basic_string<lev_wchar>();
-  median.resize(len);
-
-  /* find the symbol set;
-   * now an empty symbol set is really a failure */
-  symmap = (HQItem*)safe_malloc(0x100, sizeof(HQItem));
-  if (!symmap)
-    throw std::bad_alloc();
-
-  symlist = make_usymlistset(n, lengths, strings, &symlistlen, symmap);
-  if (!symlist) {
-    free_usymlistset_hash(symmap);
-    throw std::bad_alloc();
-  }
-
-  for (j = 0; j < len; j++) {
-    /* clear the symbol probabilities */
-    for (i = 0; i < 0x100; i++) {
-      HQItem *p = symmap + i;
-      if (p->n == symmap)
+  void clear()
+  {
+    for (size_t i = 0; i < 0x100; i++) {
+      HQItem *p = &symmap[i];
+      if (p->n == symmap.get())
         continue;
       while (p) {
         p->s = 0.0;
         p = p->n;
       }
     }
+  }
+
+  HQItem* get()
+  {
+    return symmap.get();
+  }
+};
+
+std::basic_string<uint32_t>
+lev_quick_median(const std::vector<RF_String>& strings, const std::vector<double>& weights)
+{
+  std::basic_string<uint32_t> median;  /* the resulting string */
+
+  /* first check whether the result would be an empty string 
+   * and compute resulting string length */
+  double ml = 0;
+  double wl = 0;
+  for (size_t i = 0; i < strings.size(); i++)
+  {
+    ml += weights[i] * strings[i].length;
+    wl += weights[i];
+  }
+
+  if (wl == 0.0)
+    return median;
+  ml = floor(ml/wl + 0.499999);
+  median.resize((size_t)ml);
+  if (median.empty())
+    return median;
+
+  /* find the symbol set;
+   * now an empty symbol set is really a failure */
+  SymMap symmap(strings);
+
+  for (size_t j = 0; j < median.size(); j++) {
+    /* clear the symbol probabilities */
+    symmap.clear();
 
     /* let all strings vote */
-    for (i = 0; i < n; i++) {
-      const lev_wchar *stri = strings[i];
-      double weighti = weights[i];
-      size_t lengthi = lengths[i];
-      double start = (double)lengthi / ml * (double)j;
-      double end = start + (double)lengthi / ml;
-      size_t istart = (size_t)floor(start);
-      size_t iend = (size_t)ceil(end);
+    for (size_t i = 0; i < strings.size(); i++) {
+      visit(strings[i], [&](auto first1, auto last1) {
+        double weighti = weights[i];
+        size_t lengthi = (size_t)std::distance(first1, last1);
+        double start = (double)lengthi / ml * (double)j;
+        double end = start + (double)lengthi / ml;
+        size_t istart = (size_t)floor(start);
+        size_t iend = (size_t)ceil(end);
 
-      /* rounding errors can overflow the buffer */
-      if (iend > lengthi)
-        iend = lengthi;
+        /* rounding errors can overflow the buffer */
+        if (iend > lengthi)
+          iend = lengthi;
 
-      /* the inner part, including the complete last character */
-      for (k = istart+1; k < iend; k++) {
-        int c = stri[k];
-        int key = (c + (c >> 7)) & 0xff;
-        HQItem *p = symmap + key;
-        while (p->c != c)
-          p = p->n;
-        p->s += weighti;
-      }
-      /* the initial fraction */
-      {
-        int c = stri[istart];
-        int key = (c + (c >> 7)) & 0xff;
-        HQItem *p = symmap + key;
-        while (p->c != c)
-          p = p->n;
-        p->s += weighti * ((double)(1 + istart) - start);
-      }
-      /* subtract what we counted from the last character but doesn't
-       * actually belong here.
-       * this strategy works also when istart+1 == iend (i.e., everything
-       * happens inside a one character) */
-      {
-        int c = stri[iend-1];
-        int key = (c + (c >> 7)) & 0xff;
-        HQItem *p = symmap + key;
-        while (p->c != c)
-          p = p->n;
-        p->s -= weighti * ((double)iend - end);
-      }
+        /* the inner part, including the complete last character */
+        for (size_t k = istart+1; k < iend; k++) {
+          int c = first1[k];
+          int key = (c + (c >> 7)) & 0xff;
+          HQItem *p = symmap.get() + key;
+          while (p->c != c)
+            p = p->n;
+          p->s += weighti;
+        }
+        /* the initial fraction */
+        {
+          int c = first1[istart];
+          int key = (c + (c >> 7)) & 0xff;
+          HQItem *p = symmap.get() + key;
+          while (p->c != c)
+            p = p->n;
+          p->s += weighti * ((double)(1 + istart) - start);
+        }
+        /* subtract what we counted from the last character but doesn't
+        * actually belong here.
+        * this strategy works also when istart+1 == iend (i.e., everything
+        * happens inside a one character) */
+        {
+          int c = first1[iend-1];
+          int key = (c + (c >> 7)) & 0xff;
+          HQItem *p = symmap.get() + key;
+          while (p->c != c)
+            p = p->n;
+          p->s -= weighti * ((double)iend - end);
+        }
+      });
     }
 
     /* find the elected symbol */
     {
       HQItem *max = NULL;
 
-      for (i = 0; i < 0x100; i++) {
-        HQItem *p = symmap + i;
-        if (p->n == symmap)
+      for (size_t i = 0; i < 0x100; i++) {
+        HQItem *p = symmap.get() + i;
+        if (p->n == symmap.get())
           continue;
         while (p) {
           if (!max || p->s > max->s)
@@ -377,9 +215,6 @@ lev_u_quick_median(size_t n,
       median[j] = max->c;
     }
   }
-
-  free_usymlistset_hash(symmap);
-  free(symlist);
 
   return median;
 }

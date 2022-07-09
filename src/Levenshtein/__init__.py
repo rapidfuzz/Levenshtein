@@ -24,11 +24,8 @@ from rapidfuzz.distance.Hamming import distance as hamming
 from rapidfuzz.distance.Jaro import similarity as jaro
 from rapidfuzz.distance.JaroWinkler import similarity as jaro_winkler
 
-from Levenshtein._levenshtein import (
-    quickmedian
-)
-
-from Levenshtein.cpp_levenshtein import (
+from Levenshtein.levenshtein_cpp import (
+    quickmedian,
     inverse,
     editops,
     opcodes,

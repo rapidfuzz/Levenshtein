@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12.0)
 
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+
 cmake_policy(SET CMP0054 NEW)
 set(SKBUILD_LINK_LIBRARIES_KEYWORD PRIVATE)
 
