@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Levenshtein module &mdash; Levenshtein 0.18.2 documentation</title>
+  <title>Levenshtein module &mdash; Levenshtein 0.19.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -295,20 +295,19 @@ which deactivates this behaviour.</p></li>
 <h2>median<a class="headerlink" href="#median" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.median">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.median" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.median" title="Permalink to this definition"></a></dt>
 <dd><p>Find an approximate generalized median string using greedy algorithm.</p>
-<p>median(string_sequence[, weight_sequence])</p>
 <p>You can optionally pass a weight for each string as the second
 argument.  The weights are interpreted as item multiplicities,
 although any non-negative real numbers are accepted.  Use them to
 improve computation speed when strings often appear multiple times
 in the sequence.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">median</span><span class="p">([</span><span class="s1">&#39;SpSm&#39;</span><span class="p">,</span> <span class="s1">&#39;mpamm&#39;</span><span class="p">,</span> <span class="s1">&#39;Spam&#39;</span><span class="p">,</span> <span class="s1">&#39;Spa&#39;</span><span class="p">,</span> <span class="s1">&#39;Sua&#39;</span><span class="p">,</span> <span class="s1">&#39;hSam&#39;</span><span class="p">])</span>
 <span class="go">&#39;Spam&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fixme</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Levnhtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leveshein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leenshten&#39;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="s1">&#39;Leveshtei&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lvenstein&#39;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="s1">&#39;Levenhtin&#39;</span><span class="p">,</span> <span class="s1">&#39;evenshtei&#39;</span><span class="p">]</span>
+<span class="go">             &#39;Leveshtei&#39;, &#39;Lenshtein&#39;, &#39;Lvenstein&#39;,</span>
+<span class="go">             &#39;Levenhtin&#39;, &#39;evenshtei&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">median</span><span class="p">(</span><span class="n">fixme</span><span class="p">)</span>
 <span class="go">&#39;Levenshtein&#39;</span>
 </pre></div>
@@ -321,20 +320,19 @@ in the sequence.</p>
 <h2>median_improve<a class="headerlink" href="#median-improve" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.median_improve">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">median_improve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.median_improve" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">median_improve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.median_improve" title="Permalink to this definition"></a></dt>
 <dd><p>Improve an approximate generalized median string by perturbations.</p>
-<p>median_improve(string, string_sequence[, weight_sequence])</p>
 <p>The first argument is the estimated generalized median string you
-want to improve, the others are the same as in median().  It returns
+want to improve, the others are the same as in median(). It returns
 a string with total distance less or equal to that of the given string.</p>
-<p>Note this is much slower than median().  Also note it performs only
+<p>Note this is much slower than median(). Also note it performs only
 one improvement step, calling median_improve() again on the result
 may improve it further, though this is unlikely to happen unless the
 given string was not very similar to the actual generalized median.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fixme</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Levnhtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leveshein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leenshten&#39;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="s1">&#39;Leveshtei&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lvenstein&#39;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="s1">&#39;Levenhtin&#39;</span><span class="p">,</span> <span class="s1">&#39;evenshtei&#39;</span><span class="p">]</span>
+<span class="go">             &#39;Leveshtei&#39;, &#39;Lenshtein&#39;, &#39;Lvenstein&#39;,</span>
+<span class="go">             &#39;Levenhtin&#39;, &#39;evenshtei&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">median_improve</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="n">fixme</span><span class="p">)</span>
 <span class="go">&#39;enhtein&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">median_improve</span><span class="p">(</span><span class="n">median_improve</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="n">fixme</span><span class="p">),</span> <span class="n">fixme</span><span class="p">)</span>
@@ -349,16 +347,15 @@ given string was not very similar to the actual generalized median.</p>
 <h2>quickmedian<a class="headerlink" href="#quickmedian" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.quickmedian">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">quickmedian</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.quickmedian" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">quickmedian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.quickmedian" title="Permalink to this definition"></a></dt>
 <dd><p>Find a very approximate generalized median string, but fast.</p>
-<p>quickmedian(string[, weight_sequence])</p>
 <p>See median() for argument description.</p>
 <p>This method is somewhere between setmedian() and picking a random
 string from the set; both speedwise and quality-wise.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fixme</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Levnhtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leveshein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leenshten&#39;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="s1">&#39;Leveshtei&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lvenstein&#39;</span><span class="p">,</span>
-<span class="gp">... </span>         <span class="s1">&#39;Levenhtin&#39;</span><span class="p">,</span> <span class="s1">&#39;evenshtei&#39;</span><span class="p">]</span>
+<span class="go">            &#39;Leveshtei&#39;, &#39;Lenshtein&#39;, &#39;Lvenstein&#39;,</span>
+<span class="go">            &#39;Levenhtin&#39;, &#39;evenshtei&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">quickmedian</span><span class="p">(</span><span class="n">fixme</span><span class="p">)</span>
 <span class="go">&#39;Levnshein&#39;</span>
 </pre></div>
@@ -370,14 +367,13 @@ string from the set; both speedwise and quality-wise.</p>
 <h2>setmedian<a class="headerlink" href="#setmedian" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.setmedian">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">setmedian</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.setmedian" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">setmedian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.setmedian" title="Permalink to this definition"></a></dt>
 <dd><p>Find set median of a string set (passed as a sequence).</p>
-<p>setmedian(string[, weight_sequence])</p>
 <p>See median() for argument description.</p>
 <p>The returned string is always one of the strings in the sequence.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">setmedian</span><span class="p">([</span><span class="s1">&#39;ehee&#39;</span><span class="p">,</span> <span class="s1">&#39;cceaes&#39;</span><span class="p">,</span> <span class="s1">&#39;chees&#39;</span><span class="p">,</span> <span class="s1">&#39;chreesc&#39;</span><span class="p">,</span>
-<span class="gp">... </span>           <span class="s1">&#39;chees&#39;</span><span class="p">,</span> <span class="s1">&#39;cheesee&#39;</span><span class="p">,</span> <span class="s1">&#39;cseese&#39;</span><span class="p">,</span> <span class="s1">&#39;chetese&#39;</span><span class="p">])</span>
+<span class="go">               &#39;chees&#39;, &#39;cheesee&#39;, &#39;cseese&#39;, &#39;chetese&#39;])</span>
 <span class="go">&#39;chees&#39;</span>
 </pre></div>
 </div>
@@ -389,13 +385,12 @@ string from the set; both speedwise and quality-wise.</p>
 <h2>seqratio<a class="headerlink" href="#seqratio" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.seqratio">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">seqratio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.seqratio" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">seqratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strlist2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.seqratio" title="Permalink to this definition"></a></dt>
 <dd><p>Compute similarity ratio of two sequences of strings.</p>
-<p>seqratio(string_sequence1, string_sequence2)</p>
 <p>This is like ratio(), but for string sequences.  A kind of ratio()
 is used to to measure the cost of item change operation for the
 strings.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqratio</span><span class="p">([</span><span class="s1">&#39;newspaper&#39;</span><span class="p">,</span> <span class="s1">&#39;litter bin&#39;</span><span class="p">,</span> <span class="s1">&#39;tinny&#39;</span><span class="p">,</span> <span class="s1">&#39;antelope&#39;</span><span class="p">],</span>
 <span class="gp">... </span>         <span class="p">[</span><span class="s1">&#39;caribou&#39;</span><span class="p">,</span> <span class="s1">&#39;sausage&#39;</span><span class="p">,</span> <span class="s1">&#39;gorn&#39;</span><span class="p">,</span> <span class="s1">&#39;woody&#39;</span><span class="p">])</span>
 <span class="go">0.21517857142857144</span>
@@ -408,15 +403,14 @@ strings.</p>
 <h2>setratio<a class="headerlink" href="#setratio" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.setratio">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">setratio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.setratio" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">setratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strlist2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.setratio" title="Permalink to this definition"></a></dt>
 <dd><p>Compute similarity ratio of two strings sets (passed as sequences).</p>
-<p>setratio(string_sequence1, string_sequence2)</p>
 <p>The best match between any strings in the first set and the second
 set (passed as sequences) is attempted.  I.e., the order doesn’t
 matter here.</p>
-<p>Examples:</p>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">setratio</span><span class="p">([</span><span class="s1">&#39;newspaper&#39;</span><span class="p">,</span> <span class="s1">&#39;litter bin&#39;</span><span class="p">,</span> <span class="s1">&#39;tinny&#39;</span><span class="p">,</span> <span class="s1">&#39;antelope&#39;</span><span class="p">],</span>
-<span class="gp">... </span>         <span class="p">[</span><span class="s1">&#39;caribou&#39;</span><span class="p">,</span> <span class="s1">&#39;sausage&#39;</span><span class="p">,</span> <span class="s1">&#39;gorn&#39;</span><span class="p">,</span> <span class="s1">&#39;woody&#39;</span><span class="p">])</span>  
+<span class="go">             [&#39;caribou&#39;, &#39;sausage&#39;, &#39;gorn&#39;, &#39;woody&#39;])</span>
 <span class="go">0.281845...</span>
 </pre></div>
 </div>
