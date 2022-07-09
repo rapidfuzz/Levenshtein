@@ -1,5 +1,10 @@
 ## Changelog
 
+### v0.19.0
+#### Changed
+- implement all Python wrappers mostly with cython
+- replace usage of deprecated Python APIs
+
 ### v0.18.2
 #### Changed
 - Allow installation from system installed versions of `rapidfuzz-cpp`

@@ -2,7 +2,7 @@
 # cython: language_level=3
 # cython: binding=True
 
-from libc.stdint cimport uint32_t
+from libc.stdint cimport uint32_t, uint8_t
 from libc.stdlib cimport free
 from libc.string cimport strlen
 from cpython.list cimport PyList_New, PyList_SET_ITEM
@@ -53,8 +53,6 @@ cdef extern from "<string>" namespace "std" nogil:
         size_type size()
 
 cdef extern from "_levenshtein.hpp":
-    ctypedef unsigned char lev_byte
-
     void* safe_malloc(size_t nmemb, size_t size)
 
     ctypedef enum LevEditType:
@@ -96,7 +94,8 @@ cdef extern from "_levenshtein.hpp":
     cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem) except +
 
     cdef basic_string[uint32_t] lev_greedy_median(const vector[RF_String]& strings, const vector[double]& weights) except +
-    cdef basic_string[uint32_t] lev_median_improve2(const RF_String& string, const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef basic_string[uint32_t] lev_median_improve(const RF_String& string, const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef basic_string[uint32_t] lev_quick_median(const vector[RF_String]& strings, const vector[double]& weights) except +
     cdef basic_string[uint32_t] lev_set_median(const vector[RF_String]& strings, const vector[double]& weights) except +
 
     cdef double lev_set_distance(const vector[RF_String]& strings1, const vector[RF_String]& strings2) except +
@@ -607,7 +606,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
-            s = <void*>lev_editops_apply[lev_byte](len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
+            s = <void*>lev_editops_apply[uint8_t](len1, <const uint8_t*>string1, len2, <const uint8_t*>string2,
                             n, ops, &len3)
             free(ops)
             if not s and len3:
@@ -623,7 +622,7 @@ def apply_edit(edit_operations, source_string, destination_string):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             
-            s = <void*>lev_opcodes_apply[lev_byte](len1, <const lev_byte*>string1, len2, <const lev_byte*>string2,
+            s = <void*>lev_opcodes_apply[uint8_t](len1, <const uint8_t*>string1, len2, <const uint8_t*>string2,
                             n, bops, &len3)
             free(bops)
             if not s and len3:
@@ -737,6 +736,32 @@ def median(strlist, wlist = None, *):
     median = lev_greedy_median(strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
+def quickmedian(strlist, wlist = None, *):
+    """
+    Find a very approximate generalized median string, but fast.
+
+    See median() for argument description.
+
+    This method is somewhere between setmedian() and picking a random
+    string from the set; both speedwise and quality-wise.
+
+    Examples
+    --------
+
+    >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
+                'Leveshtei', 'Lenshtein', 'Lvenstein',
+                'Levenhtin', 'evenshtei']
+    >>> quickmedian(fixme)
+    'Levnshein'
+    """
+    if wlist is not None and len(strlist) != len(wlist):
+        raise ValueError("strlist has a different length than wlist")
+
+    weights = extract_weightlist(wlist, len(strlist))
+    strings = extract_stringlist(strlist)
+    median = lev_quick_median(strings, weights)
+    return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
+
 def median_improve(string, strlist, wlist = None, *):
     """
     Improve an approximate generalized median string by perturbations.
@@ -769,7 +794,7 @@ def median_improve(string, strlist, wlist = None, *):
     weights = extract_weightlist(wlist, len(strlist))
     query = conv_sequence(string)
     strings = extract_stringlist(strlist)
-    median = lev_median_improve2(query, strings, weights)
+    median = lev_median_improve(query, strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
 def setmedian(strlist, wlist = None, *):
@@ -810,7 +835,7 @@ def setratio(strlist1, strlist2, *):
     --------
     
     >>> setratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
-                 ['caribou', 'sausage', 'gorn', 'woody'])  # doctest: +ELLIPSIS
+                 ['caribou', 'sausage', 'gorn', 'woody'])
     0.281845...
     
     No, even reordering doesn't help the tinny words to match the

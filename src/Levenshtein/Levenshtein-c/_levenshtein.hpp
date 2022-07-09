@@ -17,18 +17,6 @@
 
 #define PYTHON_VERSION(major, minor, micro) ((major << 24) | (minor << 16) | (micro << 8))
 
-#ifndef size_t
-#  include <stdlib.h>
-#endif
-
-/* In C, this is just wchar_t and unsigned char, in Python, lev_wchar can
- * be anything.  If you really want to cheat, define wchar_t to any integer
- * type you like before including Levenshtein.h and recompile it. */
-#ifndef lev_wchar
-#  define lev_wchar wchar_t
-#endif
-typedef unsigned char lev_byte;
-
 enum RF_StringType {
     RF_UINT8,  /* uint8_t */
     RF_UINT16, /* uint16_t */
@@ -194,50 +182,6 @@ safe_malloc(size_t nmemb, size_t size) {
 /* compute the sets of symbols each string contains, and the set of symbols
  * in any of them (symset).  meanwhile, count how many different symbols
  * there are (used below for symlist). */
-template <typename CharT>
-std::vector<CharT> make_symlist(size_t n, const size_t *lengths,
-              const CharT *strings[])
-{
-  std::vector<CharT> symlist;
-  if (std::all_of(lengths, lengths + n, [](size_t x){ return x == 0; }))
-  {
-    return symlist;
-  }
-
-  std::unordered_set<CharT> symmap;
-  for (size_t i = 0; i < n; i++) {
-    const CharT* stri = strings[i];
-    for (size_t j = 0; j < lengths[i]; j++) {
-      symmap.insert(stri[j]);
-    }
-  }
-  /* create dense symbol table, so we can easily iterate over only characters
-   * present in the strings */
-  symlist.insert(std::end(symlist), std::begin(symmap), std::end(symmap));
-  return symlist;
-}
-
-template <typename CharT>
-std::vector<CharT> make_symlist(const std::vector<std::basic_string<CharT>>& strings)
-{
-  std::vector<CharT> symlist;
-  if (std::all_of(std::begin(strings), std::end(strings), [](const auto& x){ return x.size() == 0; }))
-  {
-    return symlist;
-  }
-
-  std::unordered_set<CharT> symmap;
-  for (const auto& string : strings) {
-    for (auto ch : string) {
-      symmap.insert(ch);
-    }
-  }
-  /* create dense symbol table, so we can easily iterate over only characters
-   * present in the strings */
-  symlist.insert(std::end(symlist), std::begin(symmap), std::end(symmap));
-  return symlist;
-}
-
 static inline std::vector<uint32_t> make_symlist(const std::vector<RF_String>& strings)
 {
   std::vector<uint32_t> symlist;
@@ -491,7 +435,7 @@ static inline double finish_distance_computations(size_t len1, uint32_t* string1
  *
  * Returns: The improved generalized median
  **/
-static inline std::basic_string<uint32_t> lev_median_improve2(const RF_String& string,
+static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& string,
                           const std::vector<RF_String>& strings, const std::vector<double>& weights)
 {
   /* find all symbols */
@@ -626,17 +570,7 @@ static inline std::basic_string<uint32_t> lev_median_improve2(const RF_String& s
   return std::basic_string<uint32_t>(median, medlen);
 }
 
-std::basic_string<lev_byte>
-lev_quick_median(size_t n,
-                 const size_t *lengths,
-                 const lev_byte *strings[],
-                 const double *weights);
-
-std::basic_string<lev_wchar>
-lev_u_quick_median(size_t n,
-                   const size_t *lengths,
-                   const lev_wchar *strings[],
-                   const double *weights);
+std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strings, const std::vector<double>& weights);
 
 /**
  * lev_set_median:
@@ -1005,15 +939,6 @@ CharT* lev_opcodes_apply(size_t len1, const CharT* string1,
     /* possible realloc failure is detected with *len != 0 */
     return (CharT*)realloc(dst, *len*sizeof(CharT));
 }
-
-lev_wchar*
-lev_u_opcodes_apply(size_t len1,
-                    const lev_wchar* string1,
-                    size_t len2,
-                    const lev_wchar* string2,
-                    size_t nb,
-                    const LevOpCode *bops,
-                    size_t *len);
 
 LevEditOp*
 lev_editops_subtract(size_t n,
