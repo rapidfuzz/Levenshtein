@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <unordered_set>
+#include <set>
 #include <rapidfuzz/distance/Indel.hpp>
 #include <rapidfuzz/distance/Levenshtein.hpp>
 
@@ -190,7 +190,7 @@ static inline std::vector<uint32_t> make_symlist(const std::vector<RF_String>& s
     return symlist;
   }
 
-  std::unordered_set<uint32_t> symmap;
+  std::set<uint32_t> symmap;
   for (const auto& string : strings) {
     visit(string, [&](auto first1, auto last1){
       for (; first1 != last1; ++first1) {
@@ -351,20 +351,16 @@ static inline double finish_distance_computations(size_t len1, uint32_t* string1
                                     const std::vector<double>& weights, std::vector<std::unique_ptr<size_t[]>>& rows,
                                     std::unique_ptr<size_t[]>& row)
 {
-  size_t *end;
-  size_t i, j;
-  size_t offset;  /* row[0]; offset + len1 give together real len of string1 */
   double distsum = 0.0;  /* sum of distances */
-
   /* catch trivial case */
   if (len1 == 0) {
-    for (j = 0; j < strings.size(); j++)
+    for (size_t j = 0; j < strings.size(); j++)
       distsum += (double)rows[j][strings[j].length]*weights[j];
     return distsum;
   }
 
   /* iterate through the strings and sum the distances */
-  for (j = 0; j < strings.size(); j++) {
+  for (size_t j = 0; j < strings.size(); j++) {
     visit(strings[j], [&](auto first1, auto last1){
       size_t* rowi = rows[j].get();  /* current row */
       size_t leni = (size_t)std::distance(first1, last1);  /* current length */
@@ -381,7 +377,8 @@ static inline double finish_distance_computations(size_t len1, uint32_t* string1
         distsum += (double)rowi[leni]*weights[j];
         return;
       }
-      offset = rowi[0];
+      /* row[0]; offset + len1 give together real len of string1 */
+      size_t offset = rowi[0];
       if (leni == 0) {
         distsum += (double)(offset + len)*weights[j];
         return;
@@ -389,9 +386,9 @@ static inline double finish_distance_computations(size_t len1, uint32_t* string1
 
       /* complete the matrix */
       memcpy(row.get(), rowi, (leni + 1)*sizeof(size_t));
-      end = row.get() + leni;
+      size_t* end = row.get() + leni;
 
-      for (i = 1; i <= len; i++) {
+      for (size_t i = 1; i <= len; i++) {
         size_t* p = row.get() + 1;
         const uint32_t char1 = string1[i - 1];
         auto char2p = first1;
@@ -447,18 +444,16 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
   /* allocate and initialize per-string matrix rows and a common work buffer */
   std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
   size_t maxlen = 0;
-  for (const auto& str : strings) {
-    maxlen = std::max(maxlen, (size_t)str.length);
-  }
-
   for (size_t i = 0; i < strings.size(); i++) {
     size_t leni = (size_t)strings[i].length;
+    if (leni > maxlen)
+      maxlen = leni;
     rows[i] = std::make_unique<size_t[]>(leni + 1);
     std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
 
   size_t stoplen = 2*maxlen + 1;
-  auto row = std::make_unique<size_t[]>(stoplen + 1);
+  auto row = std::make_unique<size_t[]>(stoplen + 2);
 
   /* initialize median to given string */
   auto _median = std::make_unique<uint32_t[]>(stoplen + 1);

@@ -5,6 +5,9 @@
 - implement all Python wrappers mostly with cython
 - replace usage of deprecated Python APIs
 
+#### Fixed
+- fix behavior of median and median_improve
+
 ### v0.18.2
 #### Changed
 - Allow installation from system installed versions of `rapidfuzz-cpp`
