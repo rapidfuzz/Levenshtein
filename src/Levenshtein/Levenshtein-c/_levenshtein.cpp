@@ -87,16 +87,15 @@ make_symlistset(size_t n, const size_t *lengths,
   return symlist;
 }
 
-lev_byte*
+std::basic_string<lev_byte>
 lev_quick_median(size_t n,
                  const size_t *lengths,
                  const lev_byte *strings[],
-                 const double *weights,
-                 size_t *medlength)
+                 const double *weights)
 {
   size_t symlistlen, len, i, j, k;
   lev_byte *symlist;
-  lev_byte *median;  /* the resulting string */
+  std::basic_string<lev_byte> median;  /* the resulting string */
   double *symset;
 
   /* first check whether the result would be an empty string 
@@ -105,27 +104,25 @@ lev_quick_median(size_t n,
   double wl = std::accumulate(   weights, weights + n, 0.0);
 
   if (wl == 0.0)
-    return (lev_byte*)calloc(1, sizeof(lev_byte));
+    return std::basic_string<lev_byte>();
+
   ml = floor(ml/wl + 0.499999);
-  *medlength = len = (size_t)ml;
+  len = (size_t)ml;
   if (!len)
-    return (lev_byte*)calloc(1, sizeof(lev_byte));
-  median = (lev_byte*)safe_malloc(len, sizeof(lev_byte));
-  if (!median)
-    return NULL;
+    return std::basic_string<lev_byte>();
+
+  median.resize(len);
 
   /* find the symbol set;
    * now an empty symbol set is really a failure */
   symset = (double*)calloc(0x100, sizeof(double));
-  if (!symset) {
-    free(median);
-    return NULL;
-  }
+  if (!symset)
+    throw std::bad_alloc();
+
   symlist = make_symlistset(n, lengths, strings, &symlistlen, symset);
   if (!symlist) {
-    free(median);
     free(symset);
-    return NULL;
+    throw std::bad_alloc();
   }
 
   for (j = 0; j < len; j++) {
@@ -269,16 +266,15 @@ make_usymlistset(size_t n, const size_t *lengths,
   return symlist;
 }
 
-lev_wchar*
+std::basic_string<lev_wchar>
 lev_u_quick_median(size_t n,
                    const size_t *lengths,
                    const lev_wchar *strings[],
-                   const double *weights,
-                   size_t *medlength)
+                   const double *weights)
 {
   size_t symlistlen, len, i, j, k;
   lev_wchar *symlist;
-  lev_wchar *median;  /* the resulting string */
+  std::basic_string<lev_wchar> median;  /* the resulting string */
   HQItem *symmap;
 
   /* first check whether the result would be an empty string 
@@ -287,27 +283,23 @@ lev_u_quick_median(size_t n,
   double wl = std::accumulate(   weights, weights + n, 0.0);
 
   if (wl == 0.0)
-    return (lev_wchar*)calloc(1, sizeof(lev_wchar));
+    return std::basic_string<lev_wchar>();
   ml = floor(ml/wl + 0.499999);
-  *medlength = len = (size_t)ml;
+  len = (size_t)ml;
   if (!len)
-    return (lev_wchar*)calloc(1, sizeof(lev_wchar));
-  median = (lev_wchar*)safe_malloc(len, sizeof(lev_wchar));
-  if (!median)
-    return NULL;
+    return std::basic_string<lev_wchar>();
+  median.resize(len);
 
   /* find the symbol set;
    * now an empty symbol set is really a failure */
   symmap = (HQItem*)safe_malloc(0x100, sizeof(HQItem));
-  if (!symmap) {
-    free(median);
-    return NULL;
-  }
+  if (!symmap)
+    throw std::bad_alloc();
+
   symlist = make_usymlistset(n, lengths, strings, &symlistlen, symmap);
   if (!symlist) {
-    free(median);
     free_usymlistset_hash(symmap);
-    return NULL;
+    throw std::bad_alloc();
   }
 
   for (j = 0; j < len; j++) {

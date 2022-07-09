@@ -20,7 +20,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  **/
-#define lev_wchar Py_UNICODE
 #include <Python.h>
 #include "_levenshtein.hpp"
 
@@ -89,37 +88,33 @@ static PyMethodDef methods[] = {
   { NULL, NULL, 0, NULL },
 };
 
-typedef lev_byte* (*MedianFuncString)(size_t n,
+typedef std::basic_string<lev_byte> (*MedianFuncString)(size_t n,
                                       const size_t* lengths,
                                       const lev_byte** strings,
-                                      const double* weights,
-                                      size_t* medlength);
-typedef Py_UNICODE* (*MedianFuncUnicode)(size_t n,
+                                      const double* weights);
+typedef std::basic_string<Py_UNICODE> (*MedianFuncUnicode)(size_t n,
                                          const size_t* lengths,
                                          const Py_UNICODE** strings,
-                                         const double* weights,
-                                         size_t* medlength);
-typedef struct {
+                                         const double* weights);
+struct MedianFuncs {
   MedianFuncString s;
   MedianFuncUnicode u;
-} MedianFuncs;
+};
 
-typedef lev_byte* (*MedianImproveFuncString)(size_t len, const lev_byte* s,
+typedef std::basic_string<lev_byte> (*MedianImproveFuncString)(size_t len, const lev_byte* s,
                                              size_t n,
                                              const size_t* lengths,
                                              const lev_byte** strings,
-                                             const double* weights,
-                                             size_t* medlength);
-typedef Py_UNICODE* (*MedianImproveFuncUnicode)(size_t len, const Py_UNICODE* s,
+                                             const double* weights);
+typedef std::basic_string<Py_UNICODE> (*MedianImproveFuncUnicode)(size_t len, const Py_UNICODE* s,
                                                 size_t n,
                                                 const size_t* lengths,
                                                 const Py_UNICODE** strings,
-                                                const double* weights,
-                                                size_t* medlength);
-typedef struct {
+                                                const double* weights);
+struct MedianImproveFuncs {
   MedianImproveFuncString s;
   MedianImproveFuncUnicode u;
-} MedianImproveFuncs;
+};
 
 static int
 extract_stringlist(PyObject* list,
@@ -154,7 +149,7 @@ median_improve_common(PyObject* args,
 
 static PyObject* median_improve_py(PyObject*, PyObject* args)
 {
-  MedianImproveFuncs engines = { lev_median_improve<lev_byte>, lev_median_improve<lev_wchar> };
+  MedianImproveFuncs engines = { lev_median_improve<lev_byte>, lev_median_improve<Py_UNICODE> };
   return median_improve_common(args, "median_improve", engines);
 }
 
@@ -209,15 +204,8 @@ static PyObject* median_common(PyObject* args, const char* name, MedianFuncs foo
 
   if (stringtype == 0) {
     try {
-      size_t len = 0;
-      lev_byte* medstr = foo.s(n, sizes, (const lev_byte**)strings, weights, &len);
-      if (!medstr && len)
-        // todo remove after refactoring
-        result = PyErr_NoMemory();
-      else {
-        result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
-        free(medstr);
-      }
+      std::basic_string<lev_byte> medstr = foo.s(n, sizes, (const lev_byte**)strings, weights);
+      result = PyBytes_FromStringAndSize((const char*)medstr.data(), (Py_ssize_t)medstr.size());
     } catch (...)
     {
       result = PyErr_NoMemory();
@@ -225,14 +213,8 @@ static PyObject* median_common(PyObject* args, const char* name, MedianFuncs foo
   }
   else if (stringtype == 1) {
     try {
-      size_t len = 0;
-      Py_UNICODE* medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights, &len);
-      if (!medstr && len)
-        result = PyErr_NoMemory();
-      else {
-        result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
-        free(medstr);
-      }
+      std::basic_string<Py_UNICODE> medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights);
+      result = PyUnicode_FromUnicode(medstr.data(), (Py_ssize_t)medstr.size());
     } catch (...)
     {
       result = PyErr_NoMemory();
@@ -304,16 +286,10 @@ static PyObject* median_improve_common(PyObject* args, const char* name, MedianI
   Py_DECREF(strseq);
   if (stringtype == 0) {
     try {
-      size_t len = 0;
       lev_byte* s = (lev_byte*)PyBytes_AS_STRING(arg1);
       size_t l = (size_t)PyBytes_GET_SIZE(arg1);
-      lev_byte* medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights, &len);
-      if (!medstr && len)
-        result = PyErr_NoMemory();
-      else {
-        result = PyBytes_FromStringAndSize((const char*)medstr, (Py_ssize_t)len);
-        free(medstr);
-      }
+      std::basic_string<lev_byte> medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights);
+      result = PyBytes_FromStringAndSize((const char*)medstr.data(), (Py_ssize_t)medstr.size());
     } catch (...)
     {
       result = PyErr_NoMemory();
@@ -321,16 +297,10 @@ static PyObject* median_improve_common(PyObject* args, const char* name, MedianI
   }
   else if (stringtype == 1) {
     try {
-      size_t len = 0;
       Py_UNICODE* s = PyUnicode_AS_UNICODE(arg1);
-      size_t l = (size_t)PyUnicode_GET_SIZE(arg1);
-      Py_UNICODE* medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights, &len);
-      if (!medstr && len)
-        result = PyErr_NoMemory();
-      else {
-        result = PyUnicode_FromUnicode(medstr, (Py_ssize_t)len);
-        free(medstr);
-      }
+      size_t l = (size_t)PyUnicode_GET_LENGTH(arg1);
+      std::basic_string<Py_UNICODE> medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights);
+      result = PyUnicode_FromUnicode(medstr.data(), (Py_ssize_t)medstr.size());
     } catch (...)
     {
       result = PyErr_NoMemory();
@@ -470,7 +440,7 @@ static int extract_stringlist(PyObject* list, const char* name,
     }
 
     strings[0] = PyUnicode_AS_UNICODE(first);
-    sizes[0] = (size_t)PyUnicode_GET_SIZE(first);
+    sizes[0] = (size_t)PyUnicode_GET_LENGTH(first);
     for (size_t i = 1; i < n; i++) {
       PyObject* item = PySequence_Fast_GET_ITEM(list, i);
 
@@ -482,7 +452,7 @@ static int extract_stringlist(PyObject* list, const char* name,
         return -1;
       }
       strings[i] = PyUnicode_AS_UNICODE(item);
-      sizes[i] = (size_t)PyUnicode_GET_SIZE(item);
+      sizes[i] = (size_t)PyUnicode_GET_LENGTH(item);
     }
 
     *(Py_UNICODE***)strlist = strings;

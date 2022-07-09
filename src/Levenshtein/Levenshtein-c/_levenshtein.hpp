@@ -6,6 +6,7 @@
 #include <numeric>
 #include <memory>
 #include <vector>
+#include <string>
 #include <unordered_set>
 #include <rapidfuzz/distance/Indel.hpp>
 #include <rapidfuzz/distance/Levenshtein.hpp>
@@ -129,16 +130,16 @@ static inline RF_String convert_string(PyObject* py_str)
 /* Edit operation type
  * DON'T CHANGE! used as array indices and the bits are occasionally used
  * as flags */
-typedef enum {
+enum LevEditType {
   LEV_EDIT_KEEP = 0,
   LEV_EDIT_REPLACE = 1,
   LEV_EDIT_INSERT = 2,
   LEV_EDIT_DELETE = 3,
   LEV_EDIT_LAST  /* sometimes returned when an error occurs */
-} LevEditType;
+};
 
 /* Error codes returned by editop check functions */
-typedef enum {
+enum LevEditOpError {
   LEV_EDIT_ERR_OK = 0,
   LEV_EDIT_ERR_TYPE,  /* nonexistent edit type */
   LEV_EDIT_ERR_OUT,  /* edit out of string bounds */
@@ -146,7 +147,7 @@ typedef enum {
   LEV_EDIT_ERR_BLOCK,  /* incosistent block boundaries (block ops) */
   LEV_EDIT_ERR_SPAN,  /* sequence is not a full transformation (block ops) */
   LEV_EDIT_ERR_LAST
-} LevEditOpError;
+};
 
 /* Edit operation (atomic).
  * This is the `native' atomic edit operation.  It differs from the difflib
@@ -481,7 +482,6 @@ double finish_distance_computations(size_t len1, CharT* string1,
  * @strings: An array of strings, that may contain NUL characters.
  * @weights: The string weights (they behave exactly as multiplicities, though
  *           any positive value is allowed, not just integers).
- * @medlength: Where the new length of the median should be stored.
  *
  * Tries to make @s a better generalized median string of @strings with
  * small perturbations.
@@ -489,18 +489,16 @@ double finish_distance_computations(size_t len1, CharT* string1,
  * It never returns a string with larger SOD than @s; in the worst case, a
  * string identical to @s is returned.
  *
- * Returns: The improved generalized median, as a newly allocated string; its
- *          length is stored in @medlength.
+ * Returns: The improved generalized median
  **/
 template <typename CharT>
-CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* lengths,
-                             const CharT** strings, const double *weights, size_t *medlength)
+std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* lengths,
+                             const CharT** strings, const double *weights)
 {
   /* find all symbols */
   std::vector<CharT> symlist = make_symlist(n, lengths, strings);
   if (symlist.empty()) {
-    *medlength = 0;
-    return (CharT*)calloc(1, sizeof(CharT));
+    return std::basic_string<CharT>();
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
@@ -552,7 +550,7 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
       median[pos] = orig_symbol;
     }
     /* FOREACH symbol: try to add it at pos, if some lower the total
-     * distance, chooste the best (increase medlength)
+     * distance, chooste the best (increase medlen)
      * We simulate insertion by replacing the character at pos-1 */
     orig_symbol = *(median + pos - 1);
     for (size_t j = 0; j < symlist.size(); j++) {
@@ -567,8 +565,8 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
       }
     }
     *(median + pos - 1) = orig_symbol;
-    /* IF pos < medlength: try to delete the symbol at pos, if it lowers
-     * the total distance remember it (decrease medlength) */
+    /* IF pos < medlen: try to delete the symbol at pos, if it lowers
+     * the total distance remember it (decrease medlen) */
     if (pos < medlen) {
       sum = finish_distance_computations(medlen - pos - 1, median + pos + 1,
                                          n, lengths, strings,
@@ -624,29 +622,20 @@ CharT* lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* le
     }
   }
 
-  /* return result */
-  CharT *result = (CharT*)safe_malloc(medlen, sizeof(CharT));
-  if (!result) {
-    return NULL;
-  }
-  *medlength = medlen;
-  memcpy(result, median, medlen*sizeof(CharT));
-  return result;
+  return std::basic_string<CharT>(median, medlen);
 }
 
-lev_byte*
+std::basic_string<lev_byte>
 lev_quick_median(size_t n,
                  const size_t *lengths,
                  const lev_byte *strings[],
-                 const double *weights,
-                 size_t *medlength);
+                 const double *weights);
 
-lev_wchar*
+std::basic_string<lev_wchar>
 lev_u_quick_median(size_t n,
                    const size_t *lengths,
                    const lev_wchar *strings[],
-                   const double *weights,
-                   size_t *medlength);
+                   const double *weights);
 
 /**
  * lev_set_median:
@@ -655,12 +644,10 @@ lev_u_quick_median(size_t n,
  * @strings: An array of strings, that may contain NUL characters.
  * @weights: The string weights (they behave exactly as multiplicities, though
  *           any positive value is allowed, not just integers).
- * @medlength: Where the length of the median string should be stored.
  *
  * Finds the median string of a string set @strings.
  *
- * Returns: The set median as a newly allocate string, its length is stored
- *          in @medlength.  %NULL in the case of failure.
+ * Returns: The set median
  **/
 static inline std::basic_string<uint32_t> lev_set_median(const std::vector<RF_String>& strings,
                          const std::vector<double>& weights)
