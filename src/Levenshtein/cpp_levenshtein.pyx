@@ -96,6 +96,7 @@ cdef extern from "_levenshtein.hpp":
     cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem) except +
 
     cdef basic_string[uint32_t] lev_greedy_median(const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef basic_string[uint32_t] lev_median_improve2(const RF_String& string, const vector[RF_String]& strings, const vector[double]& weights) except +
     cdef basic_string[uint32_t] lev_set_median(const vector[RF_String]& strings, const vector[double]& weights) except +
 
     cdef double lev_set_distance(const vector[RF_String]& strings1, const vector[RF_String]& strings2) except +
@@ -734,6 +735,41 @@ def median(strlist, wlist = None, *):
     weights = extract_weightlist(wlist, len(strlist))
     strings = extract_stringlist(strlist)
     median = lev_greedy_median(strings, weights)
+    return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
+
+def median_improve(string, strlist, wlist = None, *):
+    """
+    Improve an approximate generalized median string by perturbations.
+
+    The first argument is the estimated generalized median string you
+    want to improve, the others are the same as in median(). It returns
+    a string with total distance less or equal to that of the given string.
+
+    Note this is much slower than median(). Also note it performs only
+    one improvement step, calling median_improve() again on the result
+    may improve it further, though this is unlikely to happen unless the
+    given string was not very similar to the actual generalized median.
+
+    Examples
+    --------
+
+    >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
+                 'Leveshtei', 'Lenshtein', 'Lvenstein',
+                 'Levenhtin', 'evenshtei']
+    >>> median_improve('spam', fixme)
+    'enhtein'
+    >>> median_improve(median_improve('spam', fixme), fixme)
+    'Levenshtein'
+
+    It takes some work to change spam to Levenshtein.
+    """
+    if wlist is not None and len(strlist) != len(wlist):
+        raise ValueError("strlist has a different length than wlist")
+
+    weights = extract_weightlist(wlist, len(strlist))
+    query = conv_sequence(string)
+    strings = extract_stringlist(strlist)
+    median = lev_median_improve2(query, strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
 def setmedian(strlist, wlist = None, *):

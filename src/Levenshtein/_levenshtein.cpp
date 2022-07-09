@@ -32,36 +32,9 @@
 
 /* python interface and wrappers */
 /* declarations and docstrings {{{ */
-static PyObject* median_improve_py(PyObject* self, PyObject* args);
 static PyObject* quickmedian_py(PyObject* self, PyObject* args);
 
 #define Levenshtein_DESC ""
-
-#define median_improve_DESC \
-  "Improve an approximate generalized median string by perturbations.\n" \
-  "\n" \
-  "median_improve(string, string_sequence[, weight_sequence])\n" \
-  "\n" \
-  "The first argument is the estimated generalized median string you\n" \
-  "want to improve, the others are the same as in median().  It returns\n" \
-  "a string with total distance less or equal to that of the given string.\n" \
-  "\n" \
-  "Note this is much slower than median().  Also note it performs only\n" \
-  "one improvement step, calling median_improve() again on the result\n" \
-  "may improve it further, though this is unlikely to happen unless the\n" \
-  "given string was not very similar to the actual generalized median.\n" \
-  "\n" \
-  "Examples:\n" \
-  "\n" \
-  ">>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',\n" \
-  "...          'Leveshtei', 'Lenshtein', 'Lvenstein',\n" \
-  "...          'Levenhtin', 'evenshtei']\n" \
-  ">>> median_improve('spam', fixme)\n" \
-  "'enhtein'\n" \
-  ">>> median_improve(median_improve('spam', fixme), fixme)\n" \
-  "'Levenshtein'\n" \
-  "\n" \
-  "It takes some work to change spam to Levenshtein.\n"
 
 #define quickmedian_DESC \
   "Find a very approximate generalized median string, but fast.\n" \
@@ -83,7 +56,6 @@ static PyObject* quickmedian_py(PyObject* self, PyObject* args);
 
 #define METHODS_ITEM(x) { #x, x##_py, METH_VARARGS, x##_DESC }
 static PyMethodDef methods[] = {
-  METHODS_ITEM(median_improve),
   METHODS_ITEM(quickmedian),
   { NULL, NULL, 0, NULL },
 };
@@ -99,21 +71,6 @@ typedef std::basic_string<Py_UNICODE> (*MedianFuncUnicode)(size_t n,
 struct MedianFuncs {
   MedianFuncString s;
   MedianFuncUnicode u;
-};
-
-typedef std::basic_string<lev_byte> (*MedianImproveFuncString)(size_t len, const lev_byte* s,
-                                             size_t n,
-                                             const size_t* lengths,
-                                             const lev_byte** strings,
-                                             const double* weights);
-typedef std::basic_string<Py_UNICODE> (*MedianImproveFuncUnicode)(size_t len, const Py_UNICODE* s,
-                                                size_t n,
-                                                const size_t* lengths,
-                                                const Py_UNICODE** strings,
-                                                const double* weights);
-struct MedianImproveFuncs {
-  MedianImproveFuncString s;
-  MedianImproveFuncUnicode u;
 };
 
 static int
@@ -133,11 +90,6 @@ median_common(PyObject* args,
               const char* name,
               MedianFuncs foo);
 
-static PyObject*
-median_improve_common(PyObject* args,
-                      const char* name,
-                      MedianImproveFuncs foo);
-
 /* }}} */
 
 /****************************************************************************
@@ -146,12 +98,6 @@ median_improve_common(PyObject* args,
  *
  ****************************************************************************/
 /* {{{ */
-
-static PyObject* median_improve_py(PyObject*, PyObject* args)
-{
-  MedianImproveFuncs engines = { lev_median_improve<lev_byte>, lev_median_improve<Py_UNICODE> };
-  return median_improve_common(args, "median_improve", engines);
-}
 
 static PyObject* quickmedian_py(PyObject*, PyObject* args)
 {
@@ -214,92 +160,6 @@ static PyObject* median_common(PyObject* args, const char* name, MedianFuncs foo
   else if (stringtype == 1) {
     try {
       std::basic_string<Py_UNICODE> medstr = foo.u(n, sizes, (const Py_UNICODE**)strings, weights);
-      result = PyUnicode_FromUnicode(medstr.data(), (Py_ssize_t)medstr.size());
-    } catch (...)
-    {
-      result = PyErr_NoMemory();
-    }
-  }
-  else
-    PyErr_Format(PyExc_SystemError, "%s internal error", name);
-
-  free(strings);
-  free(weights);
-  free(sizes);
-  return result;
-}
-
-static PyObject* median_improve_common(PyObject* args, const char* name, MedianImproveFuncs foo)
-{
-  size_t n;
-  void* strings = NULL;
-  size_t* sizes = NULL;
-  PyObject* arg1 = NULL;
-  PyObject* strlist = NULL;
-  PyObject* wlist = NULL;
-  PyObject* strseq = NULL;
-  double* weights;
-  int stringtype;
-  PyObject* result = NULL;
-
-  if (!PyArg_UnpackTuple(args, PYARGCFIX(name), 2, 3, &arg1, &strlist, &wlist))
-    return NULL;
-
-  if (PyObject_TypeCheck(arg1, &PyBytes_Type))
-    stringtype = 0;
-  else if (PyObject_TypeCheck(arg1, &PyUnicode_Type))
-    stringtype = 1;
-  else {
-    PyErr_Format(PyExc_TypeError,
-                 "%s first argument must be a String or Unicode", name);
-    return NULL;
-  }
-
-  if (!PySequence_Check(strlist)) {
-    PyErr_Format(PyExc_TypeError,
-                 "%s second argument must be a Sequence", name);
-    return NULL;
-  }
-  strseq = PySequence_Fast(strlist, name);
-
-  n = (size_t)PySequence_Fast_GET_SIZE(strseq);
-  if (n == 0) {
-    Py_INCREF(Py_None);
-    Py_DECREF(strseq);
-    return Py_None;
-  }
-
-  /* get (optional) weights, use 1 if none specified. */
-  weights = extract_weightlist(wlist, name, n);
-  if (!weights) {
-    Py_DECREF(strseq);
-    return NULL;
-  }
-
-  if (extract_stringlist(strseq, name, n, &sizes, &strings) != stringtype) {
-    PyErr_Format(PyExc_TypeError,
-                 "%s argument types don't match", name);
-    free(weights);
-    return NULL;
-  }
-
-  Py_DECREF(strseq);
-  if (stringtype == 0) {
-    try {
-      lev_byte* s = (lev_byte*)PyBytes_AS_STRING(arg1);
-      size_t l = (size_t)PyBytes_GET_SIZE(arg1);
-      std::basic_string<lev_byte> medstr = foo.s(l, s, n, sizes, (const lev_byte**)strings, weights);
-      result = PyBytes_FromStringAndSize((const char*)medstr.data(), (Py_ssize_t)medstr.size());
-    } catch (...)
-    {
-      result = PyErr_NoMemory();
-    }
-  }
-  else if (stringtype == 1) {
-    try {
-      Py_UNICODE* s = PyUnicode_AS_UNICODE(arg1);
-      size_t l = (size_t)PyUnicode_GET_LENGTH(arg1);
-      std::basic_string<Py_UNICODE> medstr = foo.u(l, s, n, sizes, (const Py_UNICODE**)strings, weights);
       result = PyUnicode_FromUnicode(medstr.data(), (Py_ssize_t)medstr.size());
     } catch (...)
     {
