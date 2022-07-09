@@ -19,8 +19,15 @@ endif()
 find_package(PythonExtensions REQUIRED)
 find_package(Python COMPONENTS Interpreter Development)
 find_package(Cython REQUIRED)
-add_subdirectory(extern/rapidfuzz-cpp)
 
-set(LEV_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+find_package(rapidfuzz 1.0.4 QUIET)
+if (rapidfuzz_FOUND)
+    message("Using system supplied version of rapidfuzz-cpp")
+else()
+    message("Using packaged version of rapidfuzz-cpp")
+    add_subdirectory(extern/rapidfuzz-cpp)
+endif()
 
-add_subdirectory(src/cython)
+set(LEV_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/Levenshtein)
+
+add_subdirectory(src/Levenshtein)

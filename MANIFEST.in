@@ -4,11 +4,11 @@ include README.md
 include COPYING
 include HISTORY.md
 include pyproject.toml
-include src/rapidfuzz/**/*.pyi
-include src/rapidfuzz/py.typed
+include src/Levenshtein/**/*.pyi
+include src/Levenshtein/py.typed
 
-recursive-include src/cython CMakeLists.txt
-recursive-include src/cython *.hpp *.h *.cpp *.pyx *.pxd
+recursive-include src/Levenshtein CMakeLists.txt
+recursive-include src/Levenshtein *.hpp *.h *.cpp *.pyx *.pxd
 
 include extern/rapidfuzz-cpp/LICENSE
 include extern/rapidfuzz-cpp/CMakeLists.txt
