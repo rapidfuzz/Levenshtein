@@ -25,7 +25,6 @@ from rapidfuzz.distance.Jaro import similarity as jaro
 from rapidfuzz.distance.JaroWinkler import similarity as jaro_winkler
 
 from Levenshtein._levenshtein import (
-    median_improve,
     quickmedian
 )
 
@@ -37,6 +36,7 @@ from Levenshtein.cpp_levenshtein import (
     subtract_edit,
     apply_edit, 
     median,
+    median_improve,
     setmedian,
     setratio,
     seqratio

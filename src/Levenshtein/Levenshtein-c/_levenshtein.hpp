@@ -3,6 +3,7 @@
 #define LEVENSHTEIN_H
 
 #include "Python.h"
+#include <cstdint>
 #include <numeric>
 #include <memory>
 #include <vector>
@@ -401,11 +402,9 @@ static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF
  *
  * string1, len1 are already shortened.
  */
-template <typename CharT>
-double finish_distance_computations(size_t len1, CharT* string1,
-                                    size_t n, const size_t* lengths,
-                                    const CharT** strings,
-                                    const double *weights, std::vector<std::unique_ptr<size_t[]>>& rows,
+static inline double finish_distance_computations(size_t len1, uint32_t* string1,
+                                    const std::vector<RF_String>& strings,
+                                    const std::vector<double>& weights, std::vector<std::unique_ptr<size_t[]>>& rows,
                                     std::unique_ptr<size_t[]>& row)
 {
   size_t *end;
@@ -413,61 +412,62 @@ double finish_distance_computations(size_t len1, CharT* string1,
   size_t offset;  /* row[0]; offset + len1 give together real len of string1 */
   double distsum = 0.0;  /* sum of distances */
 
-  /* catch trivia case */
+  /* catch trivial case */
   if (len1 == 0) {
-    for (j = 0; j < n; j++)
-      distsum += (double)rows[j][lengths[j]]*weights[j];
+    for (j = 0; j < strings.size(); j++)
+      distsum += (double)rows[j][strings[j].length]*weights[j];
     return distsum;
   }
 
   /* iterate through the strings and sum the distances */
-  for (j = 0; j < n; j++) {
-    size_t* rowi = rows[j].get();  /* current row */
-    size_t leni = lengths[j];  /* current length */
-    size_t len = len1;  /* temporary len1 for suffix stripping */
-    const CharT* stringi = strings[j];  /* current string */
+  for (j = 0; j < strings.size(); j++) {
+    visit(strings[j], [&](auto first1, auto last1){
+      size_t* rowi = rows[j].get();  /* current row */
+      size_t leni = (size_t)std::distance(first1, last1);  /* current length */
+      size_t len = len1;  /* temporary len1 for suffix stripping */
 
-    /* strip common suffix (prefix CAN'T be stripped) */
-    while (len && leni && stringi[leni-1] == string1[len-1]) {
-      len--;
-      leni--;
-    }
-
-    /* catch trivial cases */
-    if (len == 0) {
-      distsum += (double)rowi[leni]*weights[j];
-      continue;
-    }
-    offset = rowi[0];
-    if (leni == 0) {
-      distsum += (double)(offset + len)*weights[j];
-      continue;
-    }
-
-    /* complete the matrix */
-    memcpy(row.get(), rowi, (leni + 1)*sizeof(size_t));
-    end = row.get() + leni;
-
-    for (i = 1; i <= len; i++) {
-      size_t* p = row.get() + 1;
-      const CharT char1 = string1[i - 1];
-      const CharT* char2p = stringi;
-      size_t D, x;
-
-      D = x = i + offset;
-      while (p <= end) {
-        size_t c3 = --D + (char1 != *(char2p++));
-        x++;
-        if (x > c3)
-          x = c3;
-        D = *p;
-        D++;
-        if (x > D)
-          x = D;
-        *(p++) = x;
+      /* strip common suffix (prefix CAN'T be stripped) */
+      while (len && leni && first1[leni-1] == string1[len-1]) {
+        len--;
+        leni--;
       }
-    }
-    distsum += weights[j]*(double)(*end);
+
+      /* catch trivial cases */
+      if (len == 0) {
+        distsum += (double)rowi[leni]*weights[j];
+        return;
+      }
+      offset = rowi[0];
+      if (leni == 0) {
+        distsum += (double)(offset + len)*weights[j];
+        return;
+      }
+
+      /* complete the matrix */
+      memcpy(row.get(), rowi, (leni + 1)*sizeof(size_t));
+      end = row.get() + leni;
+
+      for (i = 1; i <= len; i++) {
+        size_t* p = row.get() + 1;
+        const uint32_t char1 = string1[i - 1];
+        auto char2p = first1;
+        size_t D, x;
+
+        D = x = i + offset;
+        while (p <= end) {
+          size_t c3 = --D + (char1 != *(char2p++));
+          x++;
+          if (x > c3)
+            x = c3;
+          D = *p;
+          D++;
+          if (x > D)
+            x = D;
+          *(p++) = x;
+        }
+      }
+      distsum += weights[j]*(double)(*end);
+    });
   }
 
   return distsum;
@@ -491,40 +491,45 @@ double finish_distance_computations(size_t len1, CharT* string1,
  *
  * Returns: The improved generalized median
  **/
-template <typename CharT>
-std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n, const size_t* lengths,
-                             const CharT** strings, const double *weights)
+static inline std::basic_string<uint32_t> lev_median_improve2(const RF_String& string,
+                          const std::vector<RF_String>& strings, const std::vector<double>& weights)
 {
   /* find all symbols */
-  std::vector<CharT> symlist = make_symlist(n, lengths, strings);
+  std::vector<uint32_t> symlist = make_symlist(strings);
   if (symlist.empty()) {
-    return std::basic_string<CharT>();
+    return std::basic_string<uint32_t>();
   }
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
-  std::vector<std::unique_ptr<size_t[]>> rows(n);
-  size_t maxlen = *std::max_element(lengths, lengths + n);
+  std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
+  size_t maxlen = 0;
+  for (const auto& str : strings) {
+    maxlen = std::max(maxlen, (size_t)str.length);
+  }
 
-  for (size_t i = 0; i < n; i++) {
-    size_t leni = lengths[i];
+  for (size_t i = 0; i < strings.size(); i++) {
+    size_t leni = (size_t)strings[i].length;
     rows[i] = std::make_unique<size_t[]>(leni + 1);
     std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
+
   size_t stoplen = 2*maxlen + 1;
   auto row = std::make_unique<size_t[]>(stoplen + 1);
 
   /* initialize median to given string */
-  auto _median = std::make_unique<CharT[]>(stoplen + 1);
-  CharT* median = _median.get() + 1; /* we need -1st element for insertions a pos 0 */
-  size_t medlen = len;
-  memcpy(median, s, (medlen)*sizeof(CharT));
-  double minminsum = finish_distance_computations(medlen, median,
-                                           n, lengths, strings,
-                                           weights, rows, row);
+  auto _median = std::make_unique<uint32_t[]>(stoplen + 1);
+  uint32_t* median = _median.get() + 1; /* we need -1st element for insertions a pos 0 */
+  size_t medlen = (size_t)string.length;
+
+  visit(string, [&](auto first1, auto last1){
+    std::copy(first1, last1, median);
+  });
+
+  double minminsum = finish_distance_computations(medlen, median, strings, weights, rows, row);
 
   /* sequentially try perturbations on all positions */
   for (size_t pos = 0; pos <= medlen; ) {
-    CharT orig_symbol, symbol;
+    uint32_t orig_symbol, symbol;
     LevEditType operation;
     double sum;
 
@@ -538,9 +543,7 @@ std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n
         if (symlist[j] == orig_symbol)
           continue;
         median[pos] = symlist[j];
-        sum = finish_distance_computations(medlen - pos, median + pos,
-                                           n, lengths, strings,
-                                           weights, rows, row);
+        sum = finish_distance_computations(medlen - pos, median + pos, strings, weights, rows, row);
         if (sum < minminsum) {
           minminsum = sum;
           symbol = symlist[j];
@@ -555,9 +558,7 @@ std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n
     orig_symbol = *(median + pos - 1);
     for (size_t j = 0; j < symlist.size(); j++) {
       *(median + pos - 1) = symlist[j];
-      sum = finish_distance_computations(medlen - pos + 1, median + pos - 1,
-                                          n, lengths, strings,
-                                         weights, rows, row);
+      sum = finish_distance_computations(medlen - pos + 1, median + pos - 1, strings, weights, rows, row);
       if (sum < minminsum) {
         minminsum = sum;
         symbol = symlist[j];
@@ -568,9 +569,7 @@ std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n
     /* IF pos < medlen: try to delete the symbol at pos, if it lowers
      * the total distance remember it (decrease medlen) */
     if (pos < medlen) {
-      sum = finish_distance_computations(medlen - pos - 1, median + pos + 1,
-                                         n, lengths, strings,
-                                         weights, rows, row);
+      sum = finish_distance_computations(medlen - pos - 1, median + pos + 1, strings, weights, rows, row);
       if (sum < minminsum) {
         minminsum = sum;
         operation = LEV_EDIT_DELETE;
@@ -584,14 +583,14 @@ std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n
 
     case LEV_EDIT_INSERT:
       memmove(median+pos+1, median+pos,
-              (medlen - pos)*sizeof(CharT));
+              (medlen - pos)*sizeof(uint32_t));
       median[pos] = symbol;
       medlen++;
       break;
 
     case LEV_EDIT_DELETE:
       memmove(median+pos, median + pos+1,
-              (medlen - pos-1)*sizeof(CharT));
+              (medlen - pos-1)*sizeof(uint32_t));
       medlen--;
       break;
 
@@ -603,26 +602,28 @@ std::basic_string<CharT> lev_median_improve(size_t len, const CharT* s, size_t n
     if (operation != LEV_EDIT_DELETE) {
       symbol = median[pos];
       row[0] = pos + 1;
-      for (size_t i = 0; i < n; i++) {
-        const CharT* stri = strings[i];
-        size_t* oldrow = rows[i].get();
-        size_t leni = lengths[i];
-        /* compute a row of Levenshtein matrix */
-        for (size_t k = 1; k <= leni; k++) {
-          size_t c1 = oldrow[k] + 1;
-          size_t c2 = row[k - 1] + 1;
-          size_t c3 = oldrow[k - 1] + (symbol != stri[k - 1]);
-          row[k] = c2 > c3 ? c3 : c2;
-          if (row[k] > c1)
-            row[k] = c1;
-        }
-        memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
+
+      for (size_t i = 0; i < strings.size(); i++) {
+        visit(strings[i], [&](auto first1, auto last1){
+          size_t* oldrow = rows[i].get();
+          size_t leni = (size_t)std::distance(first1, last1);
+          /* compute a row of Levenshtein matrix */
+          for (size_t k = 1; k <= leni; k++) {
+            size_t c1 = oldrow[k] + 1;
+            size_t c2 = row[k - 1] + 1;
+            size_t c3 = oldrow[k - 1] + (symbol != first1[k - 1]);
+            row[k] = c2 > c3 ? c3 : c2;
+            if (row[k] > c1)
+              row[k] = c1;
+          }
+          memcpy(oldrow, row.get(), (leni + 1)*sizeof(size_t));
+        });
       }
       pos++;
     }
   }
 
-  return std::basic_string<CharT>(median, medlen);
+  return std::basic_string<uint32_t>(median, medlen);
 }
 
 std::basic_string<lev_byte>
