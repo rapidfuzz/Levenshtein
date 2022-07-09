@@ -178,6 +178,10 @@ jobs:
           # test whether tarball contains all files required for compiling
           pip install dist/Levenshtein-*.tar.gz
 
+      - name: Test type stubs
+        run: |
+          python -m mypy.stubtest Levenshtein --ignore-missing-stub
+
       - name: Test with pytest and backtrace in case of SegFault
         run: |
           tools/seg_wrapper.sh pytest tests

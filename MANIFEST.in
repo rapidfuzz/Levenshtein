@@ -4,11 +4,10 @@ include README.md
 include COPYING
 include HISTORY.md
 include pyproject.toml
-include src/Levenshtein/**/*.pyi
 include src/Levenshtein/py.typed
 
 recursive-include src/Levenshtein CMakeLists.txt
-recursive-include src/Levenshtein *.hpp *.h *.cpp *.pyx *.pxd *.cxx
+recursive-include src/Levenshtein *.hpp *.h *.cpp *.pyx *.pxd *.cxx *.pyi
 
 include extern/rapidfuzz-cpp/LICENSE
 include extern/rapidfuzz-cpp/CMakeLists.txt

@@ -31,10 +31,10 @@ from Levenshtein.levenshtein_cpp import (
     opcodes,
     matching_blocks,
     subtract_edit,
-    apply_edit, 
+    apply_edit,
     median,
     median_improve,
     setmedian,
     setratio,
-    seqratio
+    seqratio,
 )

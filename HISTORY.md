@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.19.1
+#### Added
+- Add type hints
+
 ### v0.19.0
 #### Changed
 - implement all Python wrappers mostly with cython

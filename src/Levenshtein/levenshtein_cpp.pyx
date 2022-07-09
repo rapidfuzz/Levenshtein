@@ -252,7 +252,7 @@ cdef matching_blocks_to_tuple_list(size_t len1, size_t len2, size_t nmb, LevMatc
     PyList_SET_ITEM(tuple_list, <Py_ssize_t>nmb, result_item)
     return tuple_list
 
-def inverse(edit_operations):
+def inverse(edit_operations, *):
     """
     Invert the sense of an edit operation sequence.
 
@@ -394,7 +394,7 @@ def opcodes(*args):
     return rf_opcodes(arg1, arg2).as_list()
 
 
-def matching_blocks(edit_operations, source_string, destination_string):
+def matching_blocks(edit_operations, source_string, destination_string, *):
     """
     Find identical blocks in two strings.
 
@@ -481,7 +481,7 @@ def matching_blocks(edit_operations, source_string, destination_string):
     raise TypeError("matching_blocks expected a list of edit operations")
 
 
-def subtract_edit(edit_operations, subsequence):
+def subtract_edit(edit_operations, subsequence, *):
     """
     Subtract an edit subsequence from a sequence.
     
@@ -548,7 +548,7 @@ def subtract_edit(edit_operations, subsequence):
 
 
 
-def apply_edit(edit_operations, source_string, destination_string):
+def apply_edit(edit_operations, source_string, destination_string, *):
     """
     Apply a sequence of edit operations to a string.
     
