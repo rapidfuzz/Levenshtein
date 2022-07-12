@@ -9,6 +9,12 @@ _Opcodes = List[Tuple[str, int, int, int, int]]
 _MatchingBlocks = List[Tuple[int, int, int]]
 _AnyEditops = Union[_Editops, _Opcodes]
 
+from rapidfuzz.distance.Levenshtein import distance as distance
+from rapidfuzz.distance.Indel import normalized_similarity as ratio
+from rapidfuzz.distance.Hamming import distance as hamming
+from rapidfuzz.distance.Jaro import similarity as jaro
+from rapidfuzz.distance.JaroWinkler import similarity as jaro_winkler
+
 def inverse(edit_operations: list) -> list: ...
 
 @overload

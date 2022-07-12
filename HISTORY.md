@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.19.2
+#### Added
+- add missing type hints
+
 ### v0.19.1
 #### Added
 - Add type hints
