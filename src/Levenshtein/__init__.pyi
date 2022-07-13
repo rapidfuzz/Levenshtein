@@ -56,7 +56,7 @@ def distance(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    weights: Tuple[int, int, int] = (1, 1, 1),
+    weights: Optional[Tuple[int, int, int]] = (1, 1, 1),
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> int: ...
@@ -64,7 +64,6 @@ def ratio(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    prefix_weight: float = 0.1,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> float: ...
@@ -86,7 +85,7 @@ def jaro_winkler(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    prefix_weight: float = 0.1,
+    prefix_weight: Optional[float] = 0.1,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> float: ...
