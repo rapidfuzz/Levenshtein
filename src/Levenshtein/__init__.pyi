@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union, Optional, overload
+from typing import Callable, Hashable, List, Sequence, Tuple, Union, Optional, overload
 
 __author__: str
 __license__: str
@@ -8,12 +8,6 @@ _Editops = List[Tuple[str, int, int]]
 _Opcodes = List[Tuple[str, int, int, int, int]]
 _MatchingBlocks = List[Tuple[int, int, int]]
 _AnyEditops = Union[_Editops, _Opcodes]
-
-from rapidfuzz.distance.Levenshtein import distance as distance
-from rapidfuzz.distance.Indel import normalized_similarity as ratio
-from rapidfuzz.distance.Hamming import distance as hamming
-from rapidfuzz.distance.Jaro import similarity as jaro
-from rapidfuzz.distance.JaroWinkler import similarity as jaro_winkler
 
 def inverse(edit_operations: list) -> list: ...
 
@@ -57,4 +51,34 @@ def setratio(
 ) -> float: ...
 def seqratio(
     strlist1: List[Union[str, bytes]], strlist2: List[Union[str, bytes]]
+) -> float: ...
+def distance(
+    s1: Sequence[Hashable],
+    s2: Sequence[Hashable],
+    processor: Optional[Callable] = None,
+    score_cutoff: Optional[float] = None,
+) -> int: ...
+def ratio(
+    s1: Sequence[Hashable],
+    s2: Sequence[Hashable],
+    processor: Optional[Callable] = None,
+    score_cutoff: Optional[float] = None,
+) -> float: ...
+def hamming(
+    s1: Sequence[Hashable],
+    s2: Sequence[Hashable],
+    processor: Optional[Callable] = None,
+    score_cutoff: Optional[float] = None,
+) -> int: ...
+def jaro(
+    s1: Sequence[Hashable],
+    s2: Sequence[Hashable],
+    processor: Optional[Callable] = None,
+    score_cutoff: Optional[float] = None,
+) -> float: ...
+def jaro_winkler(
+    s1: Sequence[Hashable],
+    s2: Sequence[Hashable],
+    processor: Optional[Callable] = None,
+    score_cutoff: Optional[float] = None,
 ) -> float: ...
