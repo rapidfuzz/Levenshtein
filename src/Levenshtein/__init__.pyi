@@ -55,30 +55,35 @@ def seqratio(
 def distance(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
+    *,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> int: ...
 def ratio(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
+    *,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> float: ...
 def hamming(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
+    *,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> int: ...
 def jaro(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
+    *,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> float: ...
 def jaro_winkler(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
+    *,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> float: ...
