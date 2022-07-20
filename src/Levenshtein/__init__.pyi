@@ -4,31 +4,32 @@ __author__: str
 __license__: str
 __version__: str
 
-_Editops = List[Tuple[str, int, int]]
-_Opcodes = List[Tuple[str, int, int, int, int]]
+_EditopsList = List[Tuple[str, int, int]]
+_OpcodesList = List[Tuple[str, int, int, int, int]]
 _MatchingBlocks = List[Tuple[int, int, int]]
-_AnyEditops = Union[_Editops, _Opcodes]
+_AnyEditops = Union[_EditopsList, _OpcodesList]
 
 def inverse(edit_operations: list) -> list: ...
-
 @overload
-def editops(s1: str, s2: str) -> _Editops: ...
-
+def editops(s1: str, s2: str) -> _EditopsList: ...
 @overload
-def editops(ops: _AnyEditops, s1: Union[str, int], s2: Union[str, int]) -> _Editops: ...
-
+def editops(
+    ops: _AnyEditops, s1: Union[str, int], s2: Union[str, int]
+) -> _EditopsList: ...
 @overload
-def opcodes(s1: str, s2: str) -> _Opcodes: ...
-
+def opcodes(s1: str, s2: str) -> _OpcodesList: ...
 @overload
-def opcodes(ops: _AnyEditops, s1: Union[str, int], s2: Union[str, int]) -> _Opcodes: ...
-
+def opcodes(
+    ops: _AnyEditops, s1: Union[str, int], s2: Union[str, int]
+) -> _OpcodesList: ...
 def matching_blocks(
     edit_operations: _AnyEditops,
     source_string: Union[str, int],
     destination_string: Union[str, int],
 ) -> _MatchingBlocks: ...
-def subtract_edit(edit_operations: _Editops, subsequence: _Editops) -> _Editops: ...
+def subtract_edit(
+    edit_operations: _EditopsList, subsequence: _EditopsList
+) -> _EditopsList: ...
 def apply_edit(
     edit_operations: _AnyEditops, source_string: str, destination_string: str
 ) -> str: ...
