@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.19.3
+#### Added
+- add musllinux wheels
+
 ### v0.19.2
 #### Added
 - add missing type hints
