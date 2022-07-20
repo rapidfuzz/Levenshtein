@@ -20,15 +20,6 @@ from libcpp.utility cimport move
 
 from libcpp.algorithm cimport copy
 
-from rapidfuzz.distance import (
-    Editops as RfEditops,
-    Opcodes as RfOpcodes
-)
-from rapidfuzz.distance.Levenshtein import (
-    editops as rf_editops,
-    opcodes as rf_opcodes
-)
-
 cdef extern from *:
     int PyUnicode_4BYTE_KIND
 
@@ -304,94 +295,6 @@ def inverse(edit_operations, *):
 
 
     raise TypeError("inverse expected a list of edit operations")
-
-
-def editops(*args):
-    """
-    Find sequence of edit operations transforming one string to another.
-    
-    editops(source_string, destination_string)
-    editops(edit_operations, source_length, destination_length)
-    
-    The result is a list of triples (operation, spos, dpos), where
-    operation is one of 'equal', 'replace', 'insert', or 'delete';  spos
-    and dpos are position of characters in the first (source) and the
-    second (destination) strings.  These are operations on signle
-    characters.  In fact the returned list doesn't contain the 'equal',
-    but all the related functions accept both lists with and without
-    'equal's.
-    
-    Examples
-    --------
-    >>> editops('spam', 'park')
-    [('delete', 0, 0), ('insert', 3, 2), ('replace', 3, 3)]
-    
-    The alternate form editops(opcodes, source_string, destination_string)
-    can be used for conversion from opcodes (5-tuples) to editops (you can
-    pass strings or their lengths, it doesn't matter).
-    """
-    cdef size_t n, len1, len2
-    cdef LevEditOp* ops
-    cdef LevOpCode* bops
-
-    # convert: we were called (bops, s1, s2)
-    if len(args) == 3:
-        arg1, arg2, arg3 = args
-        len1 = get_length_of_anything(arg2)
-        len2 = get_length_of_anything(arg3)
-        if len1 == <size_t>-1 or len2 == <size_t>-1:
-            raise ValueError("editops second and third argument must specify sizes")
-
-        return RfEditops(arg1, len1, len2).as_list()
-
-    # find editops: we were called (s1, s2)
-    arg1, arg2 = args
-    return rf_editops(arg1, arg2).as_list()
-
-
-def opcodes(*args):
-    """
-    Find sequence of edit operations transforming one string to another.
-    
-    opcodes(source_string, destination_string)
-    opcodes(edit_operations, source_length, destination_length)
-    
-    The result is a list of 5-tuples with the same meaning as in
-    SequenceMatcher's get_opcodes() output.  But since the algorithms
-    differ, the actual sequences from Levenshtein and SequenceMatcher
-    may differ too.
-    
-    Examples
-    --------
-    >>> for x in opcodes('spam', 'park'):
-    ...     print(x)
-    ...
-    ('delete', 0, 1, 0, 0)
-    ('equal', 1, 3, 0, 2)
-    ('insert', 3, 3, 2, 3)
-    ('replace', 3, 4, 3, 4)
-    
-    The alternate form opcodes(editops, source_string, destination_string)
-    can be used for conversion from editops (triples) to opcodes (you can
-    pass strings or their lengths, it doesn't matter).
-    """
-    cdef size_t n, nb, len1, len2
-    cdef LevEditOp* ops
-    cdef LevOpCode* bops
-
-    # convert: we were called (ops, s1, s2)
-    if len(args) == 3:
-        arg1, arg2, arg3 = args
-        len1 = get_length_of_anything(arg2)
-        len2 = get_length_of_anything(arg3)
-        if len1 == <size_t>-1 or len2 == <size_t>-1:
-            raise ValueError("opcodes second and third argument must specify sizes")
-
-        return RfOpcodes(arg1, len1, len2).as_list()
-
-    # find editops: we were called (s1, s2)
-    arg1, arg2 = args
-    return rf_opcodes(arg1, arg2).as_list()
 
 
 def matching_blocks(edit_operations, source_string, destination_string, *):
