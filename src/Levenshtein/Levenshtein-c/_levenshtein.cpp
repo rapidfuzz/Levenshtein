@@ -21,6 +21,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  **/
 
+#include <limits>
 #include <string.h>
 #include <math.h>
 /* for debugging */
@@ -28,8 +29,9 @@
 #include <stdint.h>
 
 #include <assert.h>
-#include <iostream>
 #include "_levenshtein.hpp"
+
+#define LEV_EPSILON 1e-14
 
 /****************************************************************************
  *
@@ -64,11 +66,10 @@ public:
       symmap[i].n = &symmap[0];
     for (size_t i = 0; i < strings.size(); i++) {
       visit(strings[i], [&](auto first1, auto last1) {
-        size_t len1 = (size_t)std::distance(first1, last1);
         for (auto iter = first1; iter != last1; ++iter) {
           uint32_t c = *iter;
           int key = ((int)c + ((int)c >> 7)) & 0xff;
-          HQItem *p = symmap.get();
+          HQItem *p = symmap.get() + key;
           if (p->n == symmap.get()) {
             p->c = c;
             p->n = NULL;
@@ -344,7 +345,7 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
        * we can't get here, unless no zero is found at all */
       {
         /* find the smallest uncovered entry */
-        double min = LEV_INFINITY;
+        double min = std::numeric_limits<double>::max();
         for (j = 0; j < n1; j++) {
           double *p = dists + j;
           if (covc[j])

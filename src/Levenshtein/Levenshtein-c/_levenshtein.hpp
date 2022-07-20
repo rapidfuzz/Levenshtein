@@ -9,11 +9,9 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <limits>
 #include <rapidfuzz/distance/Indel.hpp>
 #include <rapidfuzz/distance/Levenshtein.hpp>
-
-#define LEV_EPSILON 1e-14
-#define LEV_INFINITY 1e100
 
 #define PYTHON_VERSION(major, minor, micro) ((major << 24) | (minor << 16) | (micro << 8))
 
@@ -55,13 +53,6 @@ auto visitor(const RF_String& str1, const RF_String& str2, Func&& f, Args&&... a
             return visit(str1, std::forward<Func>(f), first, last, std::forward<Args>(args)...);
         }
     );
-}
-
-static inline int64_t levenshtein_distance_func(const RF_String& s1, const RF_String& s2)
-{
-    return visitor(s1, s2, [&](auto first1, auto last1, auto first2, auto last2) {
-        return rapidfuzz::levenshtein_distance(first1, last1, first2, last2);
-    });
 }
 
 static inline bool is_valid_string(PyObject* py_str)
@@ -234,12 +225,12 @@ static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF
 
   /* allocate and initialize per-string matrix rows and a common work buffer */
   std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
-  size_t maxlen = std::max_element(std::begin(strings), std::end(strings), [](const auto& a, const auto& b){
+  size_t maxlen = (size_t)std::max_element(std::begin(strings), std::end(strings), [](const auto& a, const auto& b){
     return a.length < b.length;
   })->length;
 
   for (size_t i = 0; i < strings.size(); i++) {
-    size_t leni = strings[i].length;
+    size_t leni = (size_t)strings[i].length;
     rows[i] = std::make_unique<size_t[]>(leni + 1);
     std::iota(rows[i].get(), rows[i].get() + leni + 1, 0);
   }
@@ -265,7 +256,7 @@ static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF
    * XXX: we actually exit on break below, but on the same condition */
   for (size_t len = 1; len <= stoplen; len++) {
     uint32_t symbol = 0;
-    double minminsum = LEV_INFINITY;
+    double minminsum = std::numeric_limits<double>::max();
     row[0] = len;
     /* iterate over all symbols we may want to add */
     for (size_t j = 0; j < symlist.size(); j++) {
@@ -355,7 +346,7 @@ static inline double finish_distance_computations(size_t len1, uint32_t* string1
   /* catch trivial case */
   if (len1 == 0) {
     for (size_t j = 0; j < strings.size(); j++)
-      distsum += (double)rows[j][strings[j].length]*weights[j];
+      distsum += (double)rows[j][(size_t)strings[j].length]*weights[j];
     return distsum;
   }
 
@@ -583,38 +574,46 @@ static inline std::basic_string<uint32_t> lev_set_median(const std::vector<RF_St
                          const std::vector<double>& weights)
 {
   size_t minidx = 0;
-  double mindist = LEV_INFINITY;
+  double mindist = std::numeric_limits<double>::max();
   std::vector<long int> distances(strings.size()*(strings.size() - 1)/2, 0xff);
 
   for (size_t i = 0; i < strings.size(); i++) {
-    size_t j = 0;
-    double dist = 0.0;
+    visit(strings[i], [&](auto first1, auto last1){
+      using CharT1 = typename std::iterator_traits<decltype(first1)>::value_type;
+      rapidfuzz::CachedLevenshtein<CharT1> scorer(first1, last1);
+      double dist = 0.0;
 
-    /* below diagonal */
-    while (j < i && dist < mindist) {
-      size_t dindex = (i - 1)*(i - 2)/2 + j;
-      long int d;
-      if (distances[dindex] >= 0)
-        d = distances[dindex];
-      else {
-        d = levenshtein_distance_func(strings[j], strings[i]);
+      /* below diagonal */
+      size_t j = 0;
+      for (; j < i && dist < mindist; j++)
+      {
+        size_t dindex = (i - 1)*(i - 2)/2 + j;
+        long int d;
+        if (distances[dindex] >= 0)
+          d = distances[dindex];
+        else {
+          d = (size_t)visit(strings[j], [&](auto first2, auto last2){
+            return scorer.distance(first2, last2);
+          });
+        }
+        dist += weights[j] * (double)d;
       }
-      dist += weights[j] * (double)d;
-      j++;
-    }
-    j++;  /* no need to compare item with itself */
-    /* above diagonal */
-    while (j < strings.size() && dist < mindist) {
-      size_t dindex = (j - 1)*(j - 2)/2 + i;
-      distances[dindex] = levenshtein_distance_func(strings[j], strings[i]);
-      dist += weights[j] * (double)distances[dindex];
-      j++;
-    }
+      j++;  /* no need to compare item with itself */
+      /* above diagonal */
+      for (; j < strings.size() && dist < mindist; j++)
+      {
+        size_t dindex = (j - 1)*(j - 2)/2 + i;
+        distances[dindex] = visit(strings[j], [&](auto first2, auto last2){
+          return scorer.distance(first2, last2);
+        });
+        dist += weights[j] * (double)distances[dindex];
+      }
 
-    if (dist < mindist) {
-      mindist = dist;
-      minidx = i;
-    }
+      if (dist < mindist) {
+        mindist = dist;
+        minidx = i;
+      }
+    });
   }
 
   return visit(strings[minidx], [&](auto first1, auto last1) {
@@ -773,18 +772,19 @@ static inline double lev_set_distance(const std::vector<RF_String>& strings1, co
   auto dists = std::make_unique<double[]>(strings1.size() * strings2.size());
   double* r = dists.get();
 
-  for (size_t i = 0; i < strings2.size(); i++) {
-    for (size_t j = 0; j < strings1.size(); j++) {
-      size_t l = strings2[i].length + strings1[j].length;
-      if (l == 0)
-        *(r++) = 0.0;
-      else {
-        size_t d = visitor(strings1[j], strings2[i], [&](auto first1, auto last1, auto first2, auto last2){
-          return rapidfuzz::indel_distance(first1, last1, first2, last2);
+  for (const auto& str2 : strings2)
+  {
+    visit(str2, [&](auto first1, auto last1){
+      using CharT1 = typename std::iterator_traits<decltype(first1)>::value_type;
+      rapidfuzz::CachedIndel<CharT1> scorer(first1, last1);
+
+      for (const auto& str1 : strings1)
+      {
+        *(r++) = visit(str1, [&](auto first2, auto last2){
+          return scorer.normalized_distance(first2, last2);
         });
-        *(r++) = (double)d / (double)l;
       }
-    }
+    });
   }
 
   /* find the optimal mapping between the two sets */
@@ -792,16 +792,12 @@ static inline double lev_set_distance(const std::vector<RF_String>& strings1, co
 
   /* sum the set distance */
   double sum = (double)(strings2.size() - strings1.size());
-  for (size_t j = 0; j < strings1.size(); j++) {
-    size_t l;
+  for (size_t j = 0; j < strings1.size(); j++)
+  {
     size_t i = map[j];
-    l = strings1[j].length + strings2[i].length;
-    if (l > 0) {
-      size_t d = visitor(strings1[j], strings2[i], [&](auto first1, auto last1, auto first2, auto last2){
-        return rapidfuzz::indel_distance(first1, last1, first2, last2);
-      });
-      sum += 2.0 * (double)d / (double)l;
-    }
+    sum += 2.0 * visitor(strings1[j], strings2[i], [&](auto first1, auto last1, auto first2, auto last2){
+      return rapidfuzz::indel_normalized_distance(first1, last1, first2, last2);
+    });
   }
 
   return sum;
