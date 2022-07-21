@@ -2,17 +2,7 @@
 # cython: language_level=3
 # cython: binding=True
 
-from libc.stdint cimport uint32_t, uint8_t
-from libc.stdlib cimport free
-from libc.string cimport strlen
-from cpython.list cimport PyList_New, PyList_SET_ITEM
-from cpython.object cimport PyObject
-from cpython.ref cimport Py_INCREF
-from cpython.unicode cimport (
-    PyUnicode_CompareWithASCIIString, PyUnicode_AS_UNICODE
-)
-from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_FromStringAndSize
-from cpython.sequence cimport PySequence_Check, PySequence_Length
+from libc.stdint cimport uint32_t
 from libc.stddef cimport wchar_t
 from libcpp.vector cimport vector
 from libcpp cimport bool
@@ -22,12 +12,6 @@ from libcpp.algorithm cimport copy
 
 cdef extern from *:
     int PyUnicode_4BYTE_KIND
-
-    object PyUnicode_FromWideChar(const wchar_t *w, Py_ssize_t size)
-    unsigned int PyUnicode_KIND(object o)
-    void* PyUnicode_DATA(object o)
-    Py_UCS4 PyUnicode_READ(int kind, void *data, Py_ssize_t index)
-
     object PyUnicode_FromKindAndData(int kind, const void *buffer, Py_ssize_t size)
 
 cdef extern from "<string>" namespace "std" nogil:
