@@ -28,7 +28,5 @@ setup(
 
     packages=["Levenshtein"],
     package_dir={'':'src'},
-    zip_safe=True,
-    include_package_data=True,
     python_requires=">=3.6"
 )
