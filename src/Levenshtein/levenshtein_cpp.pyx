@@ -2,32 +2,20 @@
 # cython: language_level=3
 # cython: binding=True
 
-from libc.stdint cimport uint32_t, uint8_t
+from libc.stdint cimport uint32_t
 from libc.stdlib cimport free
 from libc.string cimport strlen
 from cpython.list cimport PyList_New, PyList_SET_ITEM
 from cpython.object cimport PyObject
 from cpython.ref cimport Py_INCREF
-from cpython.unicode cimport (
-    PyUnicode_CompareWithASCIIString, PyUnicode_AS_UNICODE
-)
-from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_FromStringAndSize
-from cpython.sequence cimport PySequence_Check, PySequence_Length
+from cpython.unicode cimport PyUnicode_CompareWithASCIIString
 from libc.stddef cimport wchar_t
 from libcpp.vector cimport vector
 from libcpp cimport bool
 from libcpp.utility cimport move
 
-from libcpp.algorithm cimport copy
-
 cdef extern from *:
     int PyUnicode_4BYTE_KIND
-
-    object PyUnicode_FromWideChar(const wchar_t *w, Py_ssize_t size)
-    unsigned int PyUnicode_KIND(object o)
-    void* PyUnicode_DATA(object o)
-    Py_UCS4 PyUnicode_READ(int kind, void *data, Py_ssize_t index)
-
     object PyUnicode_FromKindAndData(int kind, const void *buffer, Py_ssize_t size)
 
 cdef extern from "<string>" namespace "std" nogil:
@@ -71,9 +59,6 @@ cdef extern from "_levenshtein.hpp":
     cdef bool lev_editops_valid(size_t len1, size_t len2, size_t n, const LevEditOp *ops) except +
     cdef bool lev_opcodes_valid(size_t len1, size_t len2, size_t nb, const LevOpCode *bops) except +
 
-    cdef T* lev_editops_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t n, const LevEditOp *ops, size_t *len) except +
-    cdef T* lev_opcodes_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t nb, const LevOpCode *bops, size_t *len) except +
-
     cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem) except +
 
     cdef basic_string[uint32_t] lev_greedy_median(const vector[RF_String]& strings, const vector[double]& weights) except +
@@ -107,18 +92,6 @@ cdef inline RF_String conv_sequence(seq) except *:
         return convert_string(seq)
     raise TypeError("Expected string or bytes")
 
-cdef size_t get_length_of_anything(o):
-    cdef Py_ssize_t length
-    if isinstance(o, int):
-        length = <Py_ssize_t>o
-        if length < 0:
-            return <size_t>-1
-        return <size_t>length
-
-    if PySequence_Check(o):
-        return <size_t>PySequence_Length(o)
-    
-    return <size_t>-1
 
 cdef LevEditType string_to_edittype(string):
     for i in range(N_OPCODE_NAMES):
@@ -148,7 +121,7 @@ cdef LevEditOp* extract_editops(list editops) except *:
         if not isinstance(editop, tuple) or len(<tuple>editop) != 3:
             free(ops)
             return NULL
-        
+
         _type, spos, dpos = <tuple>editop
         if not isinstance(spos, int) or not isinstance(dpos, int):
             free(ops)
@@ -160,7 +133,7 @@ cdef LevEditOp* extract_editops(list editops) except *:
         if ops[i].type == LEV_EDIT_LAST:
             free(ops)
             return NULL
-    
+
     return ops
 
 
@@ -177,7 +150,7 @@ cdef LevOpCode* extract_opcodes(list opcodes) except *:
         if not isinstance(opcode, tuple) or len(<tuple>opcode) !=5:
             free(bops)
             return NULL
-        
+
         _type, sbeg, send, dbeg, dend = <tuple>opcode
         if (not isinstance(sbeg, int) or not isinstance(send, int) or
                not isinstance(dbeg, int) or not isinstance(dend, int)):
@@ -192,7 +165,7 @@ cdef LevOpCode* extract_opcodes(list opcodes) except *:
         if bops[i].type == LEV_EDIT_LAST:
             free(bops)
             return NULL
-    
+
     return bops
 
 
@@ -279,9 +252,9 @@ def inverse(edit_operations, *):
 def subtract_edit(edit_operations, subsequence, *):
     """
     Subtract an edit subsequence from a sequence.
-    
+
     subtract_edit(edit_operations, subsequence)
-    
+
     The result is equivalent to
     editops(apply_edit(subsequence, s1, s2), s2), except that is
     constructed directly from the edit operations.  That is, if you apply
@@ -289,10 +262,10 @@ def subtract_edit(edit_operations, subsequence, *):
     string as from application complete edit_operations.  It may be not
     identical, though (in amibuous cases, like insertion of a character
     next to the same character).
-    
+
     The subtracted subsequence must be an ordered subset of
     edit_operations.
-    
+
     Note this function does not accept difflib-style opcodes as no one in
     his right mind wants to create subsequences from them.
 
@@ -317,7 +290,7 @@ def subtract_edit(edit_operations, subsequence, *):
     ns = <size_t>len(<list>subsequence)
     if not ns:
         return edit_operations
-    
+
     n = <size_t>len(<list>edit_operations)
     if not n:
         raise ValueError("subtract_edit subsequence is not a subsequence or is invalid")
@@ -351,140 +324,6 @@ def subtract_edit(edit_operations, subsequence, *):
     raise TypeError("subtract_edit expected two lists of edit operations")
 
 
-
-def apply_edit(edit_operations, source_string, destination_string, *):
-    """
-    Apply a sequence of edit operations to a string.
-    
-    apply_edit(edit_operations, source_string, destination_string)
-    
-    In the case of editops, the sequence can be arbitrary ordered subset
-    of the edit sequence transforming source_string to destination_string.
-    
-    Examples
-    --------
-    >>> e = editops('man', 'scotsman')
-    >>> apply_edit(e, 'man', 'scotsman')
-    'scotsman'
-    >>> apply_edit(e[:3], 'man', 'scotsman')
-    'scoman'
-    
-    The other form of edit operations, opcodes, is not very suitable for
-    such a tricks, because it has to always span over complete strings,
-    subsets can be created by carefully replacing blocks with 'equal'
-    blocks, or by enlarging 'equal' block at the expense of other blocks
-    and adjusting the other blocks accordingly.
-
-    >>> a, b = 'spam and eggs', 'foo and bar'
-    >>> e = opcodes(a, b)
-    >>> apply_edit(inverse(e), b, a)
-    'spam and eggs'
-    >>> e[4] = ('equal', 10, 13, 8, 11)
-    >>> e
-    [('delete', 0, 1, 0, 0), ('replace', 1, 4, 0, 3), ('equal', 4, 9, 3, 8), ('delete', 9, 10, 8, 8), ('equal', 10, 13, 8, 11)]
-    >>> apply_edit(e, a, b)
-    'foo and ggs'
-    """
-    cdef size_t n, len1, len2, len3
-    cdef LevEditOp *ops
-    cdef LevOpCode *bops
-
-    if not isinstance(edit_operations, list):
-        raise TypeError("apply_edit first argument must be a List of edit operations")
-
-    n = <size_t>len(<list>edit_operations)
-
-    if isinstance(source_string, bytes) and isinstance(destination_string, bytes):
-        if not n:
-            return source_string
-        
-        len1 = <size_t>len(<bytes>source_string)
-        len2 = <size_t>len(<bytes>destination_string)
-
-        string1 = PyBytes_AS_STRING(source_string)
-        string2 = PyBytes_AS_STRING(destination_string)
-
-        ops = extract_editops(edit_operations)
-        if ops:
-            if not lev_editops_valid(len1, len2, n, ops):
-                free(ops)
-                raise ValueError("apply_edit edit operations are invalid or inapplicable")
-
-            s = <void*>lev_editops_apply[uint8_t](len1, <const uint8_t*>string1, len2, <const uint8_t*>string2,
-                            n, ops, &len3)
-            free(ops)
-            if not s and len3:
-                raise MemoryError
-            
-            result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)
-            free(s)
-            return result
-
-        bops = extract_opcodes(edit_operations)
-        if bops:
-            if not lev_opcodes_valid(len1, len2, n, bops):
-                free(bops)
-                raise ValueError("apply_edit edit operations are invalid or inapplicable")
-            
-            s = <void*>lev_opcodes_apply[uint8_t](len1, <const uint8_t*>string1, len2, <const uint8_t*>string2,
-                            n, bops, &len3)
-            free(bops)
-            if not s and len3:
-                raise MemoryError
-
-            result = PyBytes_FromStringAndSize(<const char*>s, <Py_ssize_t>len3)
-            free(s)
-            return result
-        
-        raise TypeError("apply_edit first argument must be a list of edit operations")
-
-    if isinstance(source_string, str) and isinstance(destination_string, str):
-        if not n:
-            return source_string
-        
-        len1 = <size_t>len(<str>source_string)
-        len2 = <size_t>len(<str>destination_string)
-
-        string1 = PyUnicode_AS_UNICODE(source_string)
-        string2 = PyUnicode_AS_UNICODE(destination_string)
-
-        ops = extract_editops(edit_operations)
-        if ops:
-            if not lev_editops_valid(len1, len2, n, ops):
-                free(ops)
-                raise ValueError("apply_edit edit operations are invalid or inapplicable")
-
-            s = <void*>lev_editops_apply[wchar_t](len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
-                            n, ops, &len3)
-            free(ops)
-            if not s and len3:
-                raise MemoryError
-            
-            result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
-            free(s)
-            return result
-
-        bops = extract_opcodes(edit_operations)
-        if bops:
-            if not lev_opcodes_valid(len1, len2, n, bops):
-                free(bops)
-                raise ValueError("apply_edit edit operations are invalid or inapplicable")
-            
-            s = <void*>lev_opcodes_apply[wchar_t](len1, <const wchar_t*>string1, len2, <const wchar_t*>string2,
-                            n, bops, &len3)
-            free(bops)
-            if not s and len3:
-                raise MemoryError
-
-            result = PyUnicode_FromWideChar(<const wchar_t*>s, <Py_ssize_t>len3)
-            free(s)
-            return result
-        
-        raise TypeError("apply_edit first argument must be a list of edit operations")
-    
-    raise TypeError("apply_edit expected two Strings or two Unicodes")
-
-
 cdef vector[double] extract_weightlist(wlist, size_t n) except *:
     cdef size_t i
     cdef double weight
@@ -506,7 +345,7 @@ cdef vector[RF_String] extract_stringlist(strings) except *:
 
     for string in strings:
         strlist.push_back(move(conv_sequence(string)))
-    
+
     return move(strlist)
 
 def median(strlist, wlist = None, *):
@@ -518,10 +357,10 @@ def median(strlist, wlist = None, *):
     although any non-negative real numbers are accepted.  Use them to
     improve computation speed when strings often appear multiple times
     in the sequence.
-    
+
     Examples
     --------
-    
+
     >>> median(['SpSm', 'mpamm', 'Spam', 'Spa', 'Sua', 'hSam'])
     'Spam'
     >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
@@ -529,7 +368,7 @@ def median(strlist, wlist = None, *):
                  'Levenhtin', 'evenshtei']
     >>> median(fixme)
     'Levenshtein'
-    
+
     Hm.  Even a computer program can spell Levenshtein better than me.
     """
     if wlist is not None and len(strlist) != len(wlist):
@@ -606,16 +445,16 @@ def setmedian(strlist, wlist = None, *):
     Find set median of a string set (passed as a sequence).
 
     See median() for argument description.
-    
+
     The returned string is always one of the strings in the sequence.
-    
+
     Examples
     --------
-    
+
     >>> setmedian(['ehee', 'cceaes', 'chees', 'chreesc',
                    'chees', 'cheesee', 'cseese', 'chetese'])
     'chees'
-    
+
     You haven't asked me about Limburger, sir.
     """
 
@@ -634,14 +473,14 @@ def setratio(strlist1, strlist2, *):
     The best match between any strings in the first set and the second
     set (passed as sequences) is attempted.  I.e., the order doesn't
     matter here.
-    
+
     Examples
     --------
-    
+
     >>> setratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
                  ['caribou', 'sausage', 'gorn', 'woody'])
     0.281845...
-    
+
     No, even reordering doesn't help the tinny words to match the
     woody ones.
     """
@@ -665,14 +504,14 @@ def setratio(strlist1, strlist2, *):
 def seqratio(strlist1, strlist2, *):
     """
     Compute similarity ratio of two sequences of strings.
-    
+
     This is like ratio(), but for string sequences.  A kind of ratio()
     is used to to measure the cost of item change operation for the
     strings.
-    
+
     Examples
     --------
-    
+
     >>> seqratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
     ...          ['caribou', 'sausage', 'gorn', 'woody'])
     0.21517857142857144

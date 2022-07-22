@@ -2,7 +2,7 @@
 
 ### v0.19.4
 #### Changed
-- use matching_blocks implementation from RapidFuzz
+- use `matching_blocks`/`apply` implementation from RapidFuzz
 
 #### Fixed
 - stop adding data to wheels

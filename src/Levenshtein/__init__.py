@@ -36,7 +36,6 @@ from Levenshtein.levenshtein_cpp import (
     quickmedian,
     inverse,
     subtract_edit,
-    apply_edit,
     median,
     median_improve,
     setmedian,
@@ -167,3 +166,43 @@ def matching_blocks(edit_operations, source_string, destination_string):
         return _Editops(edit_operations, len1, len2).as_matching_blocks().as_list()
 
     return _Opcodes(edit_operations, len1, len2).as_matching_blocks().as_list()
+
+
+def apply_edit(edit_operations, source_string, destination_string):
+    """
+    Apply a sequence of edit operations to a string.
+
+    apply_edit(edit_operations, source_string, destination_string)
+
+    In the case of editops, the sequence can be arbitrary ordered subset
+    of the edit sequence transforming source_string to destination_string.
+
+    Examples
+    --------
+    >>> e = editops('man', 'scotsman')
+    >>> apply_edit(e, 'man', 'scotsman')
+    'scotsman'
+    >>> apply_edit(e[:3], 'man', 'scotsman')
+    'scoman'
+
+    The other form of edit operations, opcodes, is not very suitable for
+    such a tricks, because it has to always span over complete strings,
+    subsets can be created by carefully replacing blocks with 'equal'
+    blocks, or by enlarging 'equal' block at the expense of other blocks
+    and adjusting the other blocks accordingly.
+
+    >>> a, b = 'spam and eggs', 'foo and bar'
+    >>> e = opcodes(a, b)
+    >>> apply_edit(inverse(e), b, a)
+    'spam and eggs'
+    """
+    if len(edit_operations) == 0:
+        return source_string
+
+    len1 = len(source_string)
+    len2 = len(destination_string)
+
+    if len(edit_operations[0]) == 3:
+        return _Editops(edit_operations, len1, len2).apply(source_string, destination_string)
+
+    return _Opcodes(edit_operations, len1, len2).apply(source_string, destination_string)
