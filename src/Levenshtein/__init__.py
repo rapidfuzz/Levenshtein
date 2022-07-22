@@ -16,7 +16,7 @@ subclasses).
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.19.3"
+__version__: str = "0.20.0"
 
 from rapidfuzz.distance.Levenshtein import distance
 from rapidfuzz.distance.Indel import normalized_similarity as ratio
@@ -34,8 +34,6 @@ from rapidfuzz.distance import (
 
 from Levenshtein.levenshtein_cpp import (
     quickmedian,
-    inverse,
-    subtract_edit,
     median,
     median_improve,
     setmedian,
@@ -206,3 +204,78 @@ def apply_edit(edit_operations, source_string, destination_string):
         return _Editops(edit_operations, len1, len2).apply(source_string, destination_string)
 
     return _Opcodes(edit_operations, len1, len2).apply(source_string, destination_string)
+
+
+def subtract_edit(edit_operations, subsequence):
+    """
+    Subtract an edit subsequence from a sequence.
+
+    subtract_edit(edit_operations, subsequence)
+
+    The result is equivalent to
+    editops(apply_edit(subsequence, s1, s2), s2), except that is
+    constructed directly from the edit operations.  That is, if you apply
+    it to the result of subsequence application, you get the same final
+    string as from application complete edit_operations.  It may be not
+    identical, though (in amibuous cases, like insertion of a character
+    next to the same character).
+
+    The subtracted subsequence must be an ordered subset of
+    edit_operations.
+
+    Note this function does not accept difflib-style opcodes as no one in
+    his right mind wants to create subsequences from them.
+
+    Examples
+    --------
+    >>> e = editops('man', 'scotsman')
+    >>> e1 = e[:3]
+    >>> bastard = apply_edit(e1, 'man', 'scotsman')
+    >>> bastard
+    'scoman'
+    >>> apply_edit(subtract_edit(e, e1), bastard, 'scotsman')
+    'scotsman'
+    """
+    str_len = 2**32
+    return _Editops(edit_operations, str_len, str_len).remove_subsequence(
+        _Editops(subsequence, str_len, str_len)
+    ).as_list()
+
+
+def inverse(edit_operations):
+    """
+    Invert the sense of an edit operation sequence.
+
+    In other words, it returns a list of edit operations transforming the
+    second (destination) string to the first (source).  It can be used
+    with both editops and opcodes.
+
+    Parameters
+    ----------
+    edit_operations : list[]
+        edit operations to invert
+
+    Returns
+    -------
+    edit_operations : list[]
+        inverted edit operations
+
+    Examples
+    --------
+    >>> editops('spam', 'park')
+    [('delete', 0, 0), ('insert', 3, 2), ('replace', 3, 3)]
+    >>> inverse(editops('spam', 'park'))
+    [('insert', 0, 0), ('delete', 2, 3), ('replace', 3, 3)]
+    """
+    if len(edit_operations) == 0:
+        return []
+
+    if len(edit_operations[0]) == 3:
+        len1 = edit_operations[-1][1] + 1
+        len2 = edit_operations[-1][2] + 1
+        return _Editops(edit_operations, len1, len2).inverse().as_list()
+
+    len1 = edit_operations[-1][2]
+    len2 = edit_operations[-1][4]
+
+    return _Opcodes(edit_operations, len1, len2).inverse().as_list()

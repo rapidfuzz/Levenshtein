@@ -36,7 +36,7 @@ This is a fork of [ztane/python-Levenshtein](https://github.com/ztane/python-Lev
 project is no longer actively maintained.
 
 ## Requirements
-* Python 3.5 or later
+* Python 3.6 or later
 
 ## Installation
 ```bash

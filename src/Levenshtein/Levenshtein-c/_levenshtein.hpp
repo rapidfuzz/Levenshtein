@@ -1,6 +1,4 @@
-/* @(#) $Id: Levenshtein.h,v 1.22 2005/01/13 20:02:56 yeti Exp $ */
-#ifndef LEVENSHTEIN_H
-#define LEVENSHTEIN_H
+#pragma once
 
 #include "Python.h"
 #include <cstdint>
@@ -117,40 +115,6 @@ enum LevEditType {
   LEV_EDIT_DELETE = 3,
   LEV_EDIT_LAST  /* sometimes returned when an error occurs */
 };
-
-/* Edit operation (atomic).
- * This is the `native' atomic edit operation.  It differs from the difflib
- * one's because it represents a change of one character, not a block.  And
- * we usually don't care about LEV_EDIT_KEEP, though the functions can handle
- * them.  The positions are interpreted as at the left edge of a character.
- */
-typedef struct {
-  LevEditType type;  /* editing operation type */
-  size_t spos;  /* source block position */
-  size_t dpos;  /* destination position */
-} LevEditOp;
-
-/* Edit operation (difflib-compatible).
- * This is not `native', but conversion functions exist.  These fields exactly
- * correspond to the codeops() tuples fields (and this method is also the
- * source of the silly OpCode name).  Sequences must span over complete
- * strings, subsequences are simply edit sequences with more (or larger)
- * LEV_EDIT_KEEP blocks.
- */
-typedef struct {
-  LevEditType type;  /* editing operation type */
-  size_t sbeg, send;  /* source block begin, end */
-  size_t dbeg, dend;  /* destination block begin, end */
-} LevOpCode;
-
-static void *
-safe_malloc(size_t nmemb, size_t size) {
-  /* extra-conservative overflow check */
-  if (SIZE_MAX / size <= nmemb) {
-    return NULL;
-  }
-  return malloc(nmemb * size);
-}
 
 /* compute the sets of symbols each string contains, and the set of symbols
  * in any of them (symset).  meanwhile, count how many different symbols
@@ -784,13 +748,3 @@ static inline double lev_set_distance(const std::vector<RF_String>& strings1, co
 
   return sum;
 }
-
-bool lev_editops_valid(size_t len1, size_t len2, size_t n, const LevEditOp *ops);
-bool lev_opcodes_valid(size_t len1, size_t len2, size_t nb, const LevOpCode *bops);
-
-void lev_editops_invert(size_t n, LevEditOp *ops);
-void lev_opcodes_invert(size_t nb, LevOpCode *bops);
-
-LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem);
-
-#endif /* not LEVENSHTEIN_H */

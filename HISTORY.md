@@ -1,13 +1,12 @@
 ## Changelog
 
-### v0.19.4
+### v0.20.0
 #### Changed
-- use `matching_blocks`/`apply` implementation from RapidFuzz
+- use `matching_blocks`/`apply`/`remove_subsequence`/`inverse` implementation from RapidFuzz
 
 #### Fixed
 - stop adding data to wheels
-- add editops validation to subtract_edit to fix segmentation fault on some
-  invalid editop sequences
+- fix segmentation fault on some invalid editop sequences in subtract_edit
 - detect duplicated entries in editops validation
 
 ### v0.19.3
