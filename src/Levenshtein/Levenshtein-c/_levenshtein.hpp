@@ -118,17 +118,6 @@ enum LevEditType {
   LEV_EDIT_LAST  /* sometimes returned when an error occurs */
 };
 
-/* Error codes returned by editop check functions */
-enum LevEditOpError {
-  LEV_EDIT_ERR_OK = 0,
-  LEV_EDIT_ERR_TYPE,  /* nonexistent edit type */
-  LEV_EDIT_ERR_OUT,  /* edit out of string bounds */
-  LEV_EDIT_ERR_ORDER,  /* ops are not ordered */
-  LEV_EDIT_ERR_BLOCK,  /* incosistent block boundaries (block ops) */
-  LEV_EDIT_ERR_SPAN,  /* sequence is not a full transformation (block ops) */
-  LEV_EDIT_ERR_LAST
-};
-
 /* Edit operation (atomic).
  * This is the `native' atomic edit operation.  It differs from the difflib
  * one's because it represents a change of one character, not a block.  And
@@ -796,25 +785,11 @@ static inline double lev_set_distance(const std::vector<RF_String>& strings1, co
   return sum;
 }
 
-int
-lev_editops_check_errors(size_t len1,
-                         size_t len2,
-                         size_t n,
-                         const LevEditOp *ops);
+bool lev_editops_valid(size_t len1, size_t len2, size_t n, const LevEditOp *ops);
+bool lev_opcodes_valid(size_t len1, size_t len2, size_t nb, const LevOpCode *bops);
 
-int
-lev_opcodes_check_errors(size_t len1,
-                         size_t len2,
-                         size_t nb,
-                         const LevOpCode *bops);
-
-void
-lev_editops_invert(size_t n,
-                   LevEditOp *ops);
-
-void
-lev_opcodes_invert(size_t nb,
-                   LevOpCode *bops);
+void lev_editops_invert(size_t n, LevEditOp *ops);
+void lev_opcodes_invert(size_t nb, LevOpCode *bops);
 
 template <typename CharT>
 CharT* lev_editops_apply(size_t len1, const CharT* string1,

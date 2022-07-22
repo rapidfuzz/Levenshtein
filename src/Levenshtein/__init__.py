@@ -35,7 +35,6 @@ from rapidfuzz.distance import (
 from Levenshtein.levenshtein_cpp import (
     quickmedian,
     inverse,
-    matching_blocks,
     subtract_edit,
     apply_edit,
     median,

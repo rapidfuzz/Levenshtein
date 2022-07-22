@@ -68,8 +68,8 @@ cdef extern from "_levenshtein.hpp":
     cdef void lev_editops_invert(size_t n, LevEditOp *ops) except +
     cdef void lev_opcodes_invert(size_t nb, LevOpCode *bops) except +
 
-    cdef int lev_editops_check_errors(size_t len1, size_t len2, size_t n, const LevEditOp *ops) except +
-    cdef int lev_opcodes_check_errors(size_t len1, size_t len2, size_t nb, const LevOpCode *bops) except +
+    cdef bool lev_editops_valid(size_t len1, size_t len2, size_t n, const LevEditOp *ops) except +
+    cdef bool lev_opcodes_valid(size_t len1, size_t len2, size_t nb, const LevOpCode *bops) except +
 
     cdef T* lev_editops_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t n, const LevEditOp *ops, size_t *len) except +
     cdef T* lev_opcodes_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t nb, const LevOpCode *bops, size_t *len) except +
@@ -324,8 +324,17 @@ def subtract_edit(edit_operations, subsequence, *):
 
     ops = extract_editops(edit_operations)
     if ops:
+        # len unknown so ignore it
+        if not lev_editops_valid(<size_t>-1, <size_t>-1, n, ops):
+            free(ops)
+            raise ValueError("subtract_edit edit_operations is invalid")
         osub = extract_editops(subsequence)
         if osub:
+            # len unknown so ignore it
+            if not lev_editops_valid(<size_t>-1, <size_t>-1, ns, osub):
+                free(ops)
+                free(osub)
+                raise ValueError("subtract_edit subsequence is invalid")
             orem = lev_editops_subtract(n, ops, ns, osub, &nr)
             free(ops)
             free(osub)
@@ -397,7 +406,7 @@ def apply_edit(edit_operations, source_string, destination_string, *):
 
         ops = extract_editops(edit_operations)
         if ops:
-            if lev_editops_check_errors(len1, len2, n, ops):
+            if not lev_editops_valid(len1, len2, n, ops):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
@@ -413,7 +422,7 @@ def apply_edit(edit_operations, source_string, destination_string, *):
 
         bops = extract_opcodes(edit_operations)
         if bops:
-            if lev_opcodes_check_errors(len1, len2, n, bops):
+            if not lev_opcodes_valid(len1, len2, n, bops):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             
@@ -441,7 +450,7 @@ def apply_edit(edit_operations, source_string, destination_string, *):
 
         ops = extract_editops(edit_operations)
         if ops:
-            if lev_editops_check_errors(len1, len2, n, ops):
+            if not lev_editops_valid(len1, len2, n, ops):
                 free(ops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
 
@@ -457,7 +466,7 @@ def apply_edit(edit_operations, source_string, destination_string, *):
 
         bops = extract_opcodes(edit_operations)
         if bops:
-            if lev_opcodes_check_errors(len1, len2, n, bops):
+            if not lev_opcodes_valid(len1, len2, n, bops):
                 free(bops)
                 raise ValueError("apply_edit edit operations are invalid or inapplicable")
             

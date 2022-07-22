@@ -6,6 +6,9 @@
 
 #### Fixed
 - stop adding data to wheels
+- add editops validation to subtract_edit to fix segmentation fault on some
+  invalid editop sequences
+- detect duplicated entries in editops validation
 
 ### v0.19.3
 #### Added

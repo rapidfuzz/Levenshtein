@@ -414,7 +414,7 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
 /* {{{ */
 
 /**
- * lev_editops_check_errors:
+ * lev_editops_valid:
  * @len1: The length of an eventual @ops source string.
  * @len2: The length of an eventual @ops destination string.
  * @n: The length of @ops.
@@ -423,39 +423,40 @@ munkers_blackman(size_t n1, size_t n2, double *dists)
  * Checks whether @ops is consistent and applicable as a partial edit from a
  * string of length @len1 to a string of length @len2.
  *
- * Returns: Zero if @ops seems OK, a nonzero error code otherwise.
+ * Returns: true if valid, false otherwise
  **/
-int lev_editops_check_errors(size_t len1, size_t len2,
-                             size_t n, const LevEditOp *ops)
+bool lev_editops_valid(size_t len1, size_t len2, size_t n, const LevEditOp *ops)
 {
   if (!n)
-    return LEV_EDIT_ERR_OK;
+    return true;
 
   /* check bounds */
   const LevEditOp* o = ops;
   for (size_t i = n; i; i--, o++) {
     if (o->type >= LEV_EDIT_LAST)
-      return LEV_EDIT_ERR_TYPE;
+      return false;
     if (o->spos > len1 || o->dpos > len2)
-      return LEV_EDIT_ERR_OUT;
+      return false;
     if (o->spos == len1 && o->type != LEV_EDIT_INSERT)
-      return LEV_EDIT_ERR_OUT;
+      return false;
     if (o->dpos == len2 && o->type != LEV_EDIT_DELETE)
-      return LEV_EDIT_ERR_OUT;
+      return false;
   }
 
   /* check ordering */
   o = ops + 1;
   for (size_t i = n - 1; i; i--, o++, ops++) {
-    if (o->spos < ops->spos || o->dpos < ops->dpos)
-      return LEV_EDIT_ERR_ORDER;
+    if (o->spos > ops->spos || o->dpos > ops->dpos)
+      continue;
+
+    return false;
   }
 
-  return LEV_EDIT_ERR_OK;
+  return true;
 }
 
 /**
- * lev_opcodes_check_errors:
+ * lev_opcodes_valid:
  * @len1: The length of an eventual @ops source string.
  * @len2: The length of an eventual @ops destination string.
  * @nb: The length of @bops.
@@ -464,44 +465,40 @@ int lev_editops_check_errors(size_t len1, size_t len2,
  * Checks whether @bops is consistent and applicable as an edit from a
  * string of length @len1 to a string of length @len2.
  *
- * Returns: Zero if @bops seems OK, a nonzero error code otherwise.
+ * Returns: true if valid, false otherwise
  **/
-int lev_opcodes_check_errors(size_t len1, size_t len2,
-                             size_t nb, const LevOpCode *bops)
+bool lev_opcodes_valid(size_t len1, size_t len2, size_t nb, const LevOpCode *bops)
 {
   if (!nb)
-    return 1;
+    return (len1 == 0 && len2 == 0);
 
   /* check completenes */
   if (bops->sbeg || bops->dbeg
       || bops[nb - 1].send != len1 || bops[nb - 1].dend != len2)
-    return LEV_EDIT_ERR_SPAN;
+    return false;
 
   /* check bounds and block consistency */
   const LevOpCode* b = bops;
   for (size_t i = nb; i; i--, b++) {
     if (b->send > len1 || b->dend > len2)
-      return LEV_EDIT_ERR_OUT;
+      return false;
     switch (b->type) {
-      case LEV_EDIT_KEEP:
-      case LEV_EDIT_REPLACE:
+    case LEV_EDIT_KEEP:
+    case LEV_EDIT_REPLACE:
       if (b->dend - b->dbeg != b->send - b->sbeg || b->dend == b->dbeg)
-        return LEV_EDIT_ERR_BLOCK;
+        return false;
       break;
-
-      case LEV_EDIT_INSERT:
+    case LEV_EDIT_INSERT:
       if (b->dend - b->dbeg == 0 || b->send - b->sbeg != 0)
-        return LEV_EDIT_ERR_BLOCK;
+        return false;
       break;
-
-      case LEV_EDIT_DELETE:
+    case LEV_EDIT_DELETE:
       if (b->send - b->sbeg == 0 || b->dend - b->dbeg != 0)
-        return LEV_EDIT_ERR_BLOCK;
+        return false;
       break;
 
-      default:
-      return LEV_EDIT_ERR_TYPE;
-      break;
+    default:
+      return false;
     }
   }
 
@@ -509,10 +506,10 @@ int lev_opcodes_check_errors(size_t len1, size_t len2,
   b = bops + 1;
   for (size_t i = nb - 1; i; i--, b++, bops++) {
     if (b->sbeg != bops->send || b->dbeg != bops->dend)
-      return LEV_EDIT_ERR_ORDER;
+      return false;
   }
 
-  return LEV_EDIT_ERR_OK;
+  return true;
 }
 
 /**
