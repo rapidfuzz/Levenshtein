@@ -118,3 +118,53 @@ def opcodes(*args):
     # find editops: we were called (s1, s2)
     arg1, arg2 = args
     return _opcodes(arg1, arg2).as_list()
+
+def matching_blocks(edit_operations, source_string, destination_string):
+    """
+    Find identical blocks in two strings.
+
+    Parameters
+    ----------
+    edit_operations : list[]
+        editops or opcodes created for the source and destination string
+    source_string : str | int
+        source string or the length of the source string
+    destination_string : str | int
+        destination string or the length of the destination string
+
+    Returns
+    -------
+    matching_blocks : list[]
+        List of triples with the same meaning as in SequenceMatcher's
+        get_matching_blocks() output.
+
+    Examples
+    --------
+    >>> a, b = 'spam', 'park'
+    >>> matching_blocks(editops(a, b), a, b)
+    [(1, 0, 2), (4, 4, 0)]
+    >>> matching_blocks(editops(a, b), len(a), len(b))
+    [(1, 0, 2), (4, 4, 0)]
+
+    The last zero-length block is not an error, but it's there for
+    compatibility with difflib which always emits it.
+
+    One can join the matching blocks to get two identical strings:
+
+    >>> a, b = 'dog kennels', 'mattresses'
+    >>> mb = matching_blocks(editops(a,b), a, b)
+    >>> ''.join([a[x[0]:x[0]+x[2]] for x in mb])
+    'ees'
+    >>> ''.join([b[x[1]:x[1]+x[2]] for x in mb])
+    'ees'
+    """
+    if len(edit_operations) == 0:
+        return []
+
+    len1 = source_string if isinstance(source_string, int) else len(source_string)
+    len2 = destination_string if isinstance(destination_string, int) else len(destination_string)
+
+    if len(edit_operations[0]) == 3:
+        return _Editops(edit_operations, len1, len2).as_matching_blocks().as_list()
+
+    return _Opcodes(edit_operations, len1, len2).as_matching_blocks().as_list()

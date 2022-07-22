@@ -1,5 +1,12 @@
 ## Changelog
 
+### v0.19.4
+#### Changed
+- use matching_blocks implementation from RapidFuzz
+
+#### Fixed
+- stop adding data to wheels
+
 ### v0.19.3
 #### Added
 - add musllinux wheels

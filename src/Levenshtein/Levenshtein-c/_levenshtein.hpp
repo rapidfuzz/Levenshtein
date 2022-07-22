@@ -154,13 +154,6 @@ typedef struct {
   size_t dbeg, dend;  /* destination block begin, end */
 } LevOpCode;
 
-/* Matching block (difflib-compatible). */
-typedef struct {
-  size_t spos;
-  size_t dpos;
-  size_t len;
-} LevMatchingBlock;
-
 static void *
 safe_malloc(size_t nmemb, size_t size) {
   /* extra-conservative overflow check */
@@ -822,20 +815,6 @@ lev_editops_invert(size_t n,
 void
 lev_opcodes_invert(size_t nb,
                    LevOpCode *bops);
-
-LevMatchingBlock*
-lev_editops_matching_blocks(size_t len1,
-                            size_t len2,
-                            size_t n,
-                            const LevEditOp *ops,
-                            size_t *nmblocks);
-
-LevMatchingBlock*
-lev_opcodes_matching_blocks(size_t len1,
-                            size_t len2,
-                            size_t nb,
-                            const LevOpCode *bops,
-                            size_t *nmblocks);
 
 template <typename CharT>
 CharT* lev_editops_apply(size_t len1, const CharT* string1,

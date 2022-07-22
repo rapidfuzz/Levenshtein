@@ -65,11 +65,6 @@ cdef extern from "_levenshtein.hpp":
         size_t dbeg
         size_t dend
 
-    ctypedef struct LevMatchingBlock:
-        size_t spos
-        size_t dpos
-        size_t len
-
     cdef void lev_editops_invert(size_t n, LevEditOp *ops) except +
     cdef void lev_opcodes_invert(size_t nb, LevOpCode *bops) except +
 
@@ -78,9 +73,6 @@ cdef extern from "_levenshtein.hpp":
 
     cdef T* lev_editops_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t n, const LevEditOp *ops, size_t *len) except +
     cdef T* lev_opcodes_apply[T](size_t len1, const T* string1, size_t len2, const T* string2, size_t nb, const LevOpCode *bops, size_t *len) except +
-
-    cdef LevMatchingBlock* lev_editops_matching_blocks(size_t len1, size_t len2, size_t n, const LevEditOp *ops, size_t *nmblocks) except +
-    cdef LevMatchingBlock* lev_opcodes_matching_blocks(size_t len1, size_t len2, size_t nb, const LevOpCode *bops, size_t *nmblocks) except +
 
     cdef LevEditOp* lev_editops_subtract(size_t n, const LevEditOp *ops, size_t ns, const LevEditOp *sub, size_t *nrem) except +
 
@@ -230,19 +222,6 @@ cdef opcodes_to_tuple_list(size_t nb, LevOpCode *bops):
 
     return tuple_list
 
-cdef matching_blocks_to_tuple_list(size_t len1, size_t len2, size_t nmb, LevMatchingBlock *mblocks):
-    cdef list tuple_list = PyList_New(<Py_ssize_t>nmb + 1)
-
-    for i in range(nmb):
-        result_item = (mblocks[i].spos, mblocks[i].dpos, mblocks[i].len)
-        Py_INCREF(result_item)
-        PyList_SET_ITEM(tuple_list, <Py_ssize_t>i, result_item)
-
-    result_item = (len1, len2, 0)
-    Py_INCREF(result_item)
-    PyList_SET_ITEM(tuple_list, <Py_ssize_t>nmb, result_item)
-    return tuple_list
-
 def inverse(edit_operations, *):
     """
     Invert the sense of an edit operation sequence.
@@ -295,93 +274,6 @@ def inverse(edit_operations, *):
 
 
     raise TypeError("inverse expected a list of edit operations")
-
-
-def matching_blocks(edit_operations, source_string, destination_string, *):
-    """
-    Find identical blocks in two strings.
-
-    Parameters
-    ----------
-    edit_operations : list[]
-        editops or opcodes created for the source and destination string
-    source_string : str | int
-        source string or the length of the source string
-    destination_string : str | int
-        destination string or the length of the destination string
-
-    Returns
-    -------
-    matching_blocks : list[]
-        List of triples with the same meaning as in SequenceMatcher's
-        get_matching_blocks() output.
-
-    Examples
-    --------
-    >>> a, b = 'spam', 'park'
-    >>> matching_blocks(editops(a, b), a, b)
-    [(1, 0, 2), (4, 4, 0)]
-    >>> matching_blocks(editops(a, b), len(a), len(b))
-    [(1, 0, 2), (4, 4, 0)]
-    
-    The last zero-length block is not an error, but it's there for
-    compatibility with difflib which always emits it.
-    
-    One can join the matching blocks to get two identical strings:
-
-    >>> a, b = 'dog kennels', 'mattresses'
-    >>> mb = matching_blocks(editops(a,b), a, b)
-    >>> ''.join([a[x[0]:x[0]+x[2]] for x in mb])
-    'ees'
-    >>> ''.join([b[x[1]:x[1]+x[2]] for x in mb])
-    'ees'
-    """
-    cdef size_t n, nmb, len1, len2
-    cdef LevEditOp* ops
-    cdef LevOpCode* bops
-    cdef LevMatchingBlock* mblocks
-
-    if not isinstance(edit_operations, list):
-        raise TypeError("matching_blocks first argument must be a List of edit operations")
-
-    n = <size_t>len(<list>edit_operations)
-    len1 = get_length_of_anything(source_string)
-    len2 = get_length_of_anything(destination_string)
-    if len1 == <size_t>-1 or len2 == <size_t>-1:
-        raise ValueError("matching_blocks second and third argument must specify sizes")
-
-
-    ops = extract_editops(edit_operations)
-    if ops:
-        if lev_editops_check_errors(len1, len2, n, ops):
-            free(ops)
-            raise ValueError("matching_blocks edit operations are invalid or inapplicable")
-
-        mblocks = lev_editops_matching_blocks(len1, len2, n, ops, &nmb)
-        free(ops)
-        if not mblocks and n:
-            raise MemoryError
-
-        result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)
-        free(mblocks)
-        return result
-
-    bops = extract_opcodes(edit_operations)
-    if bops:
-        if lev_opcodes_check_errors(len1, len2, n, bops):
-            free(bops)
-            raise ValueError("matching_blocks edit operations are invalid or inapplicable")
-
-        mblocks = lev_opcodes_matching_blocks(len1, len2, n, bops, &nmb)
-        free(bops)
-        if not mblocks and n:
-            raise MemoryError
-
-        result = matching_blocks_to_tuple_list(len1, len2, nmb, mblocks)
-        free(mblocks)
-        return result
-
-    raise TypeError("matching_blocks expected a list of edit operations")
 
 
 def subtract_edit(edit_operations, subsequence, *):
