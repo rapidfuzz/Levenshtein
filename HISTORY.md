@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.20.1
+#### Fixed
+- fix broken matching_blocks conversion
+
 ### v0.20.0
 #### Changed
 - use `matching_blocks`/`apply`/`remove_subsequence`/`inverse` implementation from RapidFuzz

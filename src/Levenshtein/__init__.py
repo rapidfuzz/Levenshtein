@@ -16,7 +16,7 @@ subclasses).
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.20.0"
+__version__: str = "0.20.1"
 
 from rapidfuzz.distance.Levenshtein import distance
 from rapidfuzz.distance.Indel import normalized_similarity as ratio
@@ -161,9 +161,9 @@ def matching_blocks(edit_operations, source_string, destination_string):
     len2 = destination_string if isinstance(destination_string, int) else len(destination_string)
 
     if len(edit_operations[0]) == 3:
-        return _Editops(edit_operations, len1, len2).as_matching_blocks().as_list()
+        return _Editops(edit_operations, len1, len2).as_matching_blocks()
 
-    return _Opcodes(edit_operations, len1, len2).as_matching_blocks().as_list()
+    return _Opcodes(edit_operations, len1, len2).as_matching_blocks()
 
 
 def apply_edit(edit_operations, source_string, destination_string):
