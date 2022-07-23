@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Levenshtein module &mdash; Levenshtein 0.19.3 documentation</title>
+  <title>Levenshtein module &mdash; Levenshtein 0.20.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -494,9 +494,9 @@ with both editops and opcodes.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inverse</span><span class="p">(</span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">))</span>
-<span class="go">[(&#39;insert&#39;, 0, 0), (&#39;delete&#39;, 2, 3), (&#39;replace&#39;, 3, 3)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;park&#39;</span><span class="p">,</span> <span class="s1">&#39;spam&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">)</span>
+<span class="go">[(&#39;delete&#39;, 0, 0), (&#39;insert&#39;, 3, 2), (&#39;replace&#39;, 3, 3)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inverse</span><span class="p">(</span><span class="n">editops</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="s1">&#39;park&#39;</span><span class="p">))</span>
 <span class="go">[(&#39;insert&#39;, 0, 0), (&#39;delete&#39;, 2, 3), (&#39;replace&#39;, 3, 3)]</span>
 </pre></div>
 </div>
@@ -529,11 +529,6 @@ and adjusting the other blocks accordingly.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">opcodes</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">apply_edit</span><span class="p">(</span><span class="n">inverse</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
 <span class="go">&#39;spam and eggs&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span>
-<span class="go">[(&#39;delete&#39;, 0, 1, 0, 0), (&#39;replace&#39;, 1, 4, 0, 3), (&#39;equal&#39;, 4, 9, 3, 8), (&#39;delete&#39;, 9, 10, 8, 8), (&#39;equal&#39;, 10, 13, 8, 11)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">apply_edit</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-<span class="go">&#39;foo and ggs&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
