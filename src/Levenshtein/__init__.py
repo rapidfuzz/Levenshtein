@@ -115,6 +115,7 @@ def opcodes(*args):
     arg1, arg2 = args
     return _opcodes(arg1, arg2).as_list()
 
+
 def matching_blocks(edit_operations, source_string, destination_string):
     """
     Find identical blocks in two strings.
@@ -155,7 +156,11 @@ def matching_blocks(edit_operations, source_string, destination_string):
     'ees'
     """
     len1 = source_string if isinstance(source_string, int) else len(source_string)
-    len2 = destination_string if isinstance(destination_string, int) else len(destination_string)
+    len2 = (
+        destination_string
+        if isinstance(destination_string, int)
+        else len(destination_string)
+    )
 
     if not edit_operations or len(edit_operations[0]) == 3:
         return _Editops(edit_operations, len1, len2).as_matching_blocks()
@@ -198,9 +203,13 @@ def apply_edit(edit_operations, source_string, destination_string):
     len2 = len(destination_string)
 
     if len(edit_operations[0]) == 3:
-        return _Editops(edit_operations, len1, len2).apply(source_string, destination_string)
+        return _Editops(edit_operations, len1, len2).apply(
+            source_string, destination_string
+        )
 
-    return _Opcodes(edit_operations, len1, len2).apply(source_string, destination_string)
+    return _Opcodes(edit_operations, len1, len2).apply(
+        source_string, destination_string
+    )
 
 
 def subtract_edit(edit_operations, subsequence):
@@ -234,9 +243,11 @@ def subtract_edit(edit_operations, subsequence):
     'scotsman'
     """
     str_len = 2**32
-    return _Editops(edit_operations, str_len, str_len).remove_subsequence(
-        _Editops(subsequence, str_len, str_len)
-    ).as_list()
+    return (
+        _Editops(edit_operations, str_len, str_len)
+        .remove_subsequence(_Editops(subsequence, str_len, str_len))
+        .as_list()
+    )
 
 
 def inverse(edit_operations):
