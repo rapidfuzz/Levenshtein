@@ -2,8 +2,7 @@
 requires = [
     "setuptools",
     "scikit-build>=0.13.0",
-    "cmake",
-    "ninja; platform_system!='Windows'",
     "Cython==3.0.0a10"
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "backend"
+backend-path = ["_custom_build"]

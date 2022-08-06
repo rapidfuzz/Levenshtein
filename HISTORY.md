@@ -4,6 +4,9 @@
 #### Fixed
 - fix matching_blocks conversion for empty editops
 
+#### Changed
+- added in-tree build backend to install cmake and ninja only when it is not installed yet and only when wheels are available
+
 ### v0.20.1
 #### Fixed
 - fix broken matching_blocks conversion
