@@ -4,6 +4,7 @@ include README.md
 include COPYING
 include HISTORY.md
 include pyproject.toml
+include _custom_build/backend.py
 include src/Levenshtein/py.typed
 
 recursive-include src/Levenshtein CMakeLists.txt
