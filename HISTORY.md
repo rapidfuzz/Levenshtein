@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.20.2
+#### Fixed
+- fix matching_blocks conversion for empty editops
+
 ### v0.20.1
 #### Fixed
 - fix broken matching_blocks conversion
@@ -44,6 +48,7 @@
 ### v0.18.0
 #### Fixed
 * Fixed memory leak in error path of setratio
+
 * Fixed out of bound reads due to uninitialized variable in median
   * e.g. quickmedian(["test", "teste"], [0, 0]) caused out of bound reads
 
