@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.20.3
+#### Changed
+- Added support for Python3.11
+
 ### v0.20.2
 #### Fixed
 - fix matching_blocks conversion for empty editops
