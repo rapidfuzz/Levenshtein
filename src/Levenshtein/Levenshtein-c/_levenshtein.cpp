@@ -66,9 +66,8 @@ public:
         for (size_t i = 0; i < 0x100; i++)
             symmap[i].n = &symmap[0];
         for (size_t i = 0; i < strings.size(); i++) {
-            visit(strings[i], [&](auto first1, auto last1) {
-                for (auto iter = first1; iter != last1; ++iter) {
-                    uint32_t c = *iter;
+            visit(strings[i], [&](auto s1) {
+                for (auto c : s1) {
                     int key = ((int)c + ((int)c >> 7)) & 0xff;
                     HQItem* p = symmap.get() + key;
                     if (p->n == symmap.get()) {
@@ -150,9 +149,9 @@ std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strin
 
         /* let all strings vote */
         for (size_t i = 0; i < strings.size(); i++) {
-            visit(strings[i], [&](auto first1, auto last1) {
+            visit(strings[i], [&](auto s1) {
                 double weighti = weights[i];
-                size_t lengthi = (size_t)std::distance(first1, last1);
+                size_t lengthi = (size_t)s1.size();
                 double start = (double)lengthi / ml * (double)j;
                 double end = start + (double)lengthi / ml;
                 size_t istart = (size_t)floor(start);
@@ -163,7 +162,7 @@ std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strin
 
                 /* the inner part, including the complete last character */
                 for (size_t k = istart + 1; k < iend; k++) {
-                    int c = first1[k];
+                    uint32_t c = static_cast<uint32_t>(s1[k]);
                     int key = (c + (c >> 7)) & 0xff;
                     HQItem* p = symmap.get() + key;
                     while (p->c != c)
@@ -172,7 +171,7 @@ std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strin
                 }
                 /* the initial fraction */
                 {
-                    int c = first1[istart];
+                    uint32_t c = static_cast<uint32_t>(s1[istart]);
                     int key = (c + (c >> 7)) & 0xff;
                     HQItem* p = symmap.get() + key;
                     while (p->c != c)
@@ -184,7 +183,7 @@ std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strin
                  * this strategy works also when istart+1 == iend (i.e., everything
                  * happens inside a one character) */
                 {
-                    int c = first1[iend - 1];
+                    uint32_t c = static_cast<uint32_t>(s1[iend - 1]);
                     int key = (c + (c >> 7)) & 0xff;
                     HQItem* p = symmap.get() + key;
                     while (p->c != c)
