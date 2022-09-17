@@ -29,7 +29,6 @@
 #include <stdio.h>
 
 #include "_levenshtein.hpp"
-#include <assert.h>
 
 #define LEV_EPSILON 1e-14
 
@@ -221,168 +220,185 @@ std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strin
 /* {{{ */
 
 /*
- * Munkers-Blackman algorithm.
+ * Munkres-Blackman algorithm.
  */
-std::unique_ptr<size_t[]> munkers_blackman(size_t n1, size_t n2, double* dists)
+std::vector<size_t> munkres_blackman(size_t n1, size_t n2, double* dists)
 {
-    size_t i, j;
+    size_t row = 0;
 
     /* allocate memory */
     /* 1 if column is covered */
-    auto covc = std::make_unique<size_t[]>(n1);
-    std::fill(covc.get(), covc.get() + n1, 0);
+    std::vector<size_t> covc(n1, 0);
 
     /* row of a z* in given column (1-base indices, so we can use zero as `none')*/
-    auto zstarc = std::make_unique<size_t[]>(n1);
-    std::fill(zstarc.get(), zstarc.get() + n1, 0);
+    std::vector<size_t> zstarc(n1, 0);
 
     /* 1 if row is covered */
-    auto covr = std::make_unique<size_t[]>(n2);
-    std::fill(covr.get(), covr.get() + n2, 0);
+    std::vector<size_t> covr(n2, 0);
 
     /* column of a z* in given row (1-base indices, so we can use zero as `none')*/
-    auto zstarr = std::make_unique<size_t[]>(n2);
-    std::fill(zstarr.get(), zstarr.get() + n2, 0);
+    std::vector<size_t> zstarr(n2, 0);
 
     /* column of a z' in given row (1-base indices, so we can use zero as `none')*/
-    auto zprimer = std::make_unique<size_t[]>(n2);
-    std::fill(zprimer.get(), zprimer.get() + n2, 0);
+    std::vector<size_t> zprimer(n2, 0);
 
-    /* step 0 (subtract minimal distance) and step 1 (find zeroes) */
-    for (j = 0; j < n1; j++) {
-        size_t minidx = 0;
-        double* col = dists + j;
-        double min = *col;
-        double* p = col + n1;
-        for (i = 1; i < n2; i++) {
-            if (min > *p) {
-                minidx = i;
-                min = *p;
-            }
-            p += n1;
-        }
-        /* subtract */
-        p = col;
-        for (i = 0; i < n2; i++) {
-            *p -= min;
-            if (*p < LEV_EPSILON) *p = 0.0;
-            p += n1;
-        }
-        /* star the zero, if possible */
-        if (!zstarc[j] && !zstarr[minidx]) {
-            zstarc[j] = minidx + 1;
-            zstarr[minidx] = j + 1;
-        }
-        else {
-            /* otherwise try to find some other */
-            p = col;
-            for (i = 0; i < n2; i++) {
-                if (i != minidx && *p == 0.0 && !zstarc[j] && !zstarr[i]) {
-                    zstarc[j] = i + 1;
-                    zstarr[i] = j + 1;
-                    break;
+    /* step 0 (subtract minimal distance) and step 1 (find zeroes) => [2] */
+    auto step1 = [&]() {
+        for (size_t j = 0; j < n1; j++) {
+            size_t minidx = 0;
+            double* col = dists + j;
+            double min = *col;
+            double* p = col + n1;
+            for (size_t i = 1; i < n2; i++) {
+                if (min > *p) {
+                    minidx = i;
+                    min = *p;
                 }
                 p += n1;
             }
-        }
-    }
-
-    /* main */
-    while (1) {
-        /* step 2 (cover columns containing z*) */
-        {
-            size_t nc = 0;
-            for (j = 0; j < n1; j++) {
-                if (zstarc[j]) {
-                    covc[j] = 1;
-                    nc++;
-                }
+            /* subtract */
+            p = col;
+            for (size_t i = 0; i < n2; i++) {
+                *p -= min;
+                if (*p < LEV_EPSILON) *p = 0.0;
+                p += n1;
             }
-            if (nc == n1) break;
-        }
-
-        /* step 3 (find uncovered zeroes) */
-        while (1) {
-        step_3:
-            /* search uncovered matrix entries */
-            for (j = 0; j < n1; j++) {
-                double* p = dists + j;
-                if (covc[j]) continue;
-                for (i = 0; i < n2; i++) {
-                    if (!covr[i] && *p == 0.0) {
-                        /* when a zero is found, prime it */
-                        zprimer[i] = j + 1;
-                        if (zstarr[i]) {
-                            /* if there's a z* in the same row,
-                             * uncover the column, cover the row and redo */
-                            covr[i] = 1;
-                            covc[zstarr[i] - 1] = 0;
-                            goto step_3;
-                        }
-                        /* if there's no z*,
-                         * we are at the end of our path an can convert z'
-                         * to z* */
-                        goto step_4;
+            /* star the zero, if possible */
+            if (!zstarc[j] && !zstarr[minidx]) {
+                zstarc[j] = minidx + 1;
+                zstarr[minidx] = j + 1;
+            }
+            else {
+                /* otherwise try to find some other */
+                p = col;
+                for (size_t i = 0; i < n2; i++) {
+                    if (i != minidx && *p == 0.0 && !zstarc[j] && !zstarr[i]) {
+                        zstarc[j] = i + 1;
+                        zstarr[i] = j + 1;
+                        break;
                     }
                     p += n1;
                 }
             }
+        }
 
-            /* step 5 (new zero manufacturer)
-             * we can't get here, unless no zero is found at all */
-            {
-                /* find the smallest uncovered entry */
-                double min = std::numeric_limits<double>::max();
-                for (j = 0; j < n1; j++) {
-                    double* p = dists + j;
-                    if (covc[j]) continue;
-                    for (i = 0; i < n2; i++) {
-                        if (!covr[i] && min > *p) {
-                            min = *p;
-                        }
-                        p += n1;
+        return 2;
+    };
+
+    /* step 2 (cover columns containing z*) => [0, 3] */
+    auto step2 = [&]() {
+        size_t nc = 0;
+        for (size_t j = 0; j < n1; j++)
+            if (zstarc[j]) {
+                covc[j] = 1;
+                nc++;
+            }
+
+        return (nc == n1) ? 0 : 3;
+    };
+
+    /* step 3 (find uncovered zeroes) => [3, 4, 5] */
+    auto step3 = [&]() {
+        /* search uncovered matrix entries */
+        for (size_t j = 0; j < n1; j++) {
+            double* p = dists + j;
+            if (covc[j]) continue;
+
+            for (size_t i = 0; i < n2; i++) {
+                if (!covr[i] && *p == 0.0) {
+                    /* when a zero is found, prime it */
+                    zprimer[i] = j + 1;
+                    if (zstarr[i]) {
+                        /* if there's a z* in the same row,
+                         * uncover the column, cover the row and redo */
+                        covr[i] = 1;
+                        covc[zstarr[i] - 1] = 0;
+                        return 3;
                     }
+                    /* if there's no z*,
+                     * we are at the end of our path an can convert z'
+                     * to z* */
+                    row = i;
+                    return 4;
                 }
-                /* add it to all covered rows */
-                for (i = 0; i < n2; i++) {
-                    double* p = dists + i * n1;
-                    if (!covr[i]) continue;
-                    for (j = 0; j < n1; j++)
-                        *(p++) += min;
-                }
-                /* subtract if from all uncovered columns */
-                for (j = 0; j < n1; j++) {
-                    double* p = dists + j;
-                    if (covc[j]) continue;
-                    for (i = 0; i < n2; i++) {
-                        *p -= min;
-                        if (*p < LEV_EPSILON) *p = 0.0;
-                        p += n1;
-                    }
-                }
+                p += n1;
             }
         }
 
+        return 5;
+    };
+
     /* step 4 (increment the number of z*)
-     * i is the row number (we get it from step 3) */
-    step_4:
-        i++;
+     * i is the row number (we get it from step 3) => [2] */
+    auto step4 = [&]() {
+        row++;
         do {
-            size_t x = i;
+            size_t x = row;
 
-            i--;
-            j = zprimer[i] - 1; /* move to z' in the same row */
-            zstarr[i] = j + 1;  /* mark it as z* in row buffer */
-            i = zstarc[j];      /* move to z* in the same column */
-            zstarc[j] = x;      /* mark the z' as being new z* */
-        } while (i);
+            row--;
+            size_t j = zprimer[row] - 1; /* move to z' in the same row */
+            zstarr[row] = j + 1;         /* mark it as z* in row buffer */
+            row = zstarc[j];             /* move to z* in the same column */
+            zstarc[j] = x;               /* mark the z' as being new z* */
+        } while (row);
 
-        std::fill(zprimer.get(), zprimer.get() + n2, 0);
-        std::fill(covr.get(), covr.get() + n2, 0);
-        std::fill(covc.get(), covc.get() + n1, 0);
+        std::fill(std::begin(zprimer), std::end(zprimer) + n2, 0);
+        std::fill(std::begin(covr), std::end(covr) + n2, 0);
+        std::fill(std::begin(covc), std::end(covc) + n1, 0);
+
+        return 2;
+    };
+
+    /* step 5 (new zero manufacturer)
+     * we can't get here, unless no zero is found at all => [3] */
+    auto step5 = [&]() {
+        /* find the smallest uncovered entry */
+        double min = std::numeric_limits<double>::max();
+        for (size_t j = 0; j < n1; j++) {
+            double* p = dists + j;
+            if (covc[j]) continue;
+            for (size_t i = 0; i < n2; i++) {
+                if (!covr[i] && min > *p) {
+                    min = *p;
+                }
+                p += n1;
+            }
+        }
+        /* add it to all covered rows */
+        for (size_t i = 0; i < n2; i++) {
+            double* p = dists + i * n1;
+            if (!covr[i]) continue;
+            for (size_t j = 0; j < n1; j++)
+                *(p++) += min;
+        }
+        /* subtract if from all uncovered columns */
+        for (size_t j = 0; j < n1; j++) {
+            double* p = dists + j;
+            if (covc[j]) continue;
+            for (size_t i = 0; i < n2; i++) {
+                *p -= min;
+                if (*p < LEV_EPSILON) *p = 0.0;
+                p += n1;
+            }
+        }
+
+        return 3;
+    };
+
+    /* main */
+    int next_step = 1;
+    while (next_step) {
+        switch (next_step) {
+        case 1: next_step = step1(); break;
+        case 2: next_step = step2(); break;
+        case 3: next_step = step3(); break;
+        case 4: next_step = step4(); break;
+        case 5: next_step = step5(); break;
+        default: next_step = 0; break;
+        }
     }
 
-    for (j = 0; j < n1; j++)
+    for (size_t j = 0; j < n1; j++)
         zstarc[j]--;
     return zstarc;
 }

@@ -273,8 +273,8 @@ static inline double finish_distance_computations(const Range<uint32_t*>& string
     /* iterate through the strings and sum the distances */
     for (size_t j = 0; j < strings.size(); j++) {
         visit(strings[j], [&](auto s2) {
-            size_t* rowi = rows[j].get();  /* current row */
-            auto s1_temp = string1;        /* temporary string for suffix stripping */
+            size_t* rowi = rows[j].get(); /* current row */
+            auto s1_temp = string1;       /* temporary string for suffix stripping */
 
             /* strip common suffix (prefix CAN'T be stripped) */
             rapidfuzz::detail::remove_common_suffix(s1_temp, s2);
@@ -365,7 +365,8 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
         std::copy(std::begin(s1), std::end(s1), median);
     });
 
-    double minminsum = finish_distance_computations(Range(median, median + medlen), strings, weights, rows, row);
+    double minminsum =
+        finish_distance_computations(Range(median, median + medlen), strings, weights, rows, row);
 
     /* sequentially try perturbations on all positions */
     for (size_t pos = 0; pos <= medlen;) {
@@ -382,7 +383,8 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
             for (size_t j = 0; j < symlist.size(); j++) {
                 if (symlist[j] == orig_symbol) continue;
                 median[pos] = symlist[j];
-                sum = finish_distance_computations(Range(median + pos, median + medlen), strings, weights, rows, row);
+                sum = finish_distance_computations(Range(median + pos, median + medlen), strings, weights,
+                                                   rows, row);
                 if (sum < minminsum) {
                     minminsum = sum;
                     symbol = symlist[j];
@@ -397,8 +399,8 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
         orig_symbol = *(median + pos - 1);
         for (size_t j = 0; j < symlist.size(); j++) {
             *(median + pos - 1) = symlist[j];
-            sum =
-                finish_distance_computations(Range(median + pos - 1, median + medlen), strings, weights, rows, row);
+            sum = finish_distance_computations(Range(median + pos - 1, median + medlen), strings, weights,
+                                               rows, row);
             if (sum < minminsum) {
                 minminsum = sum;
                 symbol = symlist[j];
@@ -409,8 +411,8 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
         /* IF pos < medlen: try to delete the symbol at pos, if it lowers
          * the total distance remember it (decrease medlen) */
         if (pos < medlen) {
-            sum =
-                finish_distance_computations(Range(median + pos + 1, median + medlen), strings, weights, rows, row);
+            sum = finish_distance_computations(Range(median + pos + 1, median + medlen), strings, weights,
+                                               rows, row);
             if (sum < minminsum) {
                 minminsum = sum;
                 operation = LEV_EDIT_DELETE;
@@ -621,7 +623,7 @@ static inline double lev_edit_seq_distance(const std::vector<RF_String>& strings
     return *last;
 }
 
-std::unique_ptr<size_t[]> munkers_blackman(size_t n1, size_t n2, double* dists);
+std::vector<size_t> munkres_blackman(size_t n1, size_t n2, double* dists);
 
 /**
  * lev_set_distance:
@@ -638,7 +640,7 @@ std::unique_ptr<size_t[]> munkers_blackman(size_t n1, size_t n2, double* dists);
  * The optimal association of @strings1 and @strings2 is found first and
  * the similarity is computed for that.
  *
- * Uses sequential Munkers-Blackman algorithm.
+ * Uses sequential Munkres-Blackman algorithm.
  *
  * Returns: The distance of the two sets.
  **/
@@ -668,7 +670,7 @@ static inline double lev_set_distance(const std::vector<RF_String>& strings1,
         });
 
     /* find the optimal mapping between the two sets */
-    auto map = munkers_blackman(strings1.size(), strings2.size(), dists.get());
+    auto map = munkres_blackman(strings1.size(), strings2.size(), dists.get());
 
     /* sum the set distance */
     double sum = (double)(strings2.size() - strings1.size());
