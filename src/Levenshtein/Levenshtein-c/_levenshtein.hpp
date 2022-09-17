@@ -486,7 +486,8 @@ static inline std::basic_string<uint32_t> lev_set_median(const std::vector<RF_St
 
     for (size_t i = 0; i < strings.size(); i++) {
         visit(strings[i], [&](auto s1) {
-            rapidfuzz::CachedLevenshtein scorer(s1);
+            /* deduction guides are broken here on msvc */
+            rapidfuzz::CachedLevenshtein<typename decltype(s1)::value_type> scorer(s1);
             double dist = 0.0;
 
             /* below diagonal */
@@ -597,7 +598,8 @@ static inline double lev_edit_seq_distance(const std::vector<RF_String>& strings
         double x = (double)i + 1.0;
 
         visit(strings1[i], [&](auto s1) {
-            rapidfuzz::CachedIndel scorer(s1);
+            /* deduction guides are broken here on msvc */
+            rapidfuzz::CachedIndel<typename decltype(s1)::value_type> scorer(s1);
 
             while (p != end) {
                 size_t l = strings1[i].length + strings2_it->length;
@@ -662,7 +664,8 @@ static inline double lev_set_distance(const std::vector<RF_String>& strings1,
 
     for (const auto& str2 : strings2)
         visit(str2, [&](auto s1) {
-            rapidfuzz::CachedIndel scorer(s1);
+            /* deduction guides are broken here on msvc */
+            rapidfuzz::CachedIndel<typename decltype(s1)::value_type> scorer(s1);
             for (const auto& str1 : strings1)
                 *(r++) = visit(str1, [&](auto s2) {
                     return scorer.normalized_distance(s2);
