@@ -9,6 +9,7 @@ include src/Levenshtein/py.typed
 
 recursive-include src/Levenshtein CMakeLists.txt
 recursive-include src/Levenshtein *.hpp *.h *.cpp *.pyx *.pxd *.cxx *.pyi
+recursive-include tests *
 
 include extern/rapidfuzz-cpp/LICENSE
 include extern/rapidfuzz-cpp/CMakeLists.txt

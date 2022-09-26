@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.20.4
+#### Changed
+- modernize cmake build to fix most conda-forge builds
+
 ### v0.20.3
 #### Changed
 - Added support for Python3.11
