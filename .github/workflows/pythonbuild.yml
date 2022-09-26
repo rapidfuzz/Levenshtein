@@ -84,6 +84,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.10.1
         with:
+          package-dir: dist/*.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
@@ -143,6 +144,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.10.1
         with:
+          package-dir: dist/*.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
@@ -195,6 +197,7 @@ jobs:
       - name: Build wheel
         uses: pypa/cibuildwheel@v2.10.1
         with:
+          package-dir: dist/*.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
