@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Levenshtein module &mdash; Levenshtein 0.20.3 documentation</title>
+  <title>Levenshtein module &mdash; Levenshtein 0.20.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,6 +16,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,23 +46,74 @@
 <p class="caption" role="heading"><span class="caption-text">Usage:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Levenshtein module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#distance">distance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ratio">ratio</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#hamming">hamming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#jaro">jaro</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#jaro-winkler">jaro_winkler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#median">median</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#median-improve">median_improve</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#quickmedian">quickmedian</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setmedian">setmedian</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#seqratio">seqratio</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#setratio">setratio</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#editops">editops</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#opcodes">opcodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#inverse">inverse</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#apply-edit">apply_edit</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#matching-blocks">matching_blocks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#subtract-edit">subtract_edit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#distance">distance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.distance"><code class="docutils literal notranslate"><span class="pre">distance()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ratio">ratio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.ratio"><code class="docutils literal notranslate"><span class="pre">ratio()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#hamming">hamming</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.hamming"><code class="docutils literal notranslate"><span class="pre">hamming()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#jaro">jaro</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.jaro"><code class="docutils literal notranslate"><span class="pre">jaro()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#jaro-winkler">jaro_winkler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.jaro_winkler"><code class="docutils literal notranslate"><span class="pre">jaro_winkler()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#median">median</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.median"><code class="docutils literal notranslate"><span class="pre">median()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#median-improve">median_improve</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.median_improve"><code class="docutils literal notranslate"><span class="pre">median_improve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#quickmedian">quickmedian</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.quickmedian"><code class="docutils literal notranslate"><span class="pre">quickmedian()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#setmedian">setmedian</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.setmedian"><code class="docutils literal notranslate"><span class="pre">setmedian()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#seqratio">seqratio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.seqratio"><code class="docutils literal notranslate"><span class="pre">seqratio()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#setratio">setratio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.setratio"><code class="docutils literal notranslate"><span class="pre">setratio()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#editops">editops</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.editops"><code class="docutils literal notranslate"><span class="pre">editops()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#opcodes">opcodes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.opcodes"><code class="docutils literal notranslate"><span class="pre">opcodes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#inverse">inverse</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.inverse"><code class="docutils literal notranslate"><span class="pre">inverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#apply-edit">apply_edit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.apply_edit"><code class="docutils literal notranslate"><span class="pre">apply_edit()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#matching-blocks">matching_blocks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.matching_blocks"><code class="docutils literal notranslate"><span class="pre">matching_blocks()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#subtract-edit">subtract_edit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Levenshtein.subtract_edit"><code class="docutils literal notranslate"><span class="pre">subtract_edit()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
