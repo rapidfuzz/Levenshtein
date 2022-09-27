@@ -10,8 +10,6 @@ function(create_cython_target _name)
 endfunction(create_cython_target)
 
 function(rf_add_library name)
-    cmake_parse_arguments(PARSE_ARGV 2 PYTHON_ADD_LIBRARY "" "" "")
-
     if(CMAKE_VERSION VERSION_LESS 3.17)
         Python_add_library(${name} MODULE ${ARGV})
         get_property(suffix TARGET ${name} PROPERTY SUFFIX)
