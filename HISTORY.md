@@ -1,5 +1,10 @@
 ## Changelog
 
+### v0.20.5
+#### Fixed
+- fix support for cmake versions below 3.17
+- fix version requirement for `rapidfuzz-cpp` when building against a previously installed version
+
 ### v0.20.4
 #### Changed
 - modernize cmake build to fix most conda-forge builds
