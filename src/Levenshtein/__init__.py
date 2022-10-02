@@ -43,6 +43,7 @@ def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None):
     Calculates the minimum number of insertions, deletions, and substitutions
     required to change one sequence into the other according to Levenshtein with custom
     costs for insertion, deletion and substitution
+
     Parameters
     ----------
     s1 : Sequence[Hashable]
@@ -61,26 +62,34 @@ def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None):
         considered as a result. If the distance is bigger than score_cutoff,
         score_cutoff + 1 is returned instead. Default is None, which deactivates
         this behaviour.
+
     Returns
     -------
     distance : int
         distance between s1 and s2
+ 
     Raises
     ------
     ValueError
         If unsupported weights are provided a ValueError is thrown
+
     Examples
     --------
     Find the Levenshtein distance between two strings:
+
     >>> from Levenshtein import distance
     >>> distance("lewenstein", "levenshtein")
     2
+
     Setting a maximum distance allows the implementation to select
     a more efficient implementation:
+
     >>> distance("lewenstein", "levenshtein", score_cutoff=1)
     2
+
     It is possible to select different weights by passing a `weight`
     tuple.
+
     >>> distance("lewenstein", "levenshtein", weights=(1,1,2))
     3
     """
@@ -93,6 +102,7 @@ def ratio(s1, s2, *, processor=None, score_cutoff=None):
     """
     Calculates a normalized indel similarity in the range [0, 1].
     This is calculated as ``1 - normalized_distance``
+
     Parameters
     ----------
     s1 : Sequence[Hashable]
@@ -106,21 +116,28 @@ def ratio(s1, s2, *, processor=None, score_cutoff=None):
         Optional argument for a score threshold as a float between 0 and 1.0.
         For norm_sim < score_cutoff 0 is returned instead. Default is 0,
         which deactivates this behaviour.
+
     Returns
     -------
     norm_sim : float
         normalized similarity between s1 and s2 as a float between 0 and 1.0
+
     Examples
     --------
     Find the normalized Indel similarity between two strings:
+
     >>> from Levenshtein import ratio
     >>> ratio("lewenstein", "levenshtein")
     0.85714285714285
+
     Setting a score_cutoff allows the implementation to select
     a more efficient implementation:
+
     >>> ratio("lewenstein", "levenshtein", score_cutoff=0.9)
     0.0
+
     When a different processor is used s1 and s2 do not have to be strings
+
     >>> ratio(["lewenstein"], ["levenshtein"], processor=lambda s: s[0])
     0.8571428571428572
     """
@@ -135,6 +152,7 @@ def hamming(s1, s2, *, processor=None, score_cutoff=None):
     The hamming distance is defined as the number of positions
     where the two strings differ. It describes the minimum
     amount of substitutions required to transform s1 into s2.
+
     Parameters
     ----------
     s1 : Sequence[Hashable]
@@ -149,10 +167,12 @@ def hamming(s1, s2, *, processor=None, score_cutoff=None):
         considered as a result. If the distance is bigger than score_cutoff,
         score_cutoff + 1 is returned instead. Default is None, which deactivates
         this behaviour.
+
     Returns
     -------
     distance : int
         distance between s1 and s2
+
     Raises
     ------
     ValueError
@@ -164,6 +184,7 @@ def hamming(s1, s2, *, processor=None, score_cutoff=None):
 def jaro(s1, s2, *, processor=None, score_cutoff=None) -> float:
     """
     Calculates the jaro similarity
+
     Parameters
     ----------
     s1 : Sequence[Hashable]
@@ -177,6 +198,7 @@ def jaro(s1, s2, *, processor=None, score_cutoff=None) -> float:
         Optional argument for a score threshold as a float between 0 and 1.0.
         For ratio < score_cutoff 0 is returned instead. Default is None,
         which deactivates this behaviour.
+
     Returns
     -------
     similarity : float
@@ -190,6 +212,7 @@ def jaro_winkler(
 ) -> float:
     """
     Calculates the jaro winkler similarity
+
     Parameters
     ----------
     s1 : Sequence[Hashable]
@@ -206,10 +229,12 @@ def jaro_winkler(
         Optional argument for a score threshold as a float between 0 and 1.0.
         For ratio < score_cutoff 0 is returned instead. Default is None,
         which deactivates this behaviour.
+
     Returns
     -------
     similarity : float
         similarity between s1 and s2 as a float between 0 and 1.0
+
     Raises
     ------
     ValueError
