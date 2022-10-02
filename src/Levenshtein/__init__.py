@@ -18,15 +18,11 @@ __author__: str = "Max Bachmann"
 __license__: str = "GPL"
 __version__: str = "0.20.5"
 
-from rapidfuzz.distance.Levenshtein import distance
-from rapidfuzz.distance.Indel import normalized_similarity as ratio
-from rapidfuzz.distance.Hamming import distance as hamming
-from rapidfuzz.distance.Jaro import similarity as jaro
-from rapidfuzz.distance.JaroWinkler import similarity as jaro_winkler
-from rapidfuzz.distance.Levenshtein import (
-    editops as _editops,
-    opcodes as _opcodes,
-)
+import rapidfuzz.distance.Levenshtein as _Levenshtein
+import rapidfuzz.distance.Indel as _Indel
+import rapidfuzz.distance.Hamming as _Hamming
+import rapidfuzz.distance.Jaro as _Jaro
+import rapidfuzz.distance.JaroWinkler as _JaroWinkler
 from rapidfuzz.distance import (
     Editops as _Editops,
     Opcodes as _Opcodes,
@@ -40,6 +36,192 @@ from Levenshtein.levenshtein_cpp import (
     setratio,
     seqratio,
 )
+
+
+def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None):
+    """
+    Calculates the minimum number of insertions, deletions, and substitutions
+    required to change one sequence into the other according to Levenshtein with custom
+    costs for insertion, deletion and substitution
+    Parameters
+    ----------
+    s1 : Sequence[Hashable]
+        First string to compare.
+    s2 : Sequence[Hashable]
+        Second string to compare.
+    weights : Tuple[int, int, int] or None, optional
+        The weights for the three operations in the form
+        (insertion, deletion, substitution). Default is (1, 1, 1),
+        which gives all three operations a weight of 1.
+    processor: callable, optional
+        Optional callable that is used to preprocess the strings before
+        comparing them. Default is None, which deactivates this behaviour.
+    score_cutoff : int, optional
+        Maximum distance between s1 and s2, that is
+        considered as a result. If the distance is bigger than score_cutoff,
+        score_cutoff + 1 is returned instead. Default is None, which deactivates
+        this behaviour.
+    Returns
+    -------
+    distance : int
+        distance between s1 and s2
+    Raises
+    ------
+    ValueError
+        If unsupported weights are provided a ValueError is thrown
+    Examples
+    --------
+    Find the Levenshtein distance between two strings:
+    >>> from Levenshtein import distance
+    >>> distance("lewenstein", "levenshtein")
+    2
+    Setting a maximum distance allows the implementation to select
+    a more efficient implementation:
+    >>> distance("lewenstein", "levenshtein", score_cutoff=1)
+    2
+    It is possible to select different weights by passing a `weight`
+    tuple.
+    >>> distance("lewenstein", "levenshtein", weights=(1,1,2))
+    3
+    """
+    return _Levenshtein.distance(
+        s1, s2, weights=weights, processor=processor, score_cutoff=score_cutoff
+    )
+
+
+def ratio(s1, s2, *, processor=None, score_cutoff=None):
+    """
+    Calculates a normalized indel similarity in the range [0, 1].
+    This is calculated as ``1 - normalized_distance``
+    Parameters
+    ----------
+    s1 : Sequence[Hashable]
+        First string to compare.
+    s2 : Sequence[Hashable]
+        Second string to compare.
+    processor: callable, optional
+        Optional callable that is used to preprocess the strings before
+        comparing them. Default is None, which deactivates this behaviour.
+    score_cutoff : float, optional
+        Optional argument for a score threshold as a float between 0 and 1.0.
+        For norm_sim < score_cutoff 0 is returned instead. Default is 0,
+        which deactivates this behaviour.
+    Returns
+    -------
+    norm_sim : float
+        normalized similarity between s1 and s2 as a float between 0 and 1.0
+    Examples
+    --------
+    Find the normalized Indel similarity between two strings:
+    >>> from Levenshtein import ratio
+    >>> ratio("lewenstein", "levenshtein")
+    0.85714285714285
+    Setting a score_cutoff allows the implementation to select
+    a more efficient implementation:
+    >>> ratio("lewenstein", "levenshtein", score_cutoff=0.9)
+    0.0
+    When a different processor is used s1 and s2 do not have to be strings
+    >>> ratio(["lewenstein"], ["levenshtein"], processor=lambda s: s[0])
+    0.8571428571428572
+    """
+    return _Indel.normalized_similarity(
+        s1, s2, processor=processor, score_cutoff=score_cutoff
+    )
+
+
+def hamming(s1, s2, *, processor=None, score_cutoff=None):
+    """
+    Calculates the Hamming distance between two strings.
+    The hamming distance is defined as the number of positions
+    where the two strings differ. It describes the minimum
+    amount of substitutions required to transform s1 into s2.
+    Parameters
+    ----------
+    s1 : Sequence[Hashable]
+        First string to compare.
+    s2 : Sequence[Hashable]
+        Second string to compare.
+    processor: callable, optional
+        Optional callable that is used to preprocess the strings before
+        comparing them. Default is None, which deactivates this behaviour.
+    score_cutoff : int or None, optional
+        Maximum distance between s1 and s2, that is
+        considered as a result. If the distance is bigger than score_cutoff,
+        score_cutoff + 1 is returned instead. Default is None, which deactivates
+        this behaviour.
+    Returns
+    -------
+    distance : int
+        distance between s1 and s2
+    Raises
+    ------
+    ValueError
+        If s1 and s2 have a different length
+    """
+    return _Hamming.distance(s1, s2, processor=processor, score_cutoff=score_cutoff)
+
+
+def jaro(s1, s2, *, processor=None, score_cutoff=None) -> float:
+    """
+    Calculates the jaro similarity
+    Parameters
+    ----------
+    s1 : Sequence[Hashable]
+        First string to compare.
+    s2 : Sequence[Hashable]
+        Second string to compare.
+    processor: callable, optional
+        Optional callable that is used to preprocess the strings before
+        comparing them. Default is None, which deactivates this behaviour.
+    score_cutoff : float, optional
+        Optional argument for a score threshold as a float between 0 and 1.0.
+        For ratio < score_cutoff 0 is returned instead. Default is None,
+        which deactivates this behaviour.
+    Returns
+    -------
+    similarity : float
+        similarity between s1 and s2 as a float between 0 and 1.0
+    """
+    return _Jaro.similarity(s1, s2, processor=processor, score_cutoff=score_cutoff)
+
+
+def jaro_winkler(
+    s1, s2, *, prefix_weight=0.1, processor=None, score_cutoff=None
+) -> float:
+    """
+    Calculates the jaro winkler similarity
+    Parameters
+    ----------
+    s1 : Sequence[Hashable]
+        First string to compare.
+    s2 : Sequence[Hashable]
+        Second string to compare.
+    prefix_weight : float, optional
+        Weight used for the common prefix of the two strings.
+        Has to be between 0 and 0.25. Default is 0.1.
+    processor: callable, optional
+        Optional callable that is used to preprocess the strings before
+        comparing them. Default is None, which deactivates this behaviour.
+    score_cutoff : float, optional
+        Optional argument for a score threshold as a float between 0 and 1.0.
+        For ratio < score_cutoff 0 is returned instead. Default is None,
+        which deactivates this behaviour.
+    Returns
+    -------
+    similarity : float
+        similarity between s1 and s2 as a float between 0 and 1.0
+    Raises
+    ------
+    ValueError
+        If prefix_weight is invalid
+    """
+    return _JaroWinkler.similarity(
+        s1,
+        s2,
+        prefix_weight=prefix_weight,
+        processor=processor,
+        score_cutoff=score_cutoff,
+    )
 
 
 def editops(*args):
@@ -75,7 +257,7 @@ def editops(*args):
 
     # find editops: we were called (s1, s2)
     arg1, arg2 = args
-    return _editops(arg1, arg2).as_list()
+    return _Levenshtein.editops(arg1, arg2).as_list()
 
 
 def opcodes(*args):
@@ -113,7 +295,7 @@ def opcodes(*args):
 
     # find editops: we were called (s1, s2)
     arg1, arg2 = args
-    return _opcodes(arg1, arg2).as_list()
+    return _Levenshtein.opcodes(arg1, arg2).as_list()
 
 
 def matching_blocks(edit_operations, source_string, destination_string):
