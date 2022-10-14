@@ -342,9 +342,9 @@ std::vector<size_t> munkres_blackman(size_t n1, size_t n2, double* dists)
             zstarc[j] = x;               /* mark the z' as being new z* */
         } while (row);
 
-        std::fill(std::begin(zprimer), std::end(zprimer) + n2, 0);
-        std::fill(std::begin(covr), std::end(covr) + n2, 0);
-        std::fill(std::begin(covc), std::end(covc) + n1, 0);
+        std::fill(std::begin(zprimer), std::end(zprimer), 0);
+        std::fill(std::begin(covr), std::end(covr), 0);
+        std::fill(std::begin(covc), std::end(covc), 0);
 
         return 2;
     };
