@@ -1,6 +1,7 @@
 from Levenshtein import *
 from warnings import warn
 
+
 class StringMatcher:
     """A SequenceMatcher-like class built on the top of Levenshtein"""
 
@@ -8,7 +9,7 @@ class StringMatcher:
         self._ratio = self._distance = None
         self._opcodes = self._editops = self._matching_blocks = None
 
-    def __init__(self, isjunk=None, seq1='', seq2='', autojunk=False):
+    def __init__(self, isjunk=None, seq1="", seq2="", autojunk=False):
         if isjunk:
             warn("isjunk NOT implemented, it will be ignored")
         if autojunk:
@@ -46,8 +47,9 @@ class StringMatcher:
 
     def get_matching_blocks(self):
         if not self._matching_blocks:
-            self._matching_blocks = matching_blocks(self.get_opcodes(),
-                                                    self._str1, self._str2)
+            self._matching_blocks = matching_blocks(
+                self.get_opcodes(), self._str1, self._str2
+            )
         return self._matching_blocks
 
     def ratio(self):

@@ -16,7 +16,7 @@ subclasses).
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.20.5"
+__version__: str = "0.20.6"
 
 import rapidfuzz.distance.Levenshtein as _Levenshtein
 import rapidfuzz.distance.Indel as _Indel
@@ -36,6 +36,26 @@ from Levenshtein.levenshtein_cpp import (
     setratio,
     seqratio,
 )
+
+__all__ = [
+    "quickmedian",
+    "median",
+    "median_improve",
+    "setmedian",
+    "setratio",
+    "seqratio",
+    "distance",
+    "ratio",
+    "hamming",
+    "jaro",
+    "jaro_winkler",
+    "editops",
+    "opcodes",
+    "matching_blocks",
+    "apply_edit",
+    "subtract_edit",
+    "inverse",
+]
 
 
 def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None):
@@ -67,7 +87,7 @@ def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None):
     -------
     distance : int
         distance between s1 and s2
- 
+
     Raises
     ------
     ValueError

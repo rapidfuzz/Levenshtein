@@ -220,7 +220,7 @@ def setratio(strlist1, strlist2, *):
     else:
         dist = lev_set_distance(strings1, strings2)
 
-    return <double>lensum - dist / <double>lensum
+    return (<double>lensum - dist) / <double>lensum
 
 def seqratio(strlist1, strlist2, *):
     """
@@ -235,7 +235,7 @@ def seqratio(strlist1, strlist2, *):
 
     >>> seqratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
     ...          ['caribou', 'sausage', 'gorn', 'woody'])
-    0.21517857142857144
+    0.215178...
     """
 
     strings1 = extract_stringlist(strlist1)
@@ -252,4 +252,4 @@ def seqratio(strlist1, strlist2, *):
     else:
         dist = lev_edit_seq_distance(strings1, strings2)
 
-    return <double>lensum - dist / <double>lensum
+    return (<double>lensum - dist) / <double>lensum
