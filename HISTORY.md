@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.20.7
+#### Fixed
+- type hints did not get installed
+
 ### v0.20.6
 #### Fixed
 - fix incorrect result normalization in `setratio` and `seqratio`
