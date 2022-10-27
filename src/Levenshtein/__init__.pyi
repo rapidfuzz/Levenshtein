@@ -11,21 +11,25 @@ _AnyEditops = Union[_EditopsList, _OpcodesList]
 
 def inverse(edit_operations: list) -> list: ...
 @overload
-def editops(s1: str, s2: str) -> _EditopsList: ...
+def editops(s1: Sequence[Hashable], s2: Sequence[Hashable]) -> _EditopsList: ...
 @overload
 def editops(
-    ops: _AnyEditops, s1: Union[str, int], s2: Union[str, int]
+    ops: _AnyEditops,
+    s1: Union[Sequence[Hashable], int],
+    s2: Union[Sequence[Hashable], int],
 ) -> _EditopsList: ...
 @overload
-def opcodes(s1: str, s2: str) -> _OpcodesList: ...
+def opcodes(s1: Sequence[Hashable], s2: Sequence[Hashable]) -> _OpcodesList: ...
 @overload
 def opcodes(
-    ops: _AnyEditops, s1: Union[str, int], s2: Union[str, int]
+    ops: _AnyEditops,
+    s1: Union[Sequence[Hashable], int],
+    s2: Union[Sequence[Hashable], int],
 ) -> _OpcodesList: ...
 def matching_blocks(
     edit_operations: _AnyEditops,
-    source_string: Union[str, int],
-    destination_string: Union[str, int],
+    source_string: Union[Sequence[Hashable], int],
+    destination_string: Union[Sequence[Hashable], int],
 ) -> _MatchingBlocks: ...
 def subtract_edit(
     edit_operations: _EditopsList, subsequence: _EditopsList
