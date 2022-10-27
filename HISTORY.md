@@ -1,5 +1,10 @@
 ## Changelog
 
+### v0.20.8
+#### Fixed
+- type hints for `editops`/`opcoded`/`matching_blocks` did not allow any
+  hashable sequence
+
 ### v0.20.7
 #### Fixed
 - type hints did not get installed

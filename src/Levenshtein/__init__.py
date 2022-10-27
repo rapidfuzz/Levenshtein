@@ -16,7 +16,7 @@ subclasses).
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.20.7"
+__version__: str = "0.20.8"
 
 import rapidfuzz.distance.Levenshtein as _Levenshtein
 import rapidfuzz.distance.Indel as _Indel
