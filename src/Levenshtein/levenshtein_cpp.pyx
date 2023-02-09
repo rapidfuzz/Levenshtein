@@ -74,8 +74,8 @@ def median(strlist, wlist = None, *):
     Find an approximate generalized median string using greedy algorithm.
 
     You can optionally pass a weight for each string as the second
-    argument.  The weights are interpreted as item multiplicities,
-    although any non-negative real numbers are accepted.  Use them to
+    argument. The weights are interpreted as item multiplicities,
+    although any non-negative real numbers are accepted. Use them to
     improve computation speed when strings often appear multiple times
     in the sequence.
 
@@ -85,12 +85,12 @@ def median(strlist, wlist = None, *):
     >>> median(['SpSm', 'mpamm', 'Spam', 'Spa', 'Sua', 'hSam'])
     'Spam'
     >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
-                 'Leveshtei', 'Lenshtein', 'Lvenstein',
-                 'Levenhtin', 'evenshtei']
+    ...          'Leveshtei', 'Lenshtein', 'Lvenstein',
+    ...          'Levenhtin', 'evenshtei']
     >>> median(fixme)
     'Levenshtein'
 
-    Hm.  Even a computer program can spell Levenshtein better than me.
+    Hm. Even a computer program can spell Levenshtein better than me.
     """
     if wlist is not None and len(strlist) != len(wlist):
         raise ValueError("strlist has a different length than wlist")
@@ -113,8 +113,8 @@ def quickmedian(strlist, wlist = None, *):
     --------
 
     >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
-                'Leveshtei', 'Lenshtein', 'Lvenstein',
-                'Levenhtin', 'evenshtei']
+    ...         'Leveshtei', 'Lenshtein', 'Lvenstein',
+    ...         'Levenhtin', 'evenshtei']
     >>> quickmedian(fixme)
     'Levnshein'
     """
@@ -143,8 +143,8 @@ def median_improve(string, strlist, wlist = None, *):
     --------
 
     >>> fixme = ['Levnhtein', 'Leveshein', 'Leenshten',
-                 'Leveshtei', 'Lenshtein', 'Lvenstein',
-                 'Levenhtin', 'evenshtei']
+    ...          'Leveshtei', 'Lenshtein', 'Lvenstein',
+    ...          'Levenhtin', 'evenshtei']
     >>> median_improve('spam', fixme)
     'enhtein'
     >>> median_improve(median_improve('spam', fixme), fixme)
@@ -173,7 +173,7 @@ def setmedian(strlist, wlist = None, *):
     --------
 
     >>> setmedian(['ehee', 'cceaes', 'chees', 'chreesc',
-                   'chees', 'cheesee', 'cseese', 'chetese'])
+    ...            'chees', 'cheesee', 'cseese', 'chetese'])
     'chees'
 
     You haven't asked me about Limburger, sir.
@@ -192,15 +192,15 @@ def setratio(strlist1, strlist2, *):
     Compute similarity ratio of two strings sets (passed as sequences).
 
     The best match between any strings in the first set and the second
-    set (passed as sequences) is attempted.  I.e., the order doesn't
+    set (passed as sequences) is attempted. I.e., the order doesn't
     matter here.
 
     Examples
     --------
 
     >>> setratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
-                 ['caribou', 'sausage', 'gorn', 'woody'])
-    0.281845...
+    ...          ['caribou', 'sausage', 'gorn', 'woody'])
+    0.281845
 
     No, even reordering doesn't help the tinny words to match the
     woody ones.
@@ -226,7 +226,7 @@ def seqratio(strlist1, strlist2, *):
     """
     Compute similarity ratio of two sequences of strings.
 
-    This is like ratio(), but for string sequences.  A kind of ratio()
+    This is like ratio(), but for string sequences. A kind of ratio()
     is used to to measure the cost of item change operation for the
     strings.
 
@@ -235,7 +235,7 @@ def seqratio(strlist1, strlist2, *):
 
     >>> seqratio(['newspaper', 'litter bin', 'tinny', 'antelope'],
     ...          ['caribou', 'sausage', 'gorn', 'woody'])
-    0.215178...
+    0.215178
     """
 
     strings1 = extract_stringlist(strlist1)
