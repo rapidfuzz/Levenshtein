@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Levenshtein module &mdash; Levenshtein 0.20.9 documentation</title>
@@ -29,11 +29,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Levenshtein
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Levenshtein
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -131,7 +135,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Levenshtein module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/levenshtein.rst.txt" rel="nofollow"> View page source</a>
@@ -153,7 +157,7 @@
 required to change one sequence into the other according to Levenshtein with custom
 costs for insertion, deletion and substitution</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
 <li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
@@ -168,13 +172,13 @@ score_cutoff + 1 is returned instead. Default is None, which deactivates
 this behaviour.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>distance</strong> – distance between s1 and s2</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If unsupported weights are provided a ValueError is thrown</p>
 </dd>
 </dl>
@@ -208,7 +212,7 @@ tuple.</p>
 <dd><p>Calculates a normalized indel similarity in the range [0, 1].
 This is calculated as <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">normalized_distance</span></code></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
 <li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
@@ -219,10 +223,10 @@ For norm_sim &lt; score_cutoff 0 is returned instead. Default is 0,
 which deactivates this behaviour.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>norm_sim</strong> – normalized similarity between s1 and s2 as a float between 0 and 1.0</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -257,7 +261,7 @@ The hamming distance is defined as the number of positions
 where the two strings differ. It describes the minimum
 amount of substitutions required to transform s1 into s2.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
 <li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
@@ -269,13 +273,13 @@ score_cutoff + 1 is returned instead. Default is None, which deactivates
 this behaviour.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>distance</strong> – distance between s1 and s2</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>int</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If s1 and s2 have a different length</p>
 </dd>
 </dl>
@@ -289,7 +293,7 @@ this behaviour.</p></li>
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Levenshtein.jaro" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the jaro similarity</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
 <li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
@@ -300,10 +304,10 @@ For ratio &lt; score_cutoff 0 is returned instead. Default is None,
 which deactivates this behaviour.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.0</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -317,7 +321,7 @@ which deactivates this behaviour.</p></li>
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">jaro_winkler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#Levenshtein.jaro_winkler" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the jaro winkler similarity</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
 <li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
@@ -330,13 +334,13 @@ For ratio &lt; score_cutoff 0 is returned instead. Default is None,
 which deactivates this behaviour.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>similarity</strong> – similarity between s1 and s2 as a float between 0 and 1.0</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If prefix_weight is invalid</p>
 </dd>
 </dl>
@@ -350,21 +354,21 @@ which deactivates this behaviour.</p></li>
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.median" title="Permalink to this definition"></a></dt>
 <dd><p>Find an approximate generalized median string using greedy algorithm.</p>
 <p>You can optionally pass a weight for each string as the second
-argument.  The weights are interpreted as item multiplicities,
-although any non-negative real numbers are accepted.  Use them to
+argument. The weights are interpreted as item multiplicities,
+although any non-negative real numbers are accepted. Use them to
 improve computation speed when strings often appear multiple times
 in the sequence.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">median</span><span class="p">([</span><span class="s1">&#39;SpSm&#39;</span><span class="p">,</span> <span class="s1">&#39;mpamm&#39;</span><span class="p">,</span> <span class="s1">&#39;Spam&#39;</span><span class="p">,</span> <span class="s1">&#39;Spa&#39;</span><span class="p">,</span> <span class="s1">&#39;Sua&#39;</span><span class="p">,</span> <span class="s1">&#39;hSam&#39;</span><span class="p">])</span>
 <span class="go">&#39;Spam&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fixme</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Levnhtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leveshein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leenshten&#39;</span><span class="p">,</span>
-<span class="go">             &#39;Leveshtei&#39;, &#39;Lenshtein&#39;, &#39;Lvenstein&#39;,</span>
-<span class="go">             &#39;Levenhtin&#39;, &#39;evenshtei&#39;]</span>
+<span class="gp">... </span>         <span class="s1">&#39;Leveshtei&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lvenstein&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;Levenhtin&#39;</span><span class="p">,</span> <span class="s1">&#39;evenshtei&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">median</span><span class="p">(</span><span class="n">fixme</span><span class="p">)</span>
 <span class="go">&#39;Levenshtein&#39;</span>
 </pre></div>
 </div>
-<p>Hm.  Even a computer program can spell Levenshtein better than me.</p>
+<p>Hm. Even a computer program can spell Levenshtein better than me.</p>
 </dd></dl>
 
 </section>
@@ -383,8 +387,8 @@ may improve it further, though this is unlikely to happen unless the
 given string was not very similar to the actual generalized median.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fixme</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Levnhtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leveshein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leenshten&#39;</span><span class="p">,</span>
-<span class="go">             &#39;Leveshtei&#39;, &#39;Lenshtein&#39;, &#39;Lvenstein&#39;,</span>
-<span class="go">             &#39;Levenhtin&#39;, &#39;evenshtei&#39;]</span>
+<span class="gp">... </span>         <span class="s1">&#39;Leveshtei&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lvenstein&#39;</span><span class="p">,</span>
+<span class="gp">... </span>         <span class="s1">&#39;Levenhtin&#39;</span><span class="p">,</span> <span class="s1">&#39;evenshtei&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">median_improve</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="n">fixme</span><span class="p">)</span>
 <span class="go">&#39;enhtein&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">median_improve</span><span class="p">(</span><span class="n">median_improve</span><span class="p">(</span><span class="s1">&#39;spam&#39;</span><span class="p">,</span> <span class="n">fixme</span><span class="p">),</span> <span class="n">fixme</span><span class="p">)</span>
@@ -406,8 +410,8 @@ given string was not very similar to the actual generalized median.</p>
 string from the set; both speedwise and quality-wise.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fixme</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Levnhtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leveshein&#39;</span><span class="p">,</span> <span class="s1">&#39;Leenshten&#39;</span><span class="p">,</span>
-<span class="go">            &#39;Leveshtei&#39;, &#39;Lenshtein&#39;, &#39;Lvenstein&#39;,</span>
-<span class="go">            &#39;Levenhtin&#39;, &#39;evenshtei&#39;]</span>
+<span class="gp">... </span>        <span class="s1">&#39;Leveshtei&#39;</span><span class="p">,</span> <span class="s1">&#39;Lenshtein&#39;</span><span class="p">,</span> <span class="s1">&#39;Lvenstein&#39;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s1">&#39;Levenhtin&#39;</span><span class="p">,</span> <span class="s1">&#39;evenshtei&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">quickmedian</span><span class="p">(</span><span class="n">fixme</span><span class="p">)</span>
 <span class="go">&#39;Levnshein&#39;</span>
 </pre></div>
@@ -425,7 +429,7 @@ string from the set; both speedwise and quality-wise.</p>
 <p>The returned string is always one of the strings in the sequence.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">setmedian</span><span class="p">([</span><span class="s1">&#39;ehee&#39;</span><span class="p">,</span> <span class="s1">&#39;cceaes&#39;</span><span class="p">,</span> <span class="s1">&#39;chees&#39;</span><span class="p">,</span> <span class="s1">&#39;chreesc&#39;</span><span class="p">,</span>
-<span class="go">               &#39;chees&#39;, &#39;cheesee&#39;, &#39;cseese&#39;, &#39;chetese&#39;])</span>
+<span class="gp">... </span>           <span class="s1">&#39;chees&#39;</span><span class="p">,</span> <span class="s1">&#39;cheesee&#39;</span><span class="p">,</span> <span class="s1">&#39;cseese&#39;</span><span class="p">,</span> <span class="s1">&#39;chetese&#39;</span><span class="p">])</span>
 <span class="go">&#39;chees&#39;</span>
 </pre></div>
 </div>
@@ -439,13 +443,13 @@ string from the set; both speedwise and quality-wise.</p>
 <dt class="sig sig-object py" id="Levenshtein.seqratio">
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">seqratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strlist2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.seqratio" title="Permalink to this definition"></a></dt>
 <dd><p>Compute similarity ratio of two sequences of strings.</p>
-<p>This is like ratio(), but for string sequences.  A kind of ratio()
+<p>This is like ratio(), but for string sequences. A kind of ratio()
 is used to to measure the cost of item change operation for the
 strings.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqratio</span><span class="p">([</span><span class="s1">&#39;newspaper&#39;</span><span class="p">,</span> <span class="s1">&#39;litter bin&#39;</span><span class="p">,</span> <span class="s1">&#39;tinny&#39;</span><span class="p">,</span> <span class="s1">&#39;antelope&#39;</span><span class="p">],</span>
 <span class="gp">... </span>         <span class="p">[</span><span class="s1">&#39;caribou&#39;</span><span class="p">,</span> <span class="s1">&#39;sausage&#39;</span><span class="p">,</span> <span class="s1">&#39;gorn&#39;</span><span class="p">,</span> <span class="s1">&#39;woody&#39;</span><span class="p">])</span>
-<span class="go">0.215178...</span>
+<span class="go">0.215178</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -458,12 +462,12 @@ strings.</p>
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">setratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strlist1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strlist2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.setratio" title="Permalink to this definition"></a></dt>
 <dd><p>Compute similarity ratio of two strings sets (passed as sequences).</p>
 <p>The best match between any strings in the first set and the second
-set (passed as sequences) is attempted.  I.e., the order doesn’t
+set (passed as sequences) is attempted. I.e., the order doesn’t
 matter here.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">setratio</span><span class="p">([</span><span class="s1">&#39;newspaper&#39;</span><span class="p">,</span> <span class="s1">&#39;litter bin&#39;</span><span class="p">,</span> <span class="s1">&#39;tinny&#39;</span><span class="p">,</span> <span class="s1">&#39;antelope&#39;</span><span class="p">],</span>
-<span class="go">             [&#39;caribou&#39;, &#39;sausage&#39;, &#39;gorn&#39;, &#39;woody&#39;])</span>
-<span class="go">0.281845...</span>
+<span class="gp">... </span>         <span class="p">[</span><span class="s1">&#39;caribou&#39;</span><span class="p">,</span> <span class="s1">&#39;sausage&#39;</span><span class="p">,</span> <span class="s1">&#39;gorn&#39;</span><span class="p">,</span> <span class="s1">&#39;woody&#39;</span><span class="p">])</span>
+<span class="go">0.281845</span>
 </pre></div>
 </div>
 <p>No, even reordering doesn’t help the tinny words to match the
@@ -535,13 +539,13 @@ pass strings or their lengths, it doesn’t matter).</p>
 second (destination) string to the first (source).  It can be used
 with both editops and opcodes.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>edit_operations</strong> (<em>list</em><em>[</em><em>]</em>) – edit operations to invert</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>edit_operations</strong> – inverted edit operations</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list[]</p>
 </dd>
 </dl>
@@ -593,18 +597,18 @@ and adjusting the other blocks accordingly.</p>
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">matching_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edit_operations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.matching_blocks" title="Permalink to this definition"></a></dt>
 <dd><p>Find identical blocks in two strings.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>edit_operations</strong> (<em>list</em><em>[</em><em>]</em>) – editops or opcodes created for the source and destination string</p></li>
 <li><p><strong>source_string</strong> (<em>str</em><em> | </em><em>int</em>) – source string or the length of the source string</p></li>
 <li><p><strong>destination_string</strong> (<em>str</em><em> | </em><em>int</em>) – destination string or the length of the destination string</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>matching_blocks</strong> – List of triples with the same meaning as in SequenceMatcher’s
 get_matching_blocks() output.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list[]</p>
 </dd>
 </dl>
