@@ -7,6 +7,7 @@ Welcome to Levenshtein's documentation!
 =======================================
 
 A C extension module for fast computation of:
+
 - Levenshtein (edit) distance and edit sequence manipulation
 - string similarity
 - approximate median strings, and generally string averaging
