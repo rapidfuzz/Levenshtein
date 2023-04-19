@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.21.0
+#### Changed
+- relax dependency requirement on ``rapidfuzz``
+
 ### v0.20.9
 #### Fixed
 - fix function signature of `get_requires_for_build_wheel`
