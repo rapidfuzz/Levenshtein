@@ -42,7 +42,7 @@ elseif("${Python_INTERPRETER_ID}" STREQUAL "PyPy")
     message(STATUS "Corrected SOABI: ${Python_SOABI}")
 endif()
 
-find_package(rapidfuzz 1.7.0 QUIET)
+find_package(rapidfuzz 2.0.0 QUIET)
 if (rapidfuzz_FOUND)
     message(STATUS "Using system supplied version of rapidfuzz-cpp")
 else()

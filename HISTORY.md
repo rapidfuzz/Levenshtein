@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.21.1
+#### Changed
+- upgrade ``rapidfuzz-cpp`` to ``v2.0.0``
+
 ### v0.21.0
 #### Changed
 - relax dependency requirement on ``rapidfuzz``
@@ -93,7 +97,7 @@
 * Use a faster editops implementation provided by RapidFuzz
 * Reduce code duplication
 * reuse implementations from rapidfuzz-cpp
-* Transition to scikit-build 
+* Transition to scikit-build
 
 ### v0.17.0
 * Removed support for Python 3.5
