@@ -81,10 +81,13 @@ jobs:
 
       - uses: actions/setup-python@v2
 
+      - name: Copy wheel
+        run: cp dist/*.tar.gz rapidfuzz.tar.gz
+
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.10.1
+        uses: pypa/cibuildwheel@v2.13.1
         with:
-          package-dir: dist/*.tar.gz
+          package-dir: rapidfuzz.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
@@ -141,10 +144,13 @@ jobs:
 
       - uses: actions/setup-python@v2
 
+      - name: Copy wheel
+        run: cp dist/*.tar.gz rapidfuzz.tar.gz
+
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.10.1
+        uses: pypa/cibuildwheel@v2.13.1
         with:
-          package-dir: dist/*.tar.gz
+          package-dir: rapidfuzz.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
@@ -194,10 +200,13 @@ jobs:
       - uses: docker/setup-qemu-action@v1
         name: Set up QEMU
 
+      - name: Copy wheel
+        run: cp dist/*.tar.gz rapidfuzz.tar.gz
+
       - name: Build wheel
-        uses: pypa/cibuildwheel@v2.10.1
+        uses: pypa/cibuildwheel@v2.13.1
         with:
-          package-dir: dist/*.tar.gz
+          package-dir: rapidfuzz.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
