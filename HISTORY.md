@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.22.0
+#### Changed
+- Added support for Python 3.12
+
 ### v0.21.1
 #### Changed
 - upgrade ``rapidfuzz-cpp`` to ``v2.0.0``
@@ -36,7 +40,7 @@
 
 ### v0.20.3
 #### Changed
-- Added support for Python3.11
+- Added support for Python 3.11
 
 ### v0.20.2
 #### Fixed
