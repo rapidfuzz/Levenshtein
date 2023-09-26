@@ -2,7 +2,11 @@
 
 ### v0.22.0
 #### Changed
-- Added support for Python 3.12
+- add support for Python 3.12
+- drop support for Python 3.6
+
+#### Added
+- add wheels for windows arm64
 
 ### v0.21.1
 #### Changed
