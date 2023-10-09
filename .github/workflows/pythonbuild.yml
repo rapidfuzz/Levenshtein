@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest hypothesis mypy Cython==3.0.2
+          pip install pytest hypothesis mypy Cython==3.0.3
 
       # The cythonized files allow installation from the sdist without cython
       - name: Generate cython

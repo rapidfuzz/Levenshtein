@@ -4,6 +4,7 @@
 #### Changed
 - added keyword argument `pad` to Hamming distance. This controls whether sequences of different
   length should be padded or lead to a `ValueError`
+- upgrade to `Cython==3.0.3`
 
 ### v0.22.0
 #### Changed
