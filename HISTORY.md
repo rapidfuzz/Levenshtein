@@ -1,5 +1,10 @@
 ## Changelog
 
+### v0.23.0
+#### Changed
+- added keyword argument `pad` to Hamming distance. This controls whether sequences of different
+  length should be padded or lead to a `ValueError`
+
 ### v0.22.0
 #### Changed
 - add support for Python 3.12
