@@ -76,6 +76,7 @@ def hamming(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
+    pad: bool = True,
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
 ) -> int: ...
