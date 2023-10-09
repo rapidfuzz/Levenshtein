@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Levenshtein module &mdash; Levenshtein 0.22.0 documentation</title>
+  <title>Levenshtein module &mdash; Levenshtein 0.23.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -255,7 +255,7 @@ a more efficient implementation:</p>
 <h2>hamming<a class="headerlink" href="#hamming" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="Levenshtein.hamming">
-<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.hamming" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.hamming" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the Hamming distance between two strings.
 The hamming distance is defined as the number of positions
 where the two strings differ. It describes the minimum
@@ -265,6 +265,9 @@ amount of substitutions required to transform s1 into s2.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s1</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – First string to compare.</p></li>
 <li><p><strong>s2</strong> (<em>Sequence</em><em>[</em><em>Hashable</em><em>]</em>) – Second string to compare.</p></li>
+<li><p><strong>pad</strong> (<em>bool</em><em>, </em><em>optional</em>) – should strings be padded if there is a length difference.
+If pad is False and strings have a different length
+a ValueError is thrown instead. Default is True.</p></li>
 <li><p><strong>processor</strong> (<em>callable</em><em>, </em><em>optional</em>) – Optional callable that is used to preprocess the strings before
 comparing them. Default is None, which deactivates this behaviour.</p></li>
 <li><p><strong>score_cutoff</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Maximum distance between s1 and s2, that is
