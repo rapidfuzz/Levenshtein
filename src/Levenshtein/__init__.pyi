@@ -64,6 +64,7 @@ def distance(
     weights: Optional[Tuple[int, int, int]] = (1, 1, 1),
     processor: Optional[Callable] = None,
     score_cutoff: Optional[float] = None,
+    score_hint: Optional[float] = None,
 ) -> int: ...
 def ratio(
     s1: Sequence[Hashable],

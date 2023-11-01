@@ -101,6 +101,9 @@ score_cutoff : int, optional
     considered as a result. If the distance is bigger than score_cutoff,
     score_cutoff + 1 is returned instead. Default is None, which deactivates
     this behaviour.
+score_hint : int, optional
+    Expected distance between s1 and s2. This is used to select a
+    faster implementation. Default is None, which deactivates this behaviour.
 
 Returns
 -------
