@@ -5,7 +5,7 @@ with open('README.md', 'rt', encoding="utf8") as f:
 
 setup(
     name="Levenshtein",
-    version="0.23.0",
+    version="0.24.0",
     url="https://github.com/maxbachmann/Levenshtein",
     author="Max Bachmann",
     install_requires=["rapidfuzz >= 3.1.0, < 4.0.0"],
@@ -18,7 +18,6 @@ setup(
     license_file = "COPYING",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -32,5 +31,5 @@ setup(
     package_data={
         "Levenshtein": ["*.pyi", "py.typed"]
     },
-    python_requires=">=3.7"
+    python_requires=">=3.8"
 )
