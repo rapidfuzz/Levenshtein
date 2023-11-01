@@ -16,7 +16,6 @@ subclasses).
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.24.0"
 
 import rapidfuzz.distance.Levenshtein as _Levenshtein
 import rapidfuzz.distance.Indel as _Indel
@@ -65,7 +64,9 @@ __all__ = [
 ]
 
 
-def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None, score_hint=None):
+def distance(
+    s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None, score_hint=None
+):
     """
     Calculates the minimum number of insertions, deletions, and substitutions
     required to change one sequence into the other according to Levenshtein with custom
@@ -124,7 +125,12 @@ def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None, sc
     3
     """
     return _Levenshtein.distance(
-        s1, s2, weights=weights, processor=processor, score_cutoff=score_cutoff, score_hint=score_hint
+        s1,
+        s2,
+        weights=weights,
+        processor=processor,
+        score_cutoff=score_cutoff,
+        score_hint=score_hint,
     )
 
 
@@ -278,6 +284,7 @@ def jaro_winkler(
         score_cutoff=score_cutoff,
     )
 
+
 # assign attributes to function. This allows rapidfuzz to call them more efficiently
 # we can't directly copy the functions + replace the docstrings, since this leads to
 # crashes on PyPy
@@ -293,16 +300,17 @@ hamming._RF_ScorerPy = _Hamming.distance._RF_ScorerPy
 jaro._RF_ScorerPy = _Jaro.similarity._RF_ScorerPy
 jaro_winkler._RF_ScorerPy = _JaroWinkler.similarity._RF_ScorerPy
 
-if hasattr('_RF_Scorer', _Levenshtein.distance):
+if hasattr("_RF_Scorer", _Levenshtein.distance):
     distance._RF_Scorer = _Levenshtein.distance._RF_Scorer
-if hasattr('_RF_Scorer', _Indel.normalized_similarity):
+if hasattr("_RF_Scorer", _Indel.normalized_similarity):
     ratio._RF_Scorer = _Indel.normalized_similarity._RF_Scorer
-if hasattr('_RF_Scorer', _Hamming.distance):
+if hasattr("_RF_Scorer", _Hamming.distance):
     hamming._RF_Scorer = _Hamming.distance._RF_Scorer
-if hasattr('_RF_Scorer', _Jaro.similarity):
+if hasattr("_RF_Scorer", _Jaro.similarity):
     jaro._RF_Scorer = _Jaro.similarity._RF_Scorer
-if hasattr('_RF_Scorer', _JaroWinkler.similarity):
+if hasattr("_RF_Scorer", _JaroWinkler.similarity):
     jaro_winkler._RF_Scorer = _JaroWinkler.similarity._RF_Scorer
+
 
 def editops(*args):
     """
