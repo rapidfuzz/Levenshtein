@@ -182,7 +182,7 @@ def ratio(s1, s2, *, processor=None, score_cutoff=None):
     )
 
 
-def hamming(s1, s2, *, processor=None, score_cutoff=None):
+def hamming(s1, s2, *, pad=True, processor=None, score_cutoff=None):
     """
     Calculates the Hamming distance between two strings.
     The hamming distance is defined as the number of positions
@@ -195,6 +195,10 @@ def hamming(s1, s2, *, processor=None, score_cutoff=None):
         First string to compare.
     s2 : Sequence[Hashable]
         Second string to compare.
+    pad : bool, optional
+       should strings be padded if there is a length difference.
+       If pad is False and strings have a different length
+       a ValueError is thrown instead. Default is True.
     processor: callable, optional
         Optional callable that is used to preprocess the strings before
         comparing them. Default is None, which deactivates this behaviour.
@@ -214,7 +218,7 @@ def hamming(s1, s2, *, processor=None, score_cutoff=None):
     ValueError
         If s1 and s2 have a different length
     """
-    return _Hamming.distance(s1, s2, processor=processor, score_cutoff=score_cutoff)
+    return _Hamming.distance(s1, s2, pad=pad, processor=processor, score_cutoff=score_cutoff)
 
 
 def jaro(s1, s2, *, processor=None, score_cutoff=None) -> float:
