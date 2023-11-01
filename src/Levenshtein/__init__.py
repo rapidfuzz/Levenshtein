@@ -300,15 +300,15 @@ hamming._RF_ScorerPy = _Hamming.distance._RF_ScorerPy
 jaro._RF_ScorerPy = _Jaro.similarity._RF_ScorerPy
 jaro_winkler._RF_ScorerPy = _JaroWinkler.similarity._RF_ScorerPy
 
-if hasattr("_RF_Scorer", _Levenshtein.distance):
+if hasattr(_Levenshtein.distance, "_RF_Scorer"):
     distance._RF_Scorer = _Levenshtein.distance._RF_Scorer
-if hasattr("_RF_Scorer", _Indel.normalized_similarity):
+if hasattr(_Indel.normalized_similarity, "_RF_Scorer"):
     ratio._RF_Scorer = _Indel.normalized_similarity._RF_Scorer
-if hasattr("_RF_Scorer", _Hamming.distance):
+if hasattr(_Hamming.distance, "_RF_Scorer"):
     hamming._RF_Scorer = _Hamming.distance._RF_Scorer
-if hasattr("_RF_Scorer", _Jaro.similarity):
+if hasattr(_Jaro.similarity, "_RF_Scorer"):
     jaro._RF_Scorer = _Jaro.similarity._RF_Scorer
-if hasattr("_RF_Scorer", _JaroWinkler.similarity):
+if hasattr(_JaroWinkler.similarity, "_RF_Scorer"):
     jaro_winkler._RF_Scorer = _JaroWinkler.similarity._RF_Scorer
 
 
