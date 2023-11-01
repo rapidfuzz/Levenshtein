@@ -16,7 +16,6 @@ subclasses).
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.23.0"
 
 import rapidfuzz.distance.Levenshtein as _Levenshtein
 import rapidfuzz.distance.Indel as _Indel
@@ -37,6 +36,12 @@ from Levenshtein.levenshtein_cpp import (
     seqratio,
 )
 
+import importlib.metadata
+
+try:
+    __version__: str = importlib.metadata.version(__package__ or __name__)
+except importlib.metadata.PackageNotFoundError:
+    __version__: str = "0.0.0"
 
 def _copy_func(f, name, doc):
     """Based on https://stackoverflow.com/a/13503277/11335032"""
@@ -139,7 +144,7 @@ distance = _copy_func(_Levenshtein.distance, "distance", _distance_doc)
 distance._RF_OriginalScorer = distance
 
 
-ratio_doc = """
+_ratio_doc = """
 Calculates a normalized indel similarity in the range [0, 1].
 This is calculated as ``1 - normalized_distance``
 
@@ -181,10 +186,10 @@ When a different processor is used s1 and s2 do not have to be strings
 >>> ratio(["lewenstein"], ["levenshtein"], processor=lambda s: s[0])
 0.8571428571428572
 """
-ratio = _copy_func(_Indel.normalized_similarity, "ratio", ratio_doc)
+ratio = _copy_func(_Indel.normalized_similarity, "ratio", _ratio_doc)
 ratio._RF_OriginalScorer = ratio
 
-hamming_doc = """
+_hamming_doc = """
 Calculates the Hamming distance between two strings.
 The hamming distance is defined as the number of positions
 where the two strings differ. It describes the minimum
@@ -219,76 +224,66 @@ Raises
 ValueError
     If s1 and s2 have a different length
 """
-hamming = _copy_func(_Hamming.distance, "hamming", hamming_doc)
+hamming = _copy_func(_Hamming.distance, "hamming", _hamming_doc)
 hamming._RF_OriginalScorer = hamming
 
+_jaro_doc = """
+Calculates the jaro similarity
 
-def jaro(s1, s2, *, processor=None, score_cutoff=None) -> float:
-    """
-    Calculates the jaro similarity
+Parameters
+----------
+s1 : Sequence[Hashable]
+    First string to compare.
+s2 : Sequence[Hashable]
+    Second string to compare.
+processor: callable, optional
+    Optional callable that is used to preprocess the strings before
+    comparing them. Default is None, which deactivates this behaviour.
+score_cutoff : float, optional
+    Optional argument for a score threshold as a float between 0 and 1.0.
+    For ratio < score_cutoff 0 is returned instead. Default is None,
+    which deactivates this behaviour.
 
-    Parameters
-    ----------
-    s1 : Sequence[Hashable]
-        First string to compare.
-    s2 : Sequence[Hashable]
-        Second string to compare.
-    processor: callable, optional
-        Optional callable that is used to preprocess the strings before
-        comparing them. Default is None, which deactivates this behaviour.
-    score_cutoff : float, optional
-        Optional argument for a score threshold as a float between 0 and 1.0.
-        For ratio < score_cutoff 0 is returned instead. Default is None,
-        which deactivates this behaviour.
+Returns
+-------
+similarity : float
+    similarity between s1 and s2 as a float between 0 and 1.0
+"""
+jaro = _copy_func(_Jaro.similarity, "jaro", _jaro_doc)
+jaro._RF_OriginalScorer = jaro
 
-    Returns
-    -------
-    similarity : float
-        similarity between s1 and s2 as a float between 0 and 1.0
-    """
-    return _Jaro.similarity(s1, s2, processor=processor, score_cutoff=score_cutoff)
+_jaro_winkler_doc = """
+Calculates the jaro winkler similarity
 
+Parameters
+----------
+s1 : Sequence[Hashable]
+    First string to compare.
+s2 : Sequence[Hashable]
+    Second string to compare.
+prefix_weight : float, optional
+    Weight used for the common prefix of the two strings.
+    Has to be between 0 and 0.25. Default is 0.1.
+processor: callable, optional
+    Optional callable that is used to preprocess the strings before
+    comparing them. Default is None, which deactivates this behaviour.
+score_cutoff : float, optional
+    Optional argument for a score threshold as a float between 0 and 1.0.
+    For ratio < score_cutoff 0 is returned instead. Default is None,
+    which deactivates this behaviour.
 
-def jaro_winkler(
-    s1, s2, *, prefix_weight=0.1, processor=None, score_cutoff=None
-) -> float:
-    """
-    Calculates the jaro winkler similarity
+Returns
+-------
+similarity : float
+    similarity between s1 and s2 as a float between 0 and 1.0
 
-    Parameters
-    ----------
-    s1 : Sequence[Hashable]
-        First string to compare.
-    s2 : Sequence[Hashable]
-        Second string to compare.
-    prefix_weight : float, optional
-        Weight used for the common prefix of the two strings.
-        Has to be between 0 and 0.25. Default is 0.1.
-    processor: callable, optional
-        Optional callable that is used to preprocess the strings before
-        comparing them. Default is None, which deactivates this behaviour.
-    score_cutoff : float, optional
-        Optional argument for a score threshold as a float between 0 and 1.0.
-        For ratio < score_cutoff 0 is returned instead. Default is None,
-        which deactivates this behaviour.
-
-    Returns
-    -------
-    similarity : float
-        similarity between s1 and s2 as a float between 0 and 1.0
-
-    Raises
-    ------
-    ValueError
-        If prefix_weight is invalid
-    """
-    return _JaroWinkler.similarity(
-        s1,
-        s2,
-        prefix_weight=prefix_weight,
-        processor=processor,
-        score_cutoff=score_cutoff,
-    )
+Raises
+------
+ValueError
+    If prefix_weight is invalid
+"""
+jaro_winkler = _copy_func(_JaroWinkler.similarity, "jaro_winkler", _jaro_winkler_doc)
+jaro_winkler._RF_OriginalScorer = jaro_winkler
 
 
 def editops(*args):
