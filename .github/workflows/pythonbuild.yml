@@ -56,11 +56,9 @@ jobs:
       fail-fast: false
       matrix:
         arch: [auto32, auto64, ARM64]
-        python_tag: ["cp37-*", "cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp37-*", "pp38-*", "pp39-*"]
+        python_tag: ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp38-*", "pp39-*"]
         exclude:
           # PyPy only supports x86_64 on Windows
-          - arch: auto32
-            python_tag: "pp37-*"
           - arch: auto32
             python_tag: "pp38-*"
           - arch: auto32
@@ -68,13 +66,9 @@ jobs:
 
           # ARM64 only supported only supported on cpython >= 3.9
           - arch: ARM64
-            python_tag: "pp37-*"
-          - arch: ARM64
             python_tag: "pp38-*"
           - arch: ARM64
             python_tag: "pp39-*"
-          - arch: ARM64
-            python_tag: "cp37-*"
           - arch: ARM64
             python_tag: "cp38-*"
 
@@ -115,23 +109,13 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64, arm64, universal2]
-        python_tag: ["cp37-*", "cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp37-*", "pp38-*", "pp39-*"]
+        python_tag: ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp38-*", "pp39-*"]
         exclude:
-          # MacOS Arm only supported since Python 3.8
-          - arch: arm64
-            python_tag: "cp37-*"
-          - arch: universal2
-            python_tag: "cp37-*"
-
           # PyPy not supported on MacOS Arm
-          - arch: arm64
-            python_tag: "pp37-*"
           - arch: arm64
             python_tag: "pp38-*"
           - arch: arm64
             python_tag: "pp39-*"
-          - arch: universal2
-            python_tag: "pp37-*"
           - arch: universal2
             python_tag: "pp38-*"
           - arch: universal2
@@ -174,17 +158,13 @@ jobs:
       fail-fast: false
       matrix:
         arch: [auto, aarch64, ppc64le, s390x]
-        python_tag: ["cp37-*", "cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp37-*", "pp38-*", "pp39-*"]
+        python_tag: ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp38-*", "pp39-*"]
         exclude:
           # PyPy builds not supported on ppc64le / s390x
-          - arch: ppc64le
-            python_tag: "pp37-*"
           - arch: ppc64le
             python_tag: "pp38-*"
           - arch: ppc64le
             python_tag: "pp39-*"
-          - arch: s390x
-            python_tag: "pp37-*"
           - arch: s390x
             python_tag: "pp38-*"
           - arch: s390x
