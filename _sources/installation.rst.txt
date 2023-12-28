@@ -22,6 +22,6 @@ repository which might be useful when you want to work on it:
 
 .. code-block:: sh
 
-   git clone https://github.com/maxbachmann/Levenshtein.git
+   git clone https://github.com/rapidfuzz/Levenshtein.git
    cd Levenshtein
    pip install .
