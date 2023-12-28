@@ -6,10 +6,10 @@ with open('README.md', 'rt', encoding="utf8") as f:
 setup(
     name="Levenshtein",
     version="0.24.0",
-    url="https://github.com/maxbachmann/Levenshtein",
+    url="https://github.com/rapidfuzz/Levenshtein",
     author="Max Bachmann",
     install_requires=["rapidfuzz >= 3.1.0, < 4.0.0"],
-    author_email="contact@maxbachmann.de",
+    author_email="pypi@maxbachmann.de",
     description="Python extension for computing string edit distances and similarities.",
     long_description=readme,
     long_description_content_type="text/markdown",
