@@ -213,7 +213,9 @@ tuple.</p>
 <dt class="sig sig-object py" id="Levenshtein.ratio">
 <span class="sig-prename descclassname"><span class="pre">Levenshtein.</span></span><span class="sig-name descname"><span class="pre">ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Levenshtein.ratio" title="Link to this definition"></a></dt>
 <dd><p>Calculates a normalized indel similarity in the range [0, 1].
-This is calculated as <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">normalized_distance</span></code></p>
+The indel distance calculates the minimum number of insertions and deletions
+required to change one sequence into the other.</p>
+<p>This is calculated as <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">(indel</span> <span class="pre">/</span> <span class="pre">max(len1,</span> <span class="pre">len2))</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
