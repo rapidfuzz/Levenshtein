@@ -137,7 +137,10 @@ def distance(
 def ratio(s1, s2, *, processor=None, score_cutoff=None):
     """
     Calculates a normalized indel similarity in the range [0, 1].
-    This is calculated as ``1 - normalized_distance``
+    The indel distance calculates the minimum number of insertions and deletions
+    required to change one sequence into the other.
+    
+    This is calculated as ``1 - (indel / max(len1, len2))``
 
     Parameters
     ----------
