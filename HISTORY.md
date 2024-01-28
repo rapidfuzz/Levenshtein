@@ -1,5 +1,10 @@
 ## Changelog
 
+### v0.24.0
+#### Changed
+- upgrade ``rapidfuzz-cpp`` to ``v3.0.0``
+- drop support for Python 3.7
+
 ### v0.23.0
 #### Changed
 - added keyword argument `pad` to Hamming distance. This controls whether sequences of different
