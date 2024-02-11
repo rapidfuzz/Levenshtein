@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Hashable, Sequence, overload
+from collections.abc import Callable, Hashable, Sequence, overload
 
 __author__: str
 __license__: str
