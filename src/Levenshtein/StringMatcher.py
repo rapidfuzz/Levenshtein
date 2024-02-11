@@ -1,5 +1,8 @@
-from Levenshtein import *
+from __future__ import annotations
+
 from warnings import warn
+
+from Levenshtein import distance, editops, matching_blocks, opcodes, ratio
 
 
 class StringMatcher:
@@ -11,9 +14,9 @@ class StringMatcher:
 
     def __init__(self, isjunk=None, seq1="", seq2="", autojunk=False):
         if isjunk:
-            warn("isjunk NOT implemented, it will be ignored")
+            warn("isjunk NOT implemented, it will be ignored", stacklevel=1)
         if autojunk:
-            warn("autojunk NOT implemented, it will be ignored")
+            warn("autojunk NOT implemented, it will be ignored", stacklevel=1)
         self._str1, self._str2 = seq1, seq2
         self._reset_cache()
 
@@ -47,9 +50,7 @@ class StringMatcher:
 
     def get_matching_blocks(self):
         if not self._matching_blocks:
-            self._matching_blocks = matching_blocks(
-                self.get_opcodes(), self._str1, self._str2
-            )
+            self._matching_blocks = matching_blocks(self.get_opcodes(), self._str1, self._str2)
         return self._matching_blocks
 
     def ratio(self):

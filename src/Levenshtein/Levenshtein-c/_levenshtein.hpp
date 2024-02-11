@@ -60,7 +60,7 @@ static inline bool is_valid_string(PyObject* py_str)
     if (PyBytes_Check(py_str))
         is_string = true;
     else if (PyUnicode_Check(py_str)) {
-        // PEP 623 deprecates legacy strings and therefor
+        // PEP 623 deprecates legacy strings and therefore
         // deprecates e.g. PyUnicode_READY in Python 3.10
 #if PY_VERSION_HEX < PYTHON_VERSION(3, 10, 0)
         if (PyUnicode_READY(py_str))
@@ -580,7 +580,7 @@ static inline double lev_edit_seq_distance(const std::vector<RF_String>& strings
     if (strings1_start == strings1_end) return (double)std::distance(strings2_start, strings2_end);
     if (strings2_start == strings2_end) return (double)std::distance(strings1_start, strings1_end);
 
-    /* initalize first row */
+    /* initialize first row */
     size_t n1 = std::distance(strings1_start, strings1_end);
     size_t n2 = std::distance(strings2_start, strings2_end);
     auto row = std::make_unique<double[]>(n2 + 1);

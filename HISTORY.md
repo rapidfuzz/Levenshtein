@@ -262,5 +262,4 @@ v0.8.0
       set was added
 
 ### v0.1.0
-* Inital release
-
+* Initial release

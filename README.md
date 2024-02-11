@@ -3,7 +3,7 @@
 <p>
   <a href="https://github.com/rapidfuzz/Levenshtein/actions">
     <img src="https://github.com/rapidfuzz/Levenshtein/workflows/Build/badge.svg"
-         alt="Continous Integration">
+         alt="Continuous Integration">
   </a>
   <a href="https://pypi.org/project/levenshtein/">
     <img src="https://img.shields.io/pypi/v/levenshtein"

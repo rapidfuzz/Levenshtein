@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import Levenshtein
 
 
@@ -28,10 +30,7 @@ def test_documented():
     assert Levenshtein.median(fixme) == "Levenshtein"
     assert Levenshtein.quickmedian(fixme) == "Levnshein"
     assert Levenshtein.median_improve("spam", fixme) == "enhtein"
-    assert (
-        Levenshtein.median_improve(Levenshtein.median_improve("spam", fixme), fixme)
-        == "Levenshtein"
-    )
+    assert Levenshtein.median_improve(Levenshtein.median_improve("spam", fixme), fixme) == "Levenshtein"
     assert (
         Levenshtein.setmedian(
             [

@@ -112,13 +112,13 @@ repos:
   hooks:
   - id: codespell
     exclude: ".*/test_.*.py"
-    args: ["-x", ".codespell-ignore-lines"]
+    #args: ["-x", ".codespell-ignore-lines"]
 
 # Check for common shell mistakes
-- repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: "v0.9.0.2"
-  hooks:
-  - id: shellcheck
+#- repo: https://github.com/shellcheck-py/shellcheck-py
+#  rev: "v0.9.0.6"
+#  hooks:
+#  - id: shellcheck
 
 # Disallow some common capitalization mistakes
 - repo: local

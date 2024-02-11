@@ -13,30 +13,33 @@ It supports both normal and Unicode strings, but can't mix them, all
 arguments to a function (method) have to be of the same type (or its
 subclasses).
 """
+from __future__ import annotations
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
 
-import rapidfuzz.distance.Levenshtein as _Levenshtein
-import rapidfuzz.distance.Indel as _Indel
+import importlib.metadata
+
 import rapidfuzz.distance.Hamming as _Hamming
+import rapidfuzz.distance.Indel as _Indel
 import rapidfuzz.distance.Jaro as _Jaro
 import rapidfuzz.distance.JaroWinkler as _JaroWinkler
+import rapidfuzz.distance.Levenshtein as _Levenshtein
 from rapidfuzz.distance import (
     Editops as _Editops,
+)
+from rapidfuzz.distance import (
     Opcodes as _Opcodes,
 )
 
 from Levenshtein.levenshtein_cpp import (
-    quickmedian,
     median,
     median_improve,
+    quickmedian,
+    seqratio,
     setmedian,
     setratio,
-    seqratio,
 )
-
-import importlib.metadata
 
 try:
     __version__: str = importlib.metadata.version(__package__ or __name__)
@@ -64,9 +67,7 @@ __all__ = [
 ]
 
 
-def distance(
-    s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None, score_hint=None
-):
+def distance(s1, s2, *, weights=(1, 1, 1), processor=None, score_cutoff=None, score_hint=None):
     """
     Calculates the minimum number of insertions, deletions, and substitutions
     required to change one sequence into the other according to Levenshtein with custom
@@ -139,7 +140,7 @@ def ratio(s1, s2, *, processor=None, score_cutoff=None):
     Calculates a normalized indel similarity in the range [0, 1].
     The indel distance calculates the minimum number of insertions and deletions
     required to change one sequence into the other.
-    
+
     This is calculated as ``1 - (distance / (len1 + len2))``
 
     Parameters
@@ -180,9 +181,7 @@ def ratio(s1, s2, *, processor=None, score_cutoff=None):
     >>> ratio(["lewenstein"], ["levenshtein"], processor=lambda s: s[0])
     0.8571428571428572
     """
-    return _Indel.normalized_similarity(
-        s1, s2, processor=processor, score_cutoff=score_cutoff
-    )
+    return _Indel.normalized_similarity(s1, s2, processor=processor, score_cutoff=score_cutoff)
 
 
 def hamming(s1, s2, *, pad=True, processor=None, score_cutoff=None):
@@ -250,9 +249,7 @@ def jaro(s1, s2, *, processor=None, score_cutoff=None) -> float:
     return _Jaro.similarity(s1, s2, processor=processor, score_cutoff=score_cutoff)
 
 
-def jaro_winkler(
-    s1, s2, *, prefix_weight=0.1, processor=None, score_cutoff=None
-) -> float:
+def jaro_winkler(s1, s2, *, prefix_weight=0.1, processor=None, score_cutoff=None) -> float:
     """
     Calculates the jaro winkler similarity
 
@@ -329,7 +326,7 @@ def editops(*args):
     The result is a list of triples (operation, spos, dpos), where
     operation is one of 'equal', 'replace', 'insert', or 'delete';  spos
     and dpos are position of characters in the first (source) and the
-    second (destination) strings.  These are operations on signle
+    second (destination) strings.  These are operations on single
     characters.  In fact the returned list doesn't contain the 'equal',
     but all the related functions accept both lists with and without
     'equal's.
@@ -433,11 +430,7 @@ def matching_blocks(edit_operations, source_string, destination_string):
     'ees'
     """
     len1 = source_string if isinstance(source_string, int) else len(source_string)
-    len2 = (
-        destination_string
-        if isinstance(destination_string, int)
-        else len(destination_string)
-    )
+    len2 = destination_string if isinstance(destination_string, int) else len(destination_string)
 
     if not edit_operations or len(edit_operations[0]) == 3:
         return _Editops(edit_operations, len1, len2).as_matching_blocks()
@@ -480,13 +473,9 @@ def apply_edit(edit_operations, source_string, destination_string):
     len2 = len(destination_string)
 
     if len(edit_operations[0]) == 3:
-        return _Editops(edit_operations, len1, len2).apply(
-            source_string, destination_string
-        )
+        return _Editops(edit_operations, len1, len2).apply(source_string, destination_string)
 
-    return _Opcodes(edit_operations, len1, len2).apply(
-        source_string, destination_string
-    )
+    return _Opcodes(edit_operations, len1, len2).apply(source_string, destination_string)
 
 
 def subtract_edit(edit_operations, subsequence):

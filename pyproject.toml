@@ -78,6 +78,7 @@ extend-ignore = [
   "E501",   # Line too long
   "PT004",  # Use underscore for non-returning fixture (use usefixture instead)
   "PTH123", # use pathlib instead of builtin open
+  "PLC1901", # simply not always correct
 ]
 target-version = "py38"
 src = ["src"]

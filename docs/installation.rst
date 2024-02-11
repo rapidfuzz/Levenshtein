@@ -1,12 +1,12 @@
 Installation
 ============
 
-The recommended method to install Levenshtein is by using `pip` (the Python package manager)
+The recommended method to install Levenshtein is by using ``pip`` (the Python package manager)
 
 using pip
 ---------
 
-Levenshtein can be installed with `pip`:
+Levenshtein can be installed with ``pip``:
 
 .. code-block:: sh
 

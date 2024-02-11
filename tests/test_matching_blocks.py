@@ -1,5 +1,8 @@
-from Levenshtein import *
+from __future__ import annotations
+
 from rapidfuzz.distance import MatchingBlock
+
+from Levenshtein import editops, matching_blocks
 
 
 def test_simple():
