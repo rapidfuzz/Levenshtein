@@ -1,13 +1,13 @@
-from typing import Callable, Hashable, List, Sequence, Tuple, Union, Optional, overload
+from typing import Callable, Hashable, Sequence, overload
 
 __author__: str
 __license__: str
 __version__: str
 
-_EditopsList = List[Tuple[str, int, int]]
-_OpcodesList = List[Tuple[str, int, int, int, int]]
-_MatchingBlocks = List[Tuple[int, int, int]]
-_AnyEditops = Union[_EditopsList, _OpcodesList]
+_EditopsList = list[tuple[str, int, int]]
+_OpcodesList = list[tuple[str, int, int, int, int]]
+_MatchingBlocks = list[tuple[int, int, int]]
+_AnyEditops = _EditopsList | _OpcodesList
 
 def inverse(edit_operations: list) -> list: ...
 @overload
@@ -15,21 +15,21 @@ def editops(s1: Sequence[Hashable], s2: Sequence[Hashable]) -> _EditopsList: ...
 @overload
 def editops(
     ops: _AnyEditops,
-    s1: Union[Sequence[Hashable], int],
-    s2: Union[Sequence[Hashable], int],
+    s1: Sequence[Hashable] | int,
+    s2: Sequence[Hashable] | int,
 ) -> _EditopsList: ...
 @overload
 def opcodes(s1: Sequence[Hashable], s2: Sequence[Hashable]) -> _OpcodesList: ...
 @overload
 def opcodes(
     ops: _AnyEditops,
-    s1: Union[Sequence[Hashable], int],
-    s2: Union[Sequence[Hashable], int],
+    s1: Sequence[Hashable] | int,
+    s2: Sequence[Hashable] | int,
 ) -> _OpcodesList: ...
 def matching_blocks(
     edit_operations: _AnyEditops,
-    source_string: Union[Sequence[Hashable], int],
-    destination_string: Union[Sequence[Hashable], int],
+    source_string: Sequence[Hashable] | int,
+    destination_string: Sequence[Hashable] | int,
 ) -> _MatchingBlocks: ...
 def subtract_edit(
     edit_operations: _EditopsList, subsequence: _EditopsList
@@ -38,61 +38,61 @@ def apply_edit(
     edit_operations: _AnyEditops, source_string: str, destination_string: str
 ) -> str: ...
 def median(
-    strlist: List[Union[str, bytes]], wlist: Optional[List[float]] = None
+    strlist: list[str | bytes], wlist: list[float] | None = None
 ) -> str: ...
 def quickmedian(
-    strlist: List[Union[str, bytes]], wlist: Optional[List[float]] = None
+    strlist: list[str | bytes], wlist: list[float] | None = None
 ) -> str: ...
 def median_improve(
-    string: Union[str, bytes],
-    strlist: List[Union[str, bytes]],
-    wlist: Optional[List[float]] = None,
+    string: str | bytes,
+    strlist: list[str | bytes],
+    wlist: list[float] | None = None,
 ) -> str: ...
 def setmedian(
-    strlist: List[Union[str, bytes]], wlist: Optional[List[float]] = None
+    strlist: list[str | bytes], wlist: list[float] | None = None
 ) -> str: ...
 def setratio(
-    strlist1: List[Union[str, bytes]], strlist2: List[Union[str, bytes]]
+    strlist1: list[str | bytes], strlist2: list[str | bytes]
 ) -> float: ...
 def seqratio(
-    strlist1: List[Union[str, bytes]], strlist2: List[Union[str, bytes]]
+    strlist1: list[str | bytes], strlist2: list[str | bytes]
 ) -> float: ...
 def distance(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    weights: Optional[Tuple[int, int, int]] = (1, 1, 1),
-    processor: Optional[Callable] = None,
-    score_cutoff: Optional[float] = None,
-    score_hint: Optional[float] = None,
+    weights: tuple[int, int, int] | None = (1, 1, 1),
+    processor: Callable[..., Sequence[Hashable]] | None = None,
+    score_cutoff: float | None = None,
+    score_hint: float | None = None,
 ) -> int: ...
 def ratio(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    processor: Optional[Callable] = None,
-    score_cutoff: Optional[float] = None,
+    processor: Callable[..., Sequence[Hashable]] | None = None,
+    score_cutoff: float | None = None,
 ) -> float: ...
 def hamming(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
     pad: bool = True,
-    processor: Optional[Callable] = None,
-    score_cutoff: Optional[float] = None,
+    processor: Callable[..., Sequence[Hashable]] | None = None,
+    score_cutoff: float | None = None,
 ) -> int: ...
 def jaro(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    processor: Optional[Callable] = None,
-    score_cutoff: Optional[float] = None,
+    processor: Callable[..., Sequence[Hashable]] | None = None,
+    score_cutoff: float | None = None,
 ) -> float: ...
 def jaro_winkler(
     s1: Sequence[Hashable],
     s2: Sequence[Hashable],
     *,
-    prefix_weight: Optional[float] = 0.1,
-    processor: Optional[Callable] = None,
-    score_cutoff: Optional[float] = None,
+    prefix_weight: float | None = 0.1,
+    processor: Callable[..., Sequence[Hashable]] | None = None,
+    score_cutoff: float | None = None,
 ) -> float: ...

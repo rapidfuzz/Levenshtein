@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.25.0
+#### Changed
+- improve type hints
+
 ### v0.24.0
 #### Changed
 - upgrade ``rapidfuzz-cpp`` to ``v3.0.0``
