@@ -13,6 +13,7 @@ It supports both normal and Unicode strings, but can't mix them, all
 arguments to a function (method) have to be of the same type (or its
 subclasses).
 """
+
 from __future__ import annotations
 
 __author__: str = "Max Bachmann"
