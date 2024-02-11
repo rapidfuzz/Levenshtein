@@ -7,7 +7,7 @@ with open("README.md", encoding="utf8") as f:
 
 setup(
     name="Levenshtein",
-    version="0.24.0",
+    version="0.25.0",
     url="https://github.com/rapidfuzz/Levenshtein",
     author="Max Bachmann",
     install_requires=["rapidfuzz >= 3.1.0, < 4.0.0"],
