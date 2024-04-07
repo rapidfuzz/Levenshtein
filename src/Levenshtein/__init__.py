@@ -18,8 +18,7 @@ from __future__ import annotations
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-
-import importlib.metadata
+__version__: str = "0.25.1"
 
 import rapidfuzz.distance.Hamming as _Hamming
 import rapidfuzz.distance.Indel as _Indel
@@ -41,11 +40,6 @@ from Levenshtein.levenshtein_cpp import (
     setmedian,
     setratio,
 )
-
-try:
-    __version__: str = importlib.metadata.version(__package__ or __name__)
-except importlib.metadata.PackageNotFoundError:
-    __version__: str = "0.0.0"
 
 __all__ = [
     "quickmedian",

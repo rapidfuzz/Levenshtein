@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.25.1
+#### Fixed
+- fix potentially incorrect results of `jaro_winkler` when using high prefix weights
+
 ### v0.25.0
 #### Changed
 - improve type hints
