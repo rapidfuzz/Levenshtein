@@ -34,7 +34,7 @@ jobs:
           pip install build
           python -m build --sdist
           # test whether tarball contains all files required for compiling
-          pip install dist/Levenshtein-*.tar.gz -v
+          pip install dist/levenshtein-*.tar.gz -v
 
       - name: Test type stubs
         run: |
