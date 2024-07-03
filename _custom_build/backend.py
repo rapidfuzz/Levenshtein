@@ -16,7 +16,7 @@ get_requires_for_build_sdist = _orig.get_requires_for_build_sdist
 
 def _cmake_required():
     try:
-        if _version.parse(_get_cmake_version()) >= _version.parse("3.12"):
+        if _version.parse(_get_cmake_version().split("-")[0]) >= _version.parse("3.12"):
             print("Using System version of cmake")
             return False
     except _SKBuildError:
