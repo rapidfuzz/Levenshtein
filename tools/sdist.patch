@@ -10,3 +10,4 @@ index 0a8c033..cf967b9 100644
 +    "scikit-build-core>=0.9.8"
  ]
  build-backend = "scikit_build_core.build"
+
