@@ -52,6 +52,7 @@ wheel.exclude = [
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
 input = "src/Levenshtein/__init__.py"
+regex = "(?i)^__version__: str = (\")(?P<value>.+?)\\1"
 
 [tool.black]
 line-length = 120
@@ -140,19 +141,3 @@ isort.required-imports = ["from __future__ import annotations"]
 "bench/**" = ["T20"]
 "_custom_build/backend.py" = ["T20"]
 "setup.py" = ["T20"]
-
-
-
-
-#[tool.scikit-build]
-
-
-
-#setup(
-#    url="https://github.com/rapidfuzz/Levenshtein",
-#    license="GPL",
-#    license_file="COPYING",
-#    packages=["Levenshtein"],
-#    package_dir={"": "src"},
-#    package_data={"Levenshtein": ["*.pyi", "py.typed"]},
-#)
