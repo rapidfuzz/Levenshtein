@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.26)
+cmake_minimum_required(VERSION 3.15...3.30)
 
 cmake_policy(SET CMP0054 NEW)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
