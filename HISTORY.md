@@ -3,6 +3,7 @@
 ### v0.26.0
 #### Changed
 - add support for Python 3.13
+- drop support for Python 3.8
 - switch build system to `scikit-build-core`
 
 ### v0.25.1
