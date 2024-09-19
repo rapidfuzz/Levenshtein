@@ -12,10 +12,11 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
-      - uses: actions/setup-python@v4
+
+      - uses: actions/setup-python@v5
 
       - name: Install dependencies
         run: |
@@ -44,8 +45,9 @@ jobs:
         run: |
           tools/seg_wrapper.sh pytest tests
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: artifact-sdist
           path: dist/*.tar.gz
 
   build_wheels_windows:
@@ -56,21 +58,17 @@ jobs:
       fail-fast: false
       matrix:
         arch: [auto32, auto64, ARM64]
-        python_tag: ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp38-*", "pp39-*"]
+        python_tag: ["cp39-*", "cp310-*", "cp311-*", "cp312-*", "cp313-*", "pp39-*", "pp310-*"]
         exclude:
           # PyPy only supports x86_64 on Windows
           - arch: auto32
-            python_tag: "pp38-*"
+            python_tag: "pp39-*"
           - arch: auto32
-            python_tag: "pp39-*"
-
-          # ARM64 only supported only supported on cpython >= 3.9
-          - arch: ARM64
-            python_tag: "pp38-*"
+            python_tag: "pp310-*"
           - arch: ARM64
             python_tag: "pp39-*"
           - arch: ARM64
-            python_tag: "cp38-*"
+            python_tag: "pp310-*"
 
     env:
       CIBW_BUILD: ${{matrix.python_tag}}
@@ -80,25 +78,26 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
 
       - name: Copy wheel
         run: cp dist/*.tar.gz rapidfuzz.tar.gz
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.5
+        uses: pypa/cibuildwheel@v2.21.1
         with:
           package-dir: rapidfuzz.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
   build_wheels_macos:
@@ -109,17 +108,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64, arm64, universal2]
-        python_tag: ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp38-*", "pp39-*"]
-        exclude:
-          # PyPy not supported on MacOS Arm
-          - arch: arm64
-            python_tag: "pp38-*"
-          - arch: arm64
-            python_tag: "pp39-*"
-          - arch: universal2
-            python_tag: "pp38-*"
-          - arch: universal2
-            python_tag: "pp39-*"
+        python_tag: ["cp39-*", "cp310-*", "cp311-*", "cp312-*", "cp313-*", "pp39-*", "pp310-*"]
     env:
       CIBW_BUILD: ${{matrix.python_tag}}
       CIBW_ARCHS: ${{matrix.arch}}
@@ -129,25 +118,26 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
 
       - name: Copy wheel
         run: cp dist/*.tar.gz rapidfuzz.tar.gz
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.5
+        uses: pypa/cibuildwheel@v2.21.1
         with:
           package-dir: rapidfuzz.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
   build_wheels_linux:
@@ -158,17 +148,17 @@ jobs:
       fail-fast: false
       matrix:
         arch: [auto, aarch64, ppc64le, s390x]
-        python_tag: ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*", "pp38-*", "pp39-*"]
+        python_tag: ["cp39-*", "cp310-*", "cp311-*", "cp312-*", "cp313-*", "pp39-*", "pp310-*"]
         exclude:
           # PyPy builds not supported on ppc64le / s390x
           - arch: ppc64le
-            python_tag: "pp38-*"
+            python_tag: "pp39-*"
           - arch: ppc64le
-            python_tag: "pp39-*"
-          - arch: s390x
-            python_tag: "pp38-*"
+            python_tag: "pp310-*"
           - arch: s390x
             python_tag: "pp39-*"
+          - arch: s390x
+            python_tag: "pp310-*"
     env:
       CIBW_ARCHS_LINUX: ${{matrix.arch}}
       CIBW_BUILD: ${{matrix.python_tag}}
@@ -178,28 +168,29 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v4
-
-      - uses: docker/setup-qemu-action@v2
-        name: Set up QEMU
+      - uses: actions/setup-python@v5
 
       - name: Copy wheel
         run: cp dist/*.tar.gz rapidfuzz.tar.gz
 
+      - uses: docker/setup-qemu-action@v3
+        name: Set up QEMU
+
       - name: Build wheel
-        uses: pypa/cibuildwheel@v2.16.5
+        uses: pypa/cibuildwheel@v2.21.1
         with:
           package-dir: rapidfuzz.tar.gz
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
 
   deploy-wheels:
@@ -211,9 +202,10 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
           path: dist
+          pattern: artifact-*
+          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@v1.8.11

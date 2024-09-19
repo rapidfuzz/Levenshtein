@@ -1,5 +1,10 @@
 ## Changelog
 
+### v0.26.0
+#### Changed
+- add support for Python 3.13
+- switch build system to `scikit-build-core`
+
 ### v0.25.1
 #### Fixed
 - fix potentially incorrect results of `jaro_winkler` when using high prefix weights

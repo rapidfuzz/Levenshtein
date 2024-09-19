@@ -4,10 +4,16 @@ function(create_cython_target _name)
         ${CMAKE_CURRENT_LIST_DIR}/${_name}.cxx
         PARENT_SCOPE)
   else()
-    find_package(Cython REQUIRED)
-    add_cython_target(${_name} CXX)
+    add_custom_command(
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${_name}.cxx"
+      MAIN_DEPENDENCY "${CMAKE_CURRENT_LIST_DIR}/${_name}.pyx"
+      VERBATIM
+      COMMAND
+        Python::Interpreter -m cython "${CMAKE_CURRENT_LIST_DIR}/${_name}.pyx"
+        --output-file "${CMAKE_CURRENT_BINARY_DIR}/${_name}.cxx")
+
     set(${_name}
-        ${_name}
+        ${CMAKE_CURRENT_BINARY_DIR}/${_name}.cxx
         PARENT_SCOPE)
   endif()
 endfunction(create_cython_target)
@@ -35,4 +41,4 @@ target_compile_features(levenshtein_cpp PUBLIC cxx_std_17)
 target_include_directories(levenshtein_cpp
                            PRIVATE ${LEV_BASE_DIR}/Levenshtein-c)
 target_link_libraries(levenshtein_cpp PRIVATE rapidfuzz::rapidfuzz)
-install(TARGETS levenshtein_cpp LIBRARY DESTINATION src/Levenshtein)
+install(TARGETS levenshtein_cpp DESTINATION Levenshtein/)

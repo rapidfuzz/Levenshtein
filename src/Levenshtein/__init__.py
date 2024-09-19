@@ -18,7 +18,7 @@ from __future__ import annotations
 
 __author__: str = "Max Bachmann"
 __license__: str = "GPL"
-__version__: str = "0.25.1"
+__version__: str = "0.26.0"
 
 import rapidfuzz.distance.Hamming as _Hamming
 import rapidfuzz.distance.Indel as _Indel
