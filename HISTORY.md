@@ -5,6 +5,7 @@
 - add support for Python 3.13
 - drop support for Python 3.8
 - switch build system to `scikit-build-core`
+- upgrade to `Cython==3.0.11`
 
 ### v0.25.1
 #### Fixed
