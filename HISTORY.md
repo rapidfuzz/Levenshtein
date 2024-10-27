@@ -1,7 +1,7 @@
 ## Changelog
 
 ### v0.26.1
-#### Changed
+#### Fixed
 - add missing mac os wheels
 
 ### v0.26.0
