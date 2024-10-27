@@ -92,7 +92,7 @@ jobs:
   build_wheels_macos:
     name: Build wheel on macos-latest/${{matrix.arch}}/${{matrix.python_tag}}
     needs: [build_sdist]
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:

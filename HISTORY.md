@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.26.1
+#### Changed
+- add missing mac os wheels
+
 ### v0.26.0
 #### Changed
 - add support for Python 3.13
