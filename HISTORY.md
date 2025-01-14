@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.27.0
+#### Fixed
+- avoid instantiation of basic_string for unsupported types
+
 ### v0.26.1
 #### Fixed
 - add missing mac os wheels

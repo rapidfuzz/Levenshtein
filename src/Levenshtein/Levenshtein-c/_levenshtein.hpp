@@ -141,14 +141,12 @@ static inline std::vector<uint32_t> make_symlist(const std::vector<RF_String>& s
  * Returns: The generalized median, as a newly allocated string; its length
  *          is stored in @medlength.
  **/
-static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF_String>& strings,
+static inline std::vector<uint32_t> lev_greedy_median(const std::vector<RF_String>& strings,
                                                             const std::vector<double>& weights)
 {
-    std::basic_string<uint32_t> result_median;
-
     /* find all symbols */
     std::vector<uint32_t> symlist = make_symlist(strings);
-    if (symlist.empty()) return result_median;
+    if (symlist.empty()) return {};
 
     /* allocate and initialize per-string matrix rows and a common work buffer */
     std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
@@ -167,7 +165,7 @@ static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF
 
     /* compute final cost of string of length 0 (empty string may be also
      * a valid answer) */
-    auto median = std::make_unique<uint32_t[]>(stoplen);
+    std::vector<uint32_t> median(stoplen);
     /**
      * the total distance of the best median string of
      * given length.  warning!  mediandist[0] is total
@@ -246,8 +244,8 @@ static inline std::basic_string<uint32_t> lev_greedy_median(const std::vector<RF
         std::distance(mediandist.get(), std::min_element(mediandist.get(), mediandist.get() + stoplen));
 
     /* return result */
-    result_median.insert(std::begin(result_median), median.get(), median.get() + bestlen);
-    return result_median;
+    median.resize(bestlen);
+    return median;
 }
 
 /*
@@ -335,13 +333,13 @@ static inline double finish_distance_computations(const Range<uint32_t*>& string
  *
  * Returns: The improved generalized median
  **/
-static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& string,
+static inline std::vector<uint32_t> lev_median_improve(const RF_String& string,
                                                              const std::vector<RF_String>& strings,
                                                              const std::vector<double>& weights)
 {
     /* find all symbols */
     std::vector<uint32_t> symlist = make_symlist(strings);
-    if (symlist.empty()) return std::basic_string<uint32_t>();
+    if (symlist.empty()) return {};
 
     /* allocate and initialize per-string matrix rows and a common work buffer */
     std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
@@ -358,7 +356,7 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
 
     /* initialize median to given string */
     auto _median = std::make_unique<uint32_t[]>(stoplen + 1);
-    uint32_t* median = _median.get() + 1; /* we need -1st element for insertions a pos 0 */
+    uint32_t* median = _median.get() + 1; /* we need -1st element for insertions at pos 0 */
     size_t medlen = (size_t)string.length;
 
     visit(string, [&](auto s1) {
@@ -459,10 +457,10 @@ static inline std::basic_string<uint32_t> lev_median_improve(const RF_String& st
         }
     }
 
-    return std::basic_string<uint32_t>(median, medlen);
+    return std::vector<uint32_t>(median, median + medlen);
 }
 
-std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
+std::vector<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
                                              const std::vector<double>& weights);
 
 /**
@@ -477,7 +475,7 @@ std::basic_string<uint32_t> lev_quick_median(const std::vector<RF_String>& strin
  *
  * Returns: The set median
  **/
-static inline std::basic_string<uint32_t> lev_set_median(const std::vector<RF_String>& strings,
+static inline std::vector<uint32_t> lev_set_median(const std::vector<RF_String>& strings,
                                                          const std::vector<double>& weights)
 {
     size_t minidx = 0;
@@ -521,7 +519,7 @@ static inline std::basic_string<uint32_t> lev_set_median(const std::vector<RF_St
     }
 
     return visit(strings[minidx], [&](auto s1) {
-        return std::basic_string<uint32_t>(std::begin(s1), std::end(s1));
+        return std::vector<uint32_t>(std::begin(s1), std::end(s1));
     });
 }
 

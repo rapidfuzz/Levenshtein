@@ -11,24 +11,11 @@ cdef extern from *:
     int PyUnicode_4BYTE_KIND
     object PyUnicode_FromKindAndData(int kind, const void *buffer, Py_ssize_t size)
 
-cdef extern from "<string>" namespace "std" nogil:
-    cdef cppclass basic_string[T]:
-        ctypedef size_t size_type
-
-        basic_string() except +
-
-        void resize(size_type) except +
-
-        T& operator[](size_type)
-
-        const T* data()
-        size_type size()
-
 cdef extern from "_levenshtein.hpp":
-    cdef basic_string[uint32_t] lev_greedy_median(const vector[RF_String]& strings, const vector[double]& weights) except +
-    cdef basic_string[uint32_t] lev_median_improve(const RF_String& string, const vector[RF_String]& strings, const vector[double]& weights) except +
-    cdef basic_string[uint32_t] lev_quick_median(const vector[RF_String]& strings, const vector[double]& weights) except +
-    cdef basic_string[uint32_t] lev_set_median(const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef vector[uint32_t] lev_greedy_median(const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef vector[uint32_t] lev_median_improve(const RF_String& string, const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef vector[uint32_t] lev_quick_median(const vector[RF_String]& strings, const vector[double]& weights) except +
+    cdef vector[uint32_t] lev_set_median(const vector[RF_String]& strings, const vector[double]& weights) except +
 
     cdef double lev_set_distance(const vector[RF_String]& strings1, const vector[RF_String]& strings2) except +
     cdef double lev_edit_seq_distance(const vector[RF_String]& strings1, const vector[RF_String]& strings2) except +
