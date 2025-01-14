@@ -4,6 +4,9 @@
 #### Fixed
 - avoid instantiation of basic_string for unsupported types
 
+#### Changed
+- upgrade ``rapidfuzz-cpp`` to ``v3.2.0``
+
 ### v0.26.1
 #### Fixed
 - add missing mac os wheels
