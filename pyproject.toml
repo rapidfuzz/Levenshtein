@@ -26,6 +26,8 @@ classifiers=[
   "Programming Language :: Python :: 3.13",
   "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 ]
+
+[project.urls]
 Homepage = "https://github.com/rapidfuzz/Levenshtein"
 Documentation = "https://rapidfuzz.github.io/Levenshtein/"
 Repository = "https://github.com/rapidfuzz/Levenshtein.git"
