@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "scikit-build-core>=0.10.7",
+    "scikit-build-core>=0.11",
     "Cython>=3.0.11,<3.1.0"
 ]
 build-backend = "scikit_build_core.build"
@@ -17,6 +17,7 @@ authors = [
 ]
 description = "Python extension for computing string edit distances and similarities."
 readme = "README.md"
+license = "GPL-2.0-or-later"
 classifiers=[
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",
@@ -24,7 +25,6 @@ classifiers=[
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
-  "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 ]
 
 [project.urls]
