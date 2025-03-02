@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.27.1
+#### Changed
+- fix build with ``scikit-build-core`` ``v0.11``
+
 ### v0.27.0
 #### Fixed
 - avoid instantiation of basic_string for unsupported types
