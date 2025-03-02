@@ -3,6 +3,7 @@
 ### v0.27.1
 #### Changed
 - fix build with ``scikit-build-core`` ``v0.11``
+- upgrade to `Cython==3.0.12`
 
 ### v0.27.0
 #### Fixed
