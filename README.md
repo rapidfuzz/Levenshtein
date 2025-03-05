@@ -17,7 +17,7 @@
     <img src="https://img.shields.io/badge/-documentation-blue"
          alt="Documentation">
   </a>
-  <a href="https://github.com/rapidfuzz/Levenshtein/blob/main/COPYING">
+  <a href="https://github.com/rapidfuzz/Levenshtein/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/rapidfuzz/Levenshtein"
          alt="GitHub license">
   </a>
@@ -60,4 +60,4 @@ under the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 2 of the License, or (at your option)
 any later version.
 
-See the file [COPYING](https://github.com/rapidfuzz/Levenshtein/blob/main/COPYING) for the full text of GNU General Public License version 2.
+See the file [LICENSE](https://github.com/rapidfuzz/Levenshtein/blob/main/LICENSE) for the full text of GNU General Public License version 2.
