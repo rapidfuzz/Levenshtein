@@ -42,8 +42,7 @@ Changelog = "https://github.com/rapidfuzz/Levenshtein/blob/main/HISTORY.md"
 
 [tool.scikit-build]
 sdist.include = [
-  "src/Levenshtein/*.cxx",
-  "src/Levenshtein/_version.py"
+  "src/Levenshtein/*.cxx"
 ]
 sdist.exclude = [
   ".github"
