@@ -74,7 +74,7 @@ jobs:
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.3.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -109,7 +109,7 @@ jobs:
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.3.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -140,7 +140,7 @@ jobs:
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.3.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -176,7 +176,7 @@ jobs:
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@v3.2.1
+        uses: pypa/cibuildwheel@v3.3.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
