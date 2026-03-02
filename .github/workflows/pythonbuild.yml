@@ -45,7 +45,7 @@ jobs:
         run: |
           tools/seg_wrapper.sh pytest tests
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: artifact-sdist
           path: dist/*.tar.gz
@@ -63,7 +63,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: artifact-sdist
           path: dist
@@ -80,7 +80,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -98,7 +98,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: artifact-sdist
           path: dist
@@ -115,7 +115,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -129,7 +129,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: artifact-sdist
           path: dist
@@ -146,7 +146,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -165,7 +165,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 3
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: artifact-sdist
           path: dist
@@ -182,7 +182,7 @@ jobs:
           output-dir: wheelhouse
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: artifact-${{ github.job }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -197,7 +197,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: artifact-*
