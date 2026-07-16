@@ -127,6 +127,7 @@ std::vector<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
             visit(strings[i], [&](auto s1) {
                 double weighti = weights[i];
                 size_t lengthi = (size_t)s1.size();
+                if (lengthi == 0) return;
                 double start = (double)lengthi / ml * (double)j;
                 double end = start + (double)lengthi / ml;
                 size_t istart = (size_t)floor(start);

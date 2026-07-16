@@ -1,5 +1,12 @@
 ## Changelog
 
+### v0.27.4
+#### Added
+- add type hints for StringMatccher
+
+#### Fixed
+- fix out of bound read in quickmedian for empty strings
+
 ### v0.27.3
 #### Fixed
 - add missing pypy and freethreaded linux wheels
