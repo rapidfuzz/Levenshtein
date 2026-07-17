@@ -6,6 +6,7 @@
 
 #### Fixed
 - fix out of bound read in quickmedian for empty strings
+- fix potential out of bounds write in median_improve
 
 ### v0.27.3
 #### Fixed

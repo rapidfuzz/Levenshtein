@@ -343,7 +343,7 @@ static inline std::vector<uint32_t> lev_median_improve(const RF_String& string,
 
     /* allocate and initialize per-string matrix rows and a common work buffer */
     std::vector<std::unique_ptr<size_t[]>> rows(strings.size());
-    size_t maxlen = 0;
+    size_t maxlen = (size_t)string.length;
     for (size_t i = 0; i < strings.size(); i++) {
         size_t leni = (size_t)strings[i].length;
         if (leni > maxlen) maxlen = leni;
