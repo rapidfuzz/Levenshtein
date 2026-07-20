@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest hypothesis mypy Cython
+          pip install pytest hypothesis mypy pyrefly Cython
 
       # The cythonized files allow installation from the sdist without cython
       - name: Generate cython
@@ -40,6 +40,10 @@ jobs:
       - name: Test type stubs
         run: |
           python -m mypy.stubtest Levenshtein --ignore-missing-stub
+
+      - name: Enforce 100% type coverage
+        run: |
+          pyrefly coverage check --output-format=github src/Levenshtein
 
       - name: Test with pytest and backtrace in case of SegFault
         run: |
