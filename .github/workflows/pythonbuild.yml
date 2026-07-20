@@ -12,11 +12,11 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: 'true'
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
 
       - name: Install dependencies
         run: |
@@ -68,13 +68,13 @@ jobs:
           name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
 
       - name: Copy wheel
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.1.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -103,13 +103,13 @@ jobs:
           name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
 
       - name: Copy wheel
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.1.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -134,13 +134,13 @@ jobs:
           name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
 
       - name: Copy wheel
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.1.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -170,13 +170,13 @@ jobs:
           name: artifact-sdist
           path: dist
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
 
       - name: Copy wheel
         run: cp dist/*.tar.gz levenshtein.tar.gz
 
       - name: Build wheel
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.1.0
         with:
           package-dir: levenshtein.tar.gz
           output-dir: wheelhouse
@@ -203,4 +203,4 @@ jobs:
           pattern: artifact-*
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@v1.14.0
+      - uses: pypa/gh-action-pypi-publish@v1.14.1
