@@ -150,5 +150,5 @@ isort.required-imports = ["from __future__ import annotations"]
 
 [tool.cibuildwheel]
 enable = ["cpython-freethreading", "pypy"]
-test-requires = ["pytest", "hypothesis"]
+test-requires = ["pytest", "hypothesis==6.155.7"]
 test-command = "pytest {package}/tests"
