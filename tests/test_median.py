@@ -12,6 +12,11 @@ def test_weight_zero():
     assert Levenshtein.quickmedian(["tes", "teste"], [0, 1]) == "teste"
     assert Levenshtein.quickmedian(["", "tes"]) == "e"
 
+def test_empty():
+    assert Levenshtein.quickmedian([]) == ""
+    assert Levenshtein.setmedian([]) == ""
+    assert Levenshtein.median([]) == ""
+
 def test_documented():
     """
     run tests from documentation

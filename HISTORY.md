@@ -7,6 +7,7 @@
 #### Fixed
 - fix out of bound read in quickmedian for empty strings
 - fix potential out of bounds write in median_improve
+- fix out of bound read in setmedian for empty sequences
 
 #### Removed
 - removed experimental Python 3.13 freethreading wheels

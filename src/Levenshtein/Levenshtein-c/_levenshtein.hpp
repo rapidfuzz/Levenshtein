@@ -478,6 +478,9 @@ std::vector<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
 static inline std::vector<uint32_t> lev_set_median(const std::vector<RF_String>& strings,
                                                          const std::vector<double>& weights)
 {
+    if(strings.empty())
+        return {};
+
     size_t minidx = 0;
     double mindist = std::numeric_limits<double>::max();
     std::vector<long int> distances(strings.size() * (strings.size() - 1) / 2, 0xff);
