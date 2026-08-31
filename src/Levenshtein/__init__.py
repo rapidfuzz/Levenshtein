@@ -503,7 +503,7 @@ def subtract_edit(edit_operations, subsequence):
     >>> apply_edit(subtract_edit(e, e1), bastard, 'scotsman')
     'scotsman'
     """
-    str_len = 2**32
+    str_len = 2**32 - 1
     return (
         _Editops(edit_operations, str_len, str_len)
         .remove_subsequence(_Editops(subsequence, str_len, str_len))
