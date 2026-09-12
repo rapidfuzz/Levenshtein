@@ -1,5 +1,9 @@
 ## Changelog
 
+### v0.27.5
+#### Fixed
+- avoid unnecessary len calls on iterables. This avoids a crash when changing the size of the iterable after the len call.
+
 ### v0.27.4
 #### Added
 - add type hints for StringMatcher

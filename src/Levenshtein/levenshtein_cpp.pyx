@@ -30,20 +30,27 @@ cdef inline RF_String conv_sequence(seq) except *:
         return convert_string(seq)
     raise TypeError("Expected string or bytes")
 
-cdef vector[double] extract_weightlist(wlist, size_t n) except *:
-    cdef size_t i
+cdef vector[double] extract_weightlist(wlist, size_t strListSize) except *:
+    cdef size_t i = 0
     cdef double weight
     cdef vector[double] weights
 
     if wlist is None:
-        weights.resize(n, 1.0)
+        weights.resize(strListSize, 1.0)
     else:
-        weights.resize(n)
-        for i, w in enumerate(wlist):
+        weights.resize(strListSize)
+        for w in wlist:
             weight = w
             if w < 0:
                 raise ValueError(f"weight {weight} is negative")
+            if i >= strListSize:
+                raise ValueError("strlist has a different length than wlist")
             weights[i] = w
+            i += 1
+
+        if i != strListSize:
+            raise ValueError("strlist has a different length than wlist")
+
     return weights
 
 cdef vector[RF_String] extract_stringlist(strings) except *:
@@ -77,11 +84,9 @@ def median(strlist, wlist = None, *):
 
     Hm. Even a computer program can spell Levenshtein better than me.
     """
-    if wlist is not None and len(strlist) != len(wlist):
-        raise ValueError("strlist has a different length than wlist")
-
-    weights = extract_weightlist(wlist, len(strlist))
     strings = extract_stringlist(strlist)
+    weights = extract_weightlist(wlist, strings.size())
+
     median = lev_greedy_median(strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
@@ -103,11 +108,8 @@ def quickmedian(strlist, wlist = None, *):
     >>> quickmedian(fixme)
     'Levnshein'
     """
-    if wlist is not None and len(strlist) != len(wlist):
-        raise ValueError("strlist has a different length than wlist")
-
-    weights = extract_weightlist(wlist, len(strlist))
     strings = extract_stringlist(strlist)
+    weights = extract_weightlist(wlist, strings.size())
     median = lev_quick_median(strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
@@ -137,12 +139,9 @@ def median_improve(string, strlist, wlist = None, *):
 
     It takes some work to change spam to Levenshtein.
     """
-    if wlist is not None and len(strlist) != len(wlist):
-        raise ValueError("strlist has a different length than wlist")
-
-    weights = extract_weightlist(wlist, len(strlist))
-    query = conv_sequence(string)
     strings = extract_stringlist(strlist)
+    weights = extract_weightlist(wlist, strings.size())
+    query = conv_sequence(string)
     median = lev_median_improve(query, strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
@@ -163,12 +162,8 @@ def setmedian(strlist, wlist = None, *):
 
     You haven't asked me about Limburger, sir.
     """
-
-    if wlist is not None and len(strlist) != len(wlist):
-        raise ValueError("strlist has a different length than wlist")
-
-    weights = extract_weightlist(wlist, len(strlist))
     strings = extract_stringlist(strlist)
+    weights = extract_weightlist(wlist, strings.size())
     median = lev_set_median(strings, weights)
     return PyUnicode_FromKindAndData(PyUnicode_4BYTE_KIND, median.data(), median.size())
 
