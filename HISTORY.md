@@ -4,6 +4,12 @@
 #### Fixed
 - avoid unnecessary len calls on iterables. This avoids a crash when changing the size of the iterable after the len call.
 
+#### Added
+* Add support for Python 3.15
+
+#### Removed
+- removed support for Python 3.10
+
 ### v0.27.4
 #### Added
 - add type hints for StringMatcher
@@ -21,7 +27,7 @@
 - add missing pypy and freethreaded linux wheels
 
 #### Removed
-- drop s390x and ppc64le wheels since they are virtually unused and require extremly long to build under emulation
+- drop s390x and ppc64le wheels since they are virtually unused and require extremely long to build under emulation
 
 ### v0.27.2
 #### Changed

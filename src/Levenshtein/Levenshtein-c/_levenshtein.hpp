@@ -142,7 +142,7 @@ static inline std::vector<uint32_t> make_symlist(const std::vector<RF_String>& s
  *          is stored in @medlength.
  **/
 static inline std::vector<uint32_t> lev_greedy_median(const std::vector<RF_String>& strings,
-                                                            const std::vector<double>& weights)
+                                                      const std::vector<double>& weights)
 {
     /* find all symbols */
     std::vector<uint32_t> symlist = make_symlist(strings);
@@ -334,8 +334,8 @@ static inline double finish_distance_computations(const Range<uint32_t*>& string
  * Returns: The improved generalized median
  **/
 static inline std::vector<uint32_t> lev_median_improve(const RF_String& string,
-                                                             const std::vector<RF_String>& strings,
-                                                             const std::vector<double>& weights)
+                                                       const std::vector<RF_String>& strings,
+                                                       const std::vector<double>& weights)
 {
     /* find all symbols */
     std::vector<uint32_t> symlist = make_symlist(strings);
@@ -461,7 +461,7 @@ static inline std::vector<uint32_t> lev_median_improve(const RF_String& string,
 }
 
 std::vector<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
-                                             const std::vector<double>& weights);
+                                       const std::vector<double>& weights);
 
 /**
  * lev_set_median:
@@ -476,10 +476,9 @@ std::vector<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
  * Returns: The set median
  **/
 static inline std::vector<uint32_t> lev_set_median(const std::vector<RF_String>& strings,
-                                                         const std::vector<double>& weights)
+                                                   const std::vector<double>& weights)
 {
-    if(strings.empty())
-        return {};
+    if (strings.empty()) return {};
 
     size_t minidx = 0;
     double mindist = std::numeric_limits<double>::max();

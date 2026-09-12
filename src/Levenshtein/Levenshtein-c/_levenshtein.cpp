@@ -1,8 +1,8 @@
 #include <limits>
 #include <math.h>
-#include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "_levenshtein.hpp"
 
@@ -96,7 +96,7 @@ public:
 };
 
 std::vector<uint32_t> lev_quick_median(const std::vector<RF_String>& strings,
-                                             const std::vector<double>& weights)
+                                       const std::vector<double>& weights)
 {
     std::vector<uint32_t> median; /* the resulting string */
 

@@ -9,8 +9,9 @@ function(create_cython_target _name)
       MAIN_DEPENDENCY "${CMAKE_CURRENT_LIST_DIR}/${_name}.pyx"
       VERBATIM
       COMMAND
-        Python::Interpreter -m cython --cplus "${CMAKE_CURRENT_LIST_DIR}/${_name}.pyx"
-        --output-file "${CMAKE_CURRENT_BINARY_DIR}/${_name}.cxx")
+        Python::Interpreter -m cython --cplus
+        "${CMAKE_CURRENT_LIST_DIR}/${_name}.pyx" --output-file
+        "${CMAKE_CURRENT_BINARY_DIR}/${_name}.cxx")
 
     set(${_name}
         ${CMAKE_CURRENT_BINARY_DIR}/${_name}.cxx

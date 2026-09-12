@@ -33,7 +33,7 @@ computation of:
 * string sequence and set similarity
 
 ## Requirements
-* Python 3.10 or later
+* Python 3.11 or later
 
 ## Installation
 ```bash
