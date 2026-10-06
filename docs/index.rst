@@ -19,22 +19,30 @@ subclasses).
 Unicode text
 ------------
 
-Unicode strings can have different underlying code-point sequences even when
-they represent the same visible text. For example, an accented character may
-be stored as one precomposed code point or as a base character followed by a
-combining mark.
+This package accepts both Python ``str`` and ``bytes`` values, but arguments
+passed to the same function must use compatible string types.
 
-When canonical equivalence matters, inputs should be normalized to the same
-Unicode normalization form before calculating Levenshtein distance.
+For Python ``str`` input, the extension reads the CPython Unicode representation
+using ``PyUnicode_GET_LENGTH`` and ``PyUnicode_DATA``. The resulting
+Levenshtein sequence therefore follows the Unicode code-point sequence of the
+Python string rather than its UTF-8 byte encoding.
 
-A user-perceived character can also consist of multiple code points.
-Applications that need one visible character to count as one edit may therefore
-need grapheme-cluster segmentation before comparison.
+For ``bytes`` input, the sequence elements are byte values instead.
 
-For additional background on Unicode normalization, grapheme segmentation,
-and text transformations in edit-distance processing, see `Unicode text
-transformations and edit distance
-<https://www.levenshtein.net/unicode-text-transformations>`_.
+This distinction matters because code-point distance is not the same as
+grapheme-cluster distance. A user-perceived character can contain multiple
+Unicode code points, and canonically equivalent text can also have different
+underlying code-point sequences.
+
+The extension does not automatically apply Unicode normalization or
+grapheme-cluster segmentation before calculating the distance. Applications
+that require those semantics should preprocess both inputs consistently before
+comparison.
+
+For additional background on how runtime string representation defines the
+sequence supplied to edit-distance algorithms, see `Levenshtein implementations
+and Unicode sequence units
+<https://www.levenshtein.net/levenshtein-implementations>`_.
 
 .. toctree::
    :maxdepth: 2
