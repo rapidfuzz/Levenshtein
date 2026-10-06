@@ -15,6 +15,7 @@ other hand it's much faster.
 It supports both normal and Unicode strings, but can't mix them, all
 arguments to a function (method) have to be of the same type (or its
 subclasses).
+
 Unicode text
 ------------
 
@@ -34,6 +35,7 @@ For additional background on Unicode normalization, grapheme segmentation,
 and text transformations in edit-distance processing, see `Unicode text
 transformations and edit distance
 <https://www.levenshtein.net/unicode-text-transformations>`_.
+
 .. toctree::
    :maxdepth: 2
    :caption: Installation:
